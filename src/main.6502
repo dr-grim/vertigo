@@ -1,1 +1,427 @@
-		TTL	e.mc		; Sets up all variables & macros,					; also includes all source files********************************************************************************DEFINE		MACRO		LDA	#8		LDX	#>@1		LDY	#<@1		JSR	osword		ENDM********************************************************************************					; Defines X,Y for enemy's pathSTART		MACRO		DW	@1,@2		ENDM********************************************************************************					; Defines 1 move for enemy's pathMOVE		MACRO		DFB	@1+(@2*8)+@3		ENDM********************************************************************************					; Wait for return to be pressedWAIT		MACROw1@0		INKEY	-99		BNE	w1@0w2@0		INKEY	-99		BEQ	w2@0		ENDM********************************************************************************					; MACRO to provide INKEY(-) functionINKEY		MACRO		LDA	#&81		LDX	#>@1		LDY	#&FF		JSR	osbyte		TYA		ENDM********************************************************************************; Use SHADOW <ON/OFF>,<IN/OUT>; switches main 20k bank in & out of memorySHADOW		MACRO		LDA	#@1+@2		STA	accreg		ENDM********************************************************************************; switches any sideways ROM/RAM bank in BANK <socket number>BANK		MACRO		LDA	#@1		STA	romevn		STA	romsel		ENDM********************************************************************************; LOAD <string_location> ( Does OSCLI(string) )LOAD		MACRO		LDX	#>@1		LDY	#<@1		JSR	oscli		ENDM********************************************************************************					; TABLE <start>,<step>,<number>LOOKUP		MACROtemp@0		=	@1count@0	=	0		REPEAT		DW	temp@0temp@0		=	temp@0+@2count@0	=	count@0+1		UNTIL	count@0=@3		ENDM********************************************************************************OFF		=	0ON		=	1+2OUT		=	0IN		=	4********************************************************************************		ORG	&E00		; Code start********************************************************************************nvwrch		EQU	&FFC8		; setup all os routines and registersnvrdch		EQU	&FFCBosfind		EQU	&FFCEosbgpb		EQU	&FFD1osbput		EQU	&FFD4osbget		EQU	&FFD7osargs		EQU	&FFDAosfile		EQU	&FFDDosrdch		EQU	&FFE0osasci		EQU	&FFE3osnewl		EQU	&FFE7oswrch		EQU	&FFEEosword		EQU	&FFF1osbyte		EQU	&FFF4oscli		EQU	&FFF7romsel		EQU	&FE30romevn		EQU	&F4accreg		EQU	&FE34 * * * * * * * * * * * * * * * * * * * *		DSECT		ORG	&0000evframe_num	DS	1evworkspace	DS	7timer1		DS	1timer2		DS	1 * * * * * * * * * * * * * * * * * * * *	DS	4bass_offset	DS	1bb_num		DS	1bass_pointer	DS	2arpeg_offset	DS	1arpeg_pointer	DS	2main_offset	DS	1mb_num		DS	1main_pointer	DS	2drmem		DS	10xy		DS	5		; WAS :   xy	DS	6yts		DS	1yts2		DS	1ab		DS	10oxy		DS	6hites		DS	7j		DS	5mem		DS	5u		DS	1VC		DS	1h		DS	1old_h		DS	1c		DS	11workspace	DS	&14indicator	DS	1frame		DS	1old_X		DS	1old_Y		DS	1old_Y2		DS	1pixel_offset	DS	1old_height	DS	1pointer	DS	2controller	DS	1height_1	DS	1height_2	DS	1height_3	DS	1height_4	DS	1pixel_X	DS	1pixel_mask	DS	1pixel_actual	DS	1pointer2	DS	2pointer3	DS	2menu_st	DS	1enemy_x	DS	2enemy_y	DS	2enemy_z	DS	1enemy_zm	DS	1e_point	DS	1e_count	DS	1e_frame	DS	1pointer4	DS	2old_lives	DS	1arrows_X	DS	1arrows_Y	DS	1arrows_frame	DS	1last_selected	DS	1block_sh	DS	1music_volume	DS	1sound_volume	DS	1volume_delay	DS	1		DEND********************************************************************************delay		=	4****************************************frames		=	8****************************************NW		=	0NE		=	64SW		=	128SE		=	192********************************************************************************		DSECT		ORG	&8000ball_data	DS	&80		; BANK 4jewel_data	DS	&A0jewel_masks	DS	&A0menu_data	DS	&1D30ptr_spr	DS	&B0ptr_msk	DS	&B0nty_dta	DS	&A0nty_msk	DS	&10wipeout_s	DS	&E0wipeout_m	DS	&E0final		DS	&410lb_sprt	DS	&400lb_mask	DS	&40block1		DS	&240block2		DS	&240block3		DS	&240block4		DS	&240block5		DS	&240block6		DS	&240block7		DS	&240block_mask2	DS	&240block_data2	DS	&240ptr_sve	DS	&2C * * * * * * * * * * * * * * * * * * * *		ORG	&8000		; BANK 5level_data	DS	&1B54tv_frames	DS	&17A0bsp1		DS	&AF		; backgroundbsp2		DS	&AF		; MUM!bsp3		DS	&AF		; er ... well,bsp4		DS	&AF		; !bsp5		DS	&AF		; Home Sweet Homelbsp1		DS	&129		; backgroundlbsp2		DS	&129		; where hav you been ?lbsp3		DS	&129		; straight to bed - and no supper ! * * * * * * * * * * * * * * * * * * * *		ORG	&8000		; BANK 7menu_save	DS	&11D0credits_save	DS	&9A0		DEND********************************************************************************		CHN	mc000a
+;		TTL	e.mc		; Sets up all variables & macros,
+						; also includes all source files
+
+		CPU	1	; 65C02
+;****************************************
+;****************************************
+
+		MACRO DEFINE address
+		LDA	#8
+		LDX	#LO(address)
+		LDY	#HI(address)
+		JSR	osword
+		ENDMACRO
+
+;****************************************
+;****************************************
+					; Defines X,Y for enemy's path
+		MACRO	ENEMYSTART px,py
+		EQUW	px, py
+		ENDMACRO
+
+;****************************************
+;****************************************
+					; Defines 1 move for enemy's path
+		MACRO 	ENEMYMOVE a,b,c
+		EQUB	a+(b*8)+c
+		ENDMACRO
+
+;****************************************
+;****************************************
+					; Wait for return to be pressed
+		MACRO 	WAIT
+{		
+.w1		INKEY	-99
+		BNE	w1
+.w2		INKEY	-99
+		BEQ	w2
+}
+		ENDMACRO
+
+;****************************************
+;****************************************
+					; MACRO to provide INKEY(-) function
+		MACRO INKEY x
+		LDA	#&81
+		LDX	#LO(x) ; was >x
+		LDY	#&FF
+		JSR	osbyte
+		TYA
+		ENDMACRO
+
+;****************************************
+;****************************************
+; Use SHADOW <ON/OFF>,<IN/OUT>
+; switches main 20k bank in & out of memory
+		MACRO SHADOW onoff, inout
+		LDA	#onoff + inout
+		STA	accreg
+		ENDMACRO
+
+;****************************************
+;****************************************
+; switches any sideways ROM/RAM bank in BANK <socket number>
+		MACRO BANK bankNum
+		LDA	#bankNum
+		STA	romevn
+		STA	romsel
+		ENDMACRO
+
+;****************************************
+;****************************************
+; LOAD <string_location> ( Does OSCLI(string) )
+		MACRO OSCLI oscliString
+		LDX	#LO(oscliString)
+		LDY	#HI(oscliString)
+		JSR	oscli
+		ENDMACRO
+
+;****************************************
+;****************************************
+					; TABLE <start>,<step>,<number>
+		MACRO LOOKUP start, step, number
+{		
+		FOR n, 0, number
+		EQUW start + (n*step)
+		NEXT
+;temp@0		=	@1
+;count@0	=	0
+;		REPEAT
+;		DW	temp@0
+;temp@0		=	temp@0+@2
+;count@0	=	count@0+1
+;		UNTIL	count@0=@3
+}
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		MACRO BLOCK  size, bytePattern
+		FOR n, 0, size
+		EQUB	bytePattern
+		NEXT
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		; Branch if Greater or Equal; equivalent of BCS
+		MACRO BGE  address		; ADE+ supported BGE
+		BCS	address
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		; Branch if Less Than; equivalent of BCC
+		MACRO BLT  address		; ADE+ supported BLT
+		BCC	address
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		; Branch if Less Than; equivalent of BCC
+		MACRO LOAD_TWOS_COMPLEMENT  register, value
+{		
+		IF value < -128
+			ERROR "Value lower than -128 - out of range of 2's complement"
+		ELIF value > 127
+			ERROR "Value higher than 127 - out of range of 2's complement"
+		ENDIF
+
+		IF value >= 0
+			actual = value
+		ELSE
+			; -ve values not allowed... but we just want the least sig 8 bits
+			actual = value AND &FF
+		ENDIF
+
+		IF register = 'A'
+			LDA #actual
+		ELIF register = 'X'
+		  	LDX #actual
+		ELIF register = 'Y'
+			LDY #actual
+		ELSE
+			ERROR Unknown register
+		ENDIF
+}
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+OFF		=	0
+ON		=	1+2
+OUT		=	0
+IN		=	4
+
+;****************************************
+;****************************************
+
+nvwrch		=	&FFC8		; setup all os routines and registers
+nvrdch		=	&FFCB
+osfind		=	&FFCE
+osbgpb		=	&FFD1
+osbput		=	&FFD4
+osbget		=	&FFD7
+osargs		=	&FFDA
+osfile		=	&FFDD
+osrdch		=	&FFE0
+osasci		=	&FFE3
+osnewl		=	&FFE7
+oswrch		=	&FFEE
+osword		=	&FFF1
+osbyte		=	&FFF4
+oscli		=	&FFF7
+
+romsel		=	&FE30
+romevn		=	&F4
+accreg		=	&FE34
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		ORG	&0000
+
+.evframe_num	SKIP	1
+.evworkspace	SKIP	7
+.timer1		SKIP	1
+.timer2		SKIP	1
+
+; * * * * * * * * * * * * * * * * * * * *
+
+	SKIP	4
+
+.bass_offset	SKIP	1
+.bb_num		SKIP	1
+.bass_pointer	SKIP	2
+
+.arpeg_offset	SKIP	1
+.arpeg_pointer	SKIP	2
+
+.main_offset	SKIP	1
+.mb_num		SKIP	1
+.main_pointer	SKIP	2
+
+.drmem		SKIP	10
+.xy		SKIP	5		; WAS :   xy	SKIP	6
+.yts		SKIP	1
+.yts2		SKIP	1
+.ab		SKIP	10
+.oxy		SKIP	6
+.hites		SKIP	7
+.j		SKIP	5
+.mem		SKIP	5
+.u		SKIP	1
+.VC		SKIP	1
+.h		SKIP	1
+.old_h		SKIP	1
+
+.c		SKIP	11
+
+.workspace	SKIP	&14
+
+.indicator	SKIP	1
+
+.frame		SKIP	1
+
+.old_X		SKIP	1
+.old_Y		SKIP	1
+.old_Y2		SKIP	1
+
+.pixel_offset	SKIP	1
+
+.old_height	SKIP	1
+
+.pointer	SKIP	2
+
+.controller	SKIP	1
+
+.height_1	SKIP	1
+.height_2	SKIP	1
+.height_3	SKIP	1
+.height_4	SKIP	1
+
+.pixel_X	SKIP	1
+.pixel_mask	SKIP	1
+.pixel_actual	SKIP	1
+
+.pointer2	SKIP	2
+.pointer3	SKIP	2
+
+.menu_st	SKIP	1
+
+.enemy_x	SKIP	2
+.enemy_y	SKIP	2
+.enemy_z	SKIP	1
+.enemy_zm	SKIP	1
+.e_point	SKIP	1
+.e_count	SKIP	1
+.e_frame	SKIP	1
+.pointer4	SKIP	2
+
+.old_lives	SKIP	1
+
+.arrows_X	SKIP	1
+.arrows_Y	SKIP	1
+.arrows_frame	SKIP	1
+.last_selected	SKIP	1
+
+.block_sh	SKIP	1
+
+.music_volume	SKIP	1
+.sound_volume	SKIP	1
+
+.volume_delay	SKIP	1
+
+;		DEND
+
+;****************************************
+;****************************************
+
+delay		=	4
+
+;****************************************
+
+frames		=	8
+
+;****************************************
+
+NW		=	0
+NE		=	64
+SW		=	128
+SE		=	192
+
+;****************************************
+;****************************************
+
+;		DSECT
+
+		ORG	&8000
+
+.ball_data	SKIP	&80		; BANK 4
+.jewel_data	SKIP	&A0
+.jewel_masks	SKIP	&A0
+.menu_data	SKIP	&1D30
+.ptr_spr	SKIP	&B0
+.ptr_msk	SKIP	&B0
+.nty_dta	SKIP	&A0
+.nty_msk	SKIP	&10
+.wipeout_s	SKIP	&E0
+.wipeout_m	SKIP	&E0
+.final		SKIP	&410
+.lb_sprt	SKIP	&400
+.lb_mask	SKIP	&40
+.block1		SKIP	&240
+.block2		SKIP	&240
+.block3		SKIP	&240
+.block4		SKIP	&240
+.block5		SKIP	&240
+.block6		SKIP	&240
+.block7		SKIP	&240
+.block_mask2	SKIP	&240
+.block_data2	SKIP	&240
+.ptr_sve	SKIP	&2C
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		CLEAR &8000, &C000		; reusing area...
+		ORG	&8000		; BANK 5
+
+.level_data	SKIP	&1B54
+.tv_frames	SKIP	&17A0
+.bsp1		SKIP	&AF		; background
+.bsp2		SKIP	&AF		; MUM!
+.bsp3		SKIP	&AF		; er ... well,
+.bsp4		SKIP	&AF		; !
+.bsp5		SKIP	&AF		; Home Sweet Home
+.lbsp1		SKIP	&129		; background
+.lbsp2		SKIP	&129		; where hav you been ?
+.lbsp3		SKIP	&129		; straight to bed - and no supper !
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		CLEAR &8000, &C000		; reusing area...
+		ORG	&8000		; BANK 7
+
+.menu_save	SKIP	&11D0
+.credits_save	SKIP	&9A0
+
+;		DEND
+
+;****************************************
+;****************************************
+
+		ORG	&E00		; Code start
+.code_start
+
+		INCLUDE	"mc000a.6502"
+		INCLUDE	"mc000b.6502"
+		INCLUDE	"mc000c.6502"
+		INCLUDE	"mc000d.6502"
+
+		INCLUDE	"mc001a.6502"
+		INCLUDE	"mc001b.6502"
+
+		INCLUDE	"mc002.6502"
+
+		INCLUDE	"mc003a.6502"
+		INCLUDE	"mc003b.6502"
+		INCLUDE	"mc003c.6502"
+
+		INCLUDE	"mc004a.6502"
+		INCLUDE	"mc004b.6502"
+
+		INCLUDE	"mc005a.6502"
+		INCLUDE	"mc005b.6502"
+
+		INCLUDE	"mc006a.6502"
+		INCLUDE	"mc006b.6502"
+
+		INCLUDE	"mc007.6502"
+
+		INCLUDE	"mc008.6502"
+
+		INCLUDE	"mc009a.6502"
+		INCLUDE	"mc009b.6502"
+
+		INCLUDE	"mc010.6502"
+
+		INCLUDE	"mc011.6502"
+
+		INCLUDE	"mc012.6502"
+
+		INCLUDE	"mc999.6502"
+
+		INCLUDE	"mctemp.6502"
+		INCLUDE	"mctemp2.6502"
+
+.code_end
+
+;****************************************
+;****************************************
+
+		SAVE "Mcode", code_start, code_end, execute
+
+;****************************************
+;****************************************
+
+		CLEAR &0000, &FFFF
+
+		INCLUDE "mcload.6502"
+
+		SAVE "vertigo", loader_code_start, loader_code_end, loader_code_execute
+
+;****************************************
+;****************************************
+;   Rest of disc contents...
+	PUTFILE "panel1", "panel1", &00003000, &00003000
+	PUTFILE "panel2", "panel2", &00006480, &00006480
+	PUTFILE "title", "title", &00003B08, &00002820
+	PUTFILE "bank4", "bank4", &00000000
+	PUTFILE "bank5", "bank5", &00000000
+
+;****************************************
+;****************************************

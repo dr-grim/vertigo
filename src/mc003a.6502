@@ -1,1 +1,952 @@
-		TTL	e.mc003a	; 1st half of main game handler****************************************go		JSR	init_screen		JSR	init_screen2		STZ	old_v_sp		LDA	#1		; inform game that it's on it's		STA	indicator	; first frame run		STZ	h		LDX	level_number	; Calc pos of nasty table for this scr		DEX		LDY	#10		JSR	mult		CLC		ADC	screen_number		DEA		ASL	A		TAY		LDA	nasty_lookup,Y		STA	pointer4		INY		LDA	nasty_lookup,Y		STA	pointer4+1		LDA	(pointer4)		; Y=0		STA	enemy_x		STA	mem		LDY	#1 			; Y=1		LDA	(pointer4),Y		STA	enemy_x+1		STA	mem+1		INY				; Y=2		LDA	(pointer4),Y		STA	enemy_y		STA	mem+2		INY				; Y=3		LDA	(pointer4),Y		STA	enemy_y+1		STA	mem+3		JSR	hi		STA	enemy_z		STZ	e_frame		STZ	enemy_zm		LDA	#4		STA	e_point		STZ	e_blocks		LDX	#8		; pokes 0 to c - c+9nup		STZ	c,X		DEX		BPL	nup		LDX	#3fha		LDA	xy,X		; Copy xy-xy+4 to workspace+&8-workspace+&C & mem-mem+4		STA	workspace+&B,X		STA	mem,X		DEX		BPL	fhagame		JSR	code		; keep music going		LDA	timer_digits		ORA	timer_digits+1		ORA	timer_digits+2		ORA	timer_frames		ORA	timer_frames+1		ORA	timer_frames+2		BNE	KOGex_go		JMP	wipeout****************************************KOGnbn		LDA	yts2		INA		CMP	#3		BNE	nny2		LDA	yts		INA		CMP	#frames		BNE	nny		LDA	#0nny		STA	yts		JSR	animate_lives		LDA	#0nny2		STA	yts2		LDA	frame_delay		INC	A		CMP	#2		BNE	not_ifr		INC	frame		LDA	frame		CMP	#frames		BNE	dts		STZ	framedts		LDA	#0not_ifr	STA	frame_delay		JSR	display_timer		LDX	#4Lc		LDA	xy,X		STA	oxy,X		DEX		BPL	Lc		LDA	h		STA	old_h		JSR	check_optkeys		LDA	menu_st		AND	#3		CMP	#1		BNE	stick_noton		JSR	read_jsstick_noton	INKEY	-120		BEQ	not_menu2		JSR	draw_menu		CMP	#255		BNE	np999		JMP	dsnp999		JMP	no_pausenot_menu2	INKEY	-106		BEQ	no_pause		LDX	#>pause_text		LDY	#<pause_text		JSR	print_pwtxtpause		JSR	code		INKEY	-56		BEQ	pnot_passpass_held	JSR	code		INKEY	-129		BEQ	pass_held		JSR	password		CMP	#0		BEQ	pnot_passpnot_pass2	JSR	code		INKEY	-90		BEQ	pnot_pass2		JMP	dspnot_pass	INKEY	-90		BEQ	pause		LDA	pointer4		PHA		LDA	pointer4+1		PHA		JSR	print_password		PLA		STA	pointer4+1		PLA		STA	pointer4no_pause	INKEY	-56		BEQ	npass1pass_held2	JSR	code		INKEY	-129		BEQ	pass_held2		JSR	password		CMP	#0		BEQ	npass2		JMP	dsnpass2		LDA	pointer4		PHA		LDA	pointer4+1		PHA		JSR	print_password		PLA		STA	pointer4+1		PLA		STA	pointer4npass1		JSR	A_pressed	; <A> key pressed ???		BEQ	nota		LDA	ab		SEC		SBC	#12		STA	ab		BCS	nota		DEC	ab+1nota		JSR	Z_pressed	; <Z> key pressed ???		BEQ	notz		LDA	ab		CLC		ADC	#12		STA	ab		BCC	notz		INC	ab+1notz		JSR	sl_pressed	; </> key pressed ???		BEQ	notsl		LDA	ab+2		SEC		SBC	#12		STA	ab+2		BCS	notsl		DEC	ab+3notsl		JSR	cl_pressed	; <:> key pressed ???		BEQ	notCLN		LDA	ab+2		CLC		ADC	#12		STA	ab+2		BCC	notCLN		INC	ab+3notCLN		LDA	ab		; X Friction		STA	ab+5		LDY	#0		LDA	ab+1		STA	ab+6		BPL	HDA		LDY	#1		LDA	ab+5		EOR	#255		CLC		ADC	#1		STA	ab+5		LDA	ab+6		EOR	#255		ADC	#0		STA	ab+6HDA		LDA	ab+6		LSR	A		ROR	ab+5		LSR	A		ROR	ab+5		LSR	A		ROR	ab+5		LSR	A		STA	ab+6		ROR	ab+5		TYA		BEQ	KDSL		LDA	ab+5		EOR	#255		CLC		ADC	#1		STA	ab+5		LDA	ab+6		EOR	#255		ADC	#0		STA	ab+6KDSL		LDA	xy		CLC		ADC	ab+5		STA	xy		LDA	xy+1		ADC	ab+6		STA	xy+1		LDA	ab		SEC		SBC	ab+5		STA	ab		LDA	ab+1		SBC	ab+6		STA	ab+1		LDA	ab+2		; Y Friction		STA	ab+5		LDY	#0		LDA	ab+3		STA	ab+6		BPL	yHDA		LDY	#1		LDA	ab+5		EOR	#255		CLC		ADC	#1		STA	ab+5		LDA	ab+6		EOR	#255		ADC	#0		STA	ab+6yHDA		LDA	ab+6		LSR	A		ROR	ab+5		LSR	A		ROR	ab+5		LSR	A		ROR	ab+5		LSR	A		STA	ab+6		ROR	ab+5		TYA		BEQ	yKDSL		LDA	ab+5		EOR	#255		CLC		ADC	#1		STA	ab+5		LDA	ab+6		EOR	#255		ADC	#0		STA	ab+6yKDSL		LDA	xy+2		CLC		ADC	ab+5		STA	xy+2		LDA	xy+3		ADC	ab+6		STA	xy+3		LDA	ab+2		SEC		SBC	ab+5		STA	ab+2		LDA	ab+3		SBC	ab+6		STA	ab+3		LDX	#0boiled		LDA	xy,X		STA	mem,X		INX		CPX	#4		BNE	boiled		JSR	hi		STA	h		LDX	ab+4		CPX	#20		BCC	JD		CPX	#128		BCS	JD		LDX	#20		STX	ab+4JD		STZ	workspace+&A		LDA	ab+4		BPL	JF52		LDA	#255		STA	workspace+&AJF52		LDA	ab+4		CLC		ADC	xy+4		STA	xy+4		BCC	stamp		LDA	ab+4		BMI	stamp		LDA	#255		STA	xy+4stamp		LDA	#0		ADC	workspace+&A		STA	workspace+&B		BMI	hjIkhjIk		LDA	workspace+&B		BPL	J5K		STZ	xy+4J5K		LDA	ab+4		SEC		SBC	gravity		TAX		CPX	#236		BCS	jmw		CPX	#128		BCC	jmw		LDX	#236jmw		STX	ab+4		LDA	h		BNE	NL900		JMP	L880NL900		LDA	xy+4		CMP	h		BCC	NL880		JMP	L880NL880****************************************Dhi1		LDA	xy		STA	workspace+&8		LDA	xy+1		ASL	workspace+&8		ROL	A		ASL	workspace+&8		ROL	A		STA	workspace+&10		LDA	xy+2		STA	workspace+&8		LDA	xy+3		ASL	workspace+&8		ROL	A		ASL	workspace+&8		ROL	A		TAY		LDX	#11		JSR	mult		CLC		ADC	workspace+&10		TAY		LDA	(pointer),Y		STA	workspace		TAX		AND	#2		BEQ	Dnflt21		JMP	L830Dnflt21	TXA		AND	#252		STA	workspace		INY		LDA	(pointer),Y		AND	#252		STA	workspace+&1		TYA		CLC		ADC	#11		TAY		LDA	(pointer),Y		AND	#252		STA	workspace+&3		DEY		LDA	(pointer),Y		AND	#252		STA	workspace+&2		STZ	workspace+&8		STZ	workspace+&9		LDA	workspace+&2	; Find Gradient		SEC		SBC	workspace		STA	workspace+&4		LDA	#0		SBC	#0		STA	workspace+&5		LDA	xy+2		AND	#63		BEQ	outy1Dlop991	LSR	A		STA	workspace+&F		BCC	DNCYET1		LDA	workspace+&8		CLC		ADC	workspace+&4		STA	workspace+&8		LDA	workspace+&9		ADC	workspace+&5		STA	workspace+&9		LDA	workspace+&F		BEQ	outy1DNCYET1	ASL	workspace+&4		ROL	workspace+&5		BRA	Dlop991outy1		ASL	workspace+&8		ROL	workspace+&9		ASL	workspace+&8		ROL	workspace+&9		LDA	workspace		CLC		ADC	workspace+&9finDhi1	STA	hites**************************************		STZ	workspace+&8		STZ	workspace+&9		LDA	workspace+&3	; Find Gradient		SEC		SBC	workspace+&1		STA	workspace+&4		LDA	#0		SBC	#0		STA	workspace+&5		LDA	xy+2		AND	#63		BEQ	outy2Dlop992	LSR	A		STA	workspace+&F		BCC	DNCYET2		LDA	workspace+&8		CLC		ADC	workspace+&4		STA	workspace+&8		LDA	workspace+&9		ADC	workspace+&5		STA	workspace+&9		LDA	workspace+&F		BEQ	outy2DNCYET2	ASL	workspace+&4		ROL	workspace+&5		BRA	Dlop992outy2		ASL	workspace+&8		ROL	workspace+&9		ASL	workspace+&8		ROL	workspace+&9		LDA	workspace+&1		CLC		ADC	workspace+&9finDhi2		STA	hites+1************************************		LDA	ab+4		BPL	NNG		EOR	#255		CLC		ADC	#1NNG		LSR	A		LSR	A		CLC		ADC	gravity		STA	drmem		STZ	hites+2		STZ	hites+3		STZ	hites+6		LDA	hites		SEC		SBC	hites+1		STA	hites+4		LDA	#0		SBC	#0		STA	hites+5		LDA	hites+5		BPL	tonit		LDA	hites+4		EOR	#255		CLC		ADC	#1		STA	hites+4		LDA	hites+5		EOR	#255		ADC	#0		STA	hites+5		LDA	#1		STA	hites+6tonit		LDA	drmemTloop		LSR	A		STA	drmem		BCC	ncyttvm		LDA	hites+2		CLC		ADC	hites+4		STA	hites+2		LDA	hites+3		ADC	hites+5		STA	hites+3ncyttvm	ASL	hites+4		ROL	hites+5		LDA	drmem		BNE	Tloop		LSR	hites+3		ROR	hites+2		LDA	hites+6		BEQ	qwe		LDA	hites+2		EOR	#255		CLC		ADC	#1		STA	hites+2		LDA	hites+3		EOR	#255		ADC	#0		STA	hites+3qwe		LDA	ab		CLC		ADC	hites+2		STA	ab		LDA	ab+1		ADC	hites+3		STA	ab+1L820****************************************		STZ	workspace+&8		STZ	workspace+&9		LDA	workspace+&1	; Find Gradient		SEC		SBC	workspace		STA	workspace+&4		LDA	#0		SBC	#0		STA	workspace+&5		LDA	xy		AND	#63		BEQ	outy3Dlop993	LSR	A		STA	workspace+&F		BCC	DNCYET3		LDA	workspace+&8		CLC		ADC	workspace+&4		STA	workspace+&8		LDA	workspace+&9		ADC	workspace+&5		STA	workspace+&9		LDA	workspace+&F		BEQ	outy3DNCYET3	ASL	workspace+&4		ROL	workspace+&5		BRA	Dlop993outy3		ASL	workspace+&8		ROL	workspace+&9		ASL	workspace+&8		ROL	workspace+&9		LDA	workspace		CLC		ADC	workspace+&9finDhi3	STA	hites**************************************		STZ	workspace+&8		STZ	workspace+&9		LDA	workspace+&3	; Find Gradient		SEC		SBC	workspace+&2		STA	workspace+&4		LDA	#0		SBC	#0		STA	workspace+&5		LDA	xy		AND	#63		BEQ	outy4Dlop994	LSR	A		STA	workspace+&F		BCC	DNCYET4		LDA	workspace+&8		CLC		ADC	workspace+&4		STA	workspace+&8		LDA	workspace+&9		ADC	workspace+&5		STA	workspace+&9		LDA	workspace+&F		BEQ	outy4DNCYET4	ASL	workspace+&4		ROL	workspace+&5		BRA	Dlop994outy4		ASL	workspace+&8		ROL	workspace+&9		ASL	workspace+&8		ROL	workspace+&9		LDA	workspace+&2		CLC		ADC	workspace+&9finDhi4	STA	hites+1****************************************		LDA	ab+4		BPL	PNNG		EOR	#255		CLC		ADC	#1PNNG		LSR	A		LSR	A		CLC		ADC	gravity		STA	drmem		STZ	hites+2		STZ	hites+3		STZ	hites+6		LDA	hites		SEC		SBC	hites+1		STA	hites+4		LDA	#0		SBC	#0		STA	hites+5		LDA	hites+5		BPL	tnit		LDA	hites+4		EOR	#255		STA	hites+4		LDA	hites+5		EOR	#255		STA	hites+5*		LDA	hites+4*		CLC*		ADC	#1*		STA	hites+4*		BCC	ncj		INC	hites+4		BNE	ncj		INC	hites+5ncj		LDA	#1		STA	hites+6tnit		LDA	drmemTlop		LSR	A		STA	drmem		BCC	ncytvm		LDA	hites+2		CLC		ADC	hites+4		STA	hites+2		LDA	hites+3		ADC	hites+5		STA	hites+3ncytvm		ASL	hites+4		ROL	hites+5		LSR	hites+3		ROR	hites+2		LDA	drmem		BNE	Tlop		LDA	hites+6		BEQ	Pqwe		LDA	hites+2		EOR	#255		STA	hites+2		LDA	hites+3		EOR	#255		STA	hites+3*		LDA	hites+2*		CLC*		ADC	#1*		STA	hites+2*		BCC	Pqwe		INC	hites+2		BNE	Pqwe		INC	hites+3Pqwe		LDA	ab+2		CLC		ADC	hites+2		STA	ab+2		LDA	ab+3		ADC	hites+3		STA	ab+3L830		LDA	ab+4		BPL	L850		CMP	#247		BCS	L850		JSR	bounce		LDA	ab+4		EOR	#255		SEC		SBC	#5		STA	ab+4		LDX	h		STX	xy+4		BRA	L880L850		LDA	h		STA	xy+4		LDA	old_h		BEQ	hit_edge		LDA	h		SEC		SBC	old_h		BMI	cont_to_3b		CMP	#20		BCC	cont_to_3b		LDA	ab+4		BPL	cont_to_3bhit_edge	STZ	ab+4		BRA	skip_zmcont_to_3b	LDA	h		SEC		SBC	oxy+4		STA	ab+4skip_zmL880		LDA	ab+4		BMI	N_store_it		BEQ	N_store_it		CMP	old_v_sp		BCC	N_store_it		LDA	old_v_sp		STA	ab+4N_store_it	CLC		ADC	#4		STA	old_v_sp********************************************************************************		CHN	mc003b
+;		TTL	e.mc003a	; 1st half of main game handler
+
+;****************************************
+
+.go		JSR	init_screen
+		JSR	init_screen2
+
+		STZ	old_v_sp
+
+		LDA	#1		; inform game that it's on it's
+		STA	indicator	; first frame run
+
+		STZ	h
+
+		LDX	level_number	; Calc pos of nasty table for this scr
+		DEX
+		LDY	#10
+		JSR	mult
+
+		CLC
+		ADC	screen_number
+		DEA
+
+		ASL	A
+		TAY
+		LDA	nasty_lookup,Y
+		STA	pointer4
+
+		INY
+		LDA	nasty_lookup,Y
+		STA	pointer4+1
+
+
+		LDA	(pointer4)		; Y=0
+		STA	enemy_x
+		STA	mem
+
+		LDY	#1 			; Y=1
+		LDA	(pointer4),Y
+		STA	enemy_x+1
+		STA	mem+1
+
+		INY				; Y=2
+		LDA	(pointer4),Y
+		STA	enemy_y
+		STA	mem+2
+
+		INY				; Y=3
+		LDA	(pointer4),Y
+		STA	enemy_y+1
+		STA	mem+3
+
+		JSR	hi
+		STA	enemy_z
+
+		STZ	e_frame
+		STZ	enemy_zm
+
+		LDA	#4
+		STA	e_point
+
+		STZ	e_blocks
+
+		LDX	#8		; pokes 0 to c - c+9
+.nup		STZ	c,X
+		DEX
+		BPL	nup
+
+		LDX	#3
+.fha		LDA	xy,X		; Copy xy-xy+4 to workspace+&8-workspace+&C & mem-mem+4
+		STA	workspace+&B,X
+		STA	mem,X
+		DEX
+		BPL	fha
+
+.game		JSR	code		; keep music going
+
+		LDA	timer_digits
+		ORA	timer_digits+1
+		ORA	timer_digits+2
+		ORA	timer_frames
+		ORA	timer_frames+1
+		ORA	timer_frames+2
+		BNE	KOG
+
+.ex_go		JMP	wipeout
+
+;****************************************
+
+.KOG
+
+.nbn		LDA	yts2
+		INA
+		CMP	#3
+		BNE	nny2
+
+		LDA	yts
+		INA
+		CMP	#frames
+		BNE	nny
+
+		LDA	#0
+.nny		STA	yts
+
+		JSR	animate_lives
+
+		LDA	#0
+.nny2		STA	yts2
+
+		LDA	frame_delay
+		INC	A
+		CMP	#2
+		BNE	not_ifr
+
+		INC	frame
+		LDA	frame
+		CMP	#frames
+		BNE	dts
+
+		STZ	frame
+
+.dts		LDA	#0
+
+.not_ifr	STA	frame_delay
+
+		JSR	display_timer
+
+
+
+
+
+		LDX	#4
+.Lc		LDA	xy,X
+		STA	oxy,X
+		DEX
+		BPL	Lc
+
+		LDA	h
+		STA	old_h
+
+		JSR	check_optkeys
+
+		LDA	menu_st
+		AND	#3
+		CMP	#1
+		BNE	stick_noton
+
+		JSR	read_js
+
+.stick_noton	INKEY	-120
+		BEQ	not_menu2
+
+		JSR	draw_menu
+		CMP	#255
+		BNE	np999
+
+		JMP	ds
+
+.np999		JMP	no_pause
+
+.not_menu2	INKEY	-106
+		BEQ	no_pause
+
+		LDX	#LO(pause_text)
+		LDY	#HI(pause_text)
+		JSR	print_pwtxt
+
+.pause		JSR	code
+
+		INKEY	-56
+		BEQ	pnot_pass
+
+.pass_held	JSR	code
+
+		INKEY	-129
+		BEQ	pass_held
+
+		JSR	password
+		CMP	#0
+		BEQ	pnot_pass
+
+.pnot_pass2	JSR	code
+
+		INKEY	-90
+		BEQ	pnot_pass2
+
+		JMP	ds
+
+.pnot_pass	INKEY	-90
+		BEQ	pause
+
+		LDA	pointer4
+		PHA
+		LDA	pointer4+1
+		PHA
+		JSR	print_password
+		PLA
+		STA	pointer4+1
+		PLA
+		STA	pointer4
+
+.no_pause	INKEY	-56
+		BEQ	npass1
+
+.pass_held2	JSR	code
+
+		INKEY	-129
+		BEQ	pass_held2
+
+		JSR	password
+		CMP	#0
+		BEQ	npass2
+
+		JMP	ds
+
+.npass2		LDA	pointer4
+		PHA
+		LDA	pointer4+1
+		PHA
+		JSR	print_password
+		PLA
+		STA	pointer4+1
+		PLA
+		STA	pointer4
+
+.npass1		JSR	A_pressed	; <A> key pressed ???
+		BEQ	nota
+
+		LDA	ab
+		SEC
+		SBC	#12
+		STA	ab
+		BCS	nota
+		DEC	ab+1
+
+.nota		JSR	Z_pressed	; <Z> key pressed ???
+		BEQ	notz
+
+		LDA	ab
+		CLC
+		ADC	#12
+		STA	ab
+		BCC	notz
+
+		INC	ab+1
+
+.notz		JSR	sl_pressed	; </> key pressed ???
+		BEQ	notsl
+
+		LDA	ab+2
+		SEC
+		SBC	#12
+		STA	ab+2
+		BCS	notsl
+		DEC	ab+3
+
+.notsl		JSR	cl_pressed	; <:> key pressed ???
+		BEQ	notCLN
+
+		LDA	ab+2
+		CLC
+		ADC	#12
+		STA	ab+2
+		BCC	notCLN
+
+		INC	ab+3
+
+.notCLN		LDA	ab		; X Friction
+		STA	ab+5
+		LDY	#0
+		LDA	ab+1
+		STA	ab+6
+		BPL	HDA
+
+		LDY	#1
+
+		LDA	ab+5
+		EOR	#255
+		CLC
+		ADC	#1
+		STA	ab+5
+
+		LDA	ab+6
+		EOR	#255
+		ADC	#0
+		STA	ab+6
+
+.HDA		LDA	ab+6
+		LSR	A
+		ROR	ab+5
+		LSR	A
+		ROR	ab+5
+		LSR	A
+		ROR	ab+5
+		LSR	A
+		STA	ab+6
+		ROR	ab+5
+		TYA
+		BEQ	KDSL
+
+		LDA	ab+5
+		EOR	#255
+		CLC
+		ADC	#1
+		STA	ab+5
+
+		LDA	ab+6
+		EOR	#255
+		ADC	#0
+		STA	ab+6
+
+.KDSL		LDA	xy
+		CLC
+		ADC	ab+5
+		STA	xy
+
+		LDA	xy+1
+		ADC	ab+6
+		STA	xy+1
+
+		LDA	ab
+		SEC
+		SBC	ab+5
+		STA	ab
+
+		LDA	ab+1
+		SBC	ab+6
+		STA	ab+1
+
+
+
+
+		LDA	ab+2		; Y Friction
+		STA	ab+5
+		LDY	#0
+		LDA	ab+3
+		STA	ab+6
+		BPL	yHDA
+
+		LDY	#1
+
+		LDA	ab+5
+		EOR	#255
+		CLC
+		ADC	#1
+		STA	ab+5
+
+		LDA	ab+6
+		EOR	#255
+		ADC	#0
+		STA	ab+6
+
+.yHDA		LDA	ab+6
+		LSR	A
+		ROR	ab+5
+		LSR	A
+		ROR	ab+5
+		LSR	A
+		ROR	ab+5
+		LSR	A
+		STA	ab+6
+		ROR	ab+5
+		TYA
+		BEQ	yKDSL
+
+		LDA	ab+5
+		EOR	#255
+		CLC
+		ADC	#1
+		STA	ab+5
+
+		LDA	ab+6
+		EOR	#255
+		ADC	#0
+		STA	ab+6
+
+.yKDSL		LDA	xy+2
+		CLC
+		ADC	ab+5
+		STA	xy+2
+
+		LDA	xy+3
+		ADC	ab+6
+		STA	xy+3
+
+		LDA	ab+2
+		SEC
+		SBC	ab+5
+		STA	ab+2
+
+		LDA	ab+3
+		SBC	ab+6
+		STA	ab+3
+
+		LDX	#0
+.boiled		LDA	xy,X
+		STA	mem,X
+		INX
+		CPX	#4
+		BNE	boiled
+
+		JSR	hi
+		STA	h
+
+		LDX	ab+4
+		CPX	#20
+		BCC	JD
+
+		CPX	#128
+		BCS	JD
+
+		LDX	#20
+		STX	ab+4
+
+.JD		STZ	workspace+&A
+		LDA	ab+4
+		BPL	JF52
+
+		LDA	#255
+		STA	workspace+&A
+
+.JF52		LDA	ab+4
+		CLC
+		ADC	xy+4
+		STA	xy+4
+		BCC	stamp
+
+		LDA	ab+4
+		BMI	stamp
+
+		LDA	#255
+		STA	xy+4
+
+.stamp		LDA	#0
+		ADC	workspace+&A
+		STA	workspace+&B
+		BMI	hjIk
+
+.hjIk		LDA	workspace+&B
+		BPL	J5K
+
+		STZ	xy+4
+
+.J5K		LDA	ab+4
+		SEC
+		SBC	gravity
+		TAX
+		CPX	#236
+		BCS	jmw
+
+		CPX	#128
+		BCC	jmw
+
+		LDX	#236
+
+.jmw		STX	ab+4
+		LDA	h
+		BNE	NL900
+
+		JMP	L880
+
+.NL900		LDA	xy+4
+		CMP	h
+		BCC	NL880
+
+		JMP	L880
+
+.NL880
+;****************************************
+
+.Dhi1		LDA	xy
+		STA	workspace+&8
+		LDA	xy+1
+
+		ASL	workspace+&8
+		ROL	A
+		ASL	workspace+&8
+		ROL	A
+		STA	workspace+&10
+
+		LDA	xy+2
+		STA	workspace+&8
+		LDA	xy+3
+		ASL	workspace+&8
+		ROL	A
+		ASL	workspace+&8
+		ROL	A
+		TAY
+
+		LDX	#11
+		JSR	mult
+		CLC
+		ADC	workspace+&10
+		TAY
+		LDA	(pointer),Y
+		STA	workspace
+		TAX
+
+		AND	#2
+		BEQ	Dnflt21
+
+		JMP	L830
+
+.Dnflt21	TXA
+		AND	#252
+		STA	workspace
+		INY
+		LDA	(pointer),Y
+		AND	#252
+		STA	workspace+&1
+		TYA
+		CLC
+		ADC	#11
+		TAY
+		LDA	(pointer),Y
+		AND	#252
+		STA	workspace+&3
+		DEY
+		LDA	(pointer),Y
+		AND	#252
+		STA	workspace+&2
+
+		STZ	workspace+&8
+		STZ	workspace+&9
+
+		LDA	workspace+&2	; Find Gradient
+		SEC
+		SBC	workspace
+		STA	workspace+&4
+		LDA	#0
+		SBC	#0
+		STA	workspace+&5
+
+		LDA	xy+2
+		AND	#63
+		BEQ	outy1
+.Dlop991	LSR	A
+		STA	workspace+&F
+		BCC	DNCYET1
+		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		LDA	workspace+&9
+		ADC	workspace+&5
+		STA	workspace+&9
+		LDA	workspace+&F
+		BEQ	outy1
+.DNCYET1	ASL	workspace+&4
+		ROL	workspace+&5
+		BRA	Dlop991
+
+.outy1		ASL	workspace+&8
+		ROL	workspace+&9
+		ASL	workspace+&8
+		ROL	workspace+&9
+
+		LDA	workspace
+		CLC
+		ADC	workspace+&9
+.finDhi1	STA	hites
+
+;**************************************
+
+		STZ	workspace+&8
+		STZ	workspace+&9
+
+		LDA	workspace+&3	; Find Gradient
+		SEC
+		SBC	workspace+&1
+		STA	workspace+&4
+		LDA	#0
+		SBC	#0
+		STA	workspace+&5
+
+		LDA	xy+2
+		AND	#63
+		BEQ	outy2
+.Dlop992	LSR	A
+		STA	workspace+&F
+		BCC	DNCYET2
+		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		LDA	workspace+&9
+		ADC	workspace+&5
+		STA	workspace+&9
+		LDA	workspace+&F
+		BEQ	outy2
+.DNCYET2	ASL	workspace+&4
+		ROL	workspace+&5
+		BRA	Dlop992
+
+.outy2		ASL	workspace+&8
+		ROL	workspace+&9
+		ASL	workspace+&8
+		ROL	workspace+&9
+
+		LDA	workspace+&1
+		CLC
+		ADC	workspace+&9
+.finDhi2
+		STA	hites+1
+
+;************************************
+
+		LDA	ab+4
+		BPL	NNG
+
+		EOR	#255
+		CLC
+		ADC	#1
+.NNG		LSR	A
+		LSR	A
+		CLC
+		ADC	gravity
+		STA	drmem
+		STZ	hites+2
+		STZ	hites+3
+		STZ	hites+6
+		LDA	hites
+		SEC
+		SBC	hites+1
+		STA	hites+4
+
+		LDA	#0
+		SBC	#0
+		STA	hites+5
+
+		LDA	hites+5
+		BPL	tonit
+
+		LDA	hites+4
+		EOR	#255
+		CLC
+		ADC	#1
+		STA	hites+4
+
+		LDA	hites+5
+		EOR	#255
+		ADC	#0
+		STA	hites+5
+
+		LDA	#1
+		STA	hites+6
+
+.tonit		LDA	drmem
+.Tloop		LSR	A
+		STA	drmem
+		BCC	ncyttvm
+
+		LDA	hites+2
+		CLC
+		ADC	hites+4
+		STA	hites+2
+
+		LDA	hites+3
+		ADC	hites+5
+		STA	hites+3
+
+.ncyttvm	ASL	hites+4
+		ROL	hites+5
+
+		LDA	drmem
+		BNE	Tloop
+
+		LSR	hites+3
+		ROR	hites+2
+
+		LDA	hites+6
+		BEQ	qwe
+
+		LDA	hites+2
+		EOR	#255
+		CLC
+		ADC	#1
+		STA	hites+2
+
+		LDA	hites+3
+		EOR	#255
+		ADC	#0
+		STA	hites+3
+
+.qwe		LDA	ab
+		CLC
+		ADC	hites+2
+		STA	ab
+
+		LDA	ab+1
+		ADC	hites+3
+		STA	ab+1
+.L820
+;****************************************
+
+		STZ	workspace+&8
+		STZ	workspace+&9
+
+		LDA	workspace+&1	; Find Gradient
+		SEC
+		SBC	workspace
+		STA	workspace+&4
+		LDA	#0
+		SBC	#0
+		STA	workspace+&5
+
+		LDA	xy
+		AND	#63
+		BEQ	outy3
+.Dlop993	LSR	A
+		STA	workspace+&F
+		BCC	DNCYET3
+		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		LDA	workspace+&9
+		ADC	workspace+&5
+		STA	workspace+&9
+		LDA	workspace+&F
+		BEQ	outy3
+.DNCYET3	ASL	workspace+&4
+		ROL	workspace+&5
+		BRA	Dlop993
+
+.outy3		ASL	workspace+&8
+		ROL	workspace+&9
+		ASL	workspace+&8
+		ROL	workspace+&9
+
+		LDA	workspace
+		CLC
+		ADC	workspace+&9
+.finDhi3	STA	hites
+
+;**************************************
+
+		STZ	workspace+&8
+		STZ	workspace+&9
+
+		LDA	workspace+&3	; Find Gradient
+		SEC
+		SBC	workspace+&2
+		STA	workspace+&4
+		LDA	#0
+		SBC	#0
+		STA	workspace+&5
+
+		LDA	xy
+		AND	#63
+		BEQ	outy4
+.Dlop994	LSR	A
+		STA	workspace+&F
+		BCC	DNCYET4
+		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		LDA	workspace+&9
+		ADC	workspace+&5
+		STA	workspace+&9
+		LDA	workspace+&F
+		BEQ	outy4
+.DNCYET4	ASL	workspace+&4
+		ROL	workspace+&5
+		BRA	Dlop994
+
+.outy4		ASL	workspace+&8
+		ROL	workspace+&9
+		ASL	workspace+&8
+		ROL	workspace+&9
+
+		LDA	workspace+&2
+		CLC
+		ADC	workspace+&9
+.finDhi4	STA	hites+1
+
+;****************************************
+
+		LDA	ab+4
+		BPL	PNNG
+
+		EOR	#255
+		CLC
+		ADC	#1
+
+.PNNG		LSR	A
+		LSR	A
+		CLC
+		ADC	gravity
+		STA	drmem
+
+		STZ	hites+2
+		STZ	hites+3
+		STZ	hites+6
+
+		LDA	hites
+		SEC
+		SBC	hites+1
+		STA	hites+4
+
+		LDA	#0
+		SBC	#0
+		STA	hites+5
+
+		LDA	hites+5
+		BPL	tnit
+
+		LDA	hites+4
+		EOR	#255
+		STA	hites+4
+
+		LDA	hites+5
+		EOR	#255
+		STA	hites+5
+
+;*		LDA	hites+4
+;*		CLC
+;*		ADC	#1
+;*		STA	hites+4
+;*		BCC	ncj
+
+		INC	hites+4
+		BNE	ncj
+
+		INC	hites+5
+
+.ncj		LDA	#1
+		STA	hites+6
+
+
+.tnit		LDA	drmem
+.Tlop		LSR	A
+		STA	drmem
+		BCC	ncytvm
+
+		LDA	hites+2
+		CLC
+		ADC	hites+4
+		STA	hites+2
+
+		LDA	hites+3
+		ADC	hites+5
+		STA	hites+3
+
+.ncytvm		ASL	hites+4
+		ROL	hites+5
+
+		LSR	hites+3
+		ROR	hites+2
+
+		LDA	drmem
+		BNE	Tlop
+
+		LDA	hites+6
+		BEQ	Pqwe
+
+		LDA	hites+2
+		EOR	#255
+		STA	hites+2
+
+		LDA	hites+3
+		EOR	#255
+		STA	hites+3
+
+;*		LDA	hites+2
+;*		CLC
+;*		ADC	#1
+;*		STA	hites+2
+;*		BCC	Pqwe
+
+		INC	hites+2
+		BNE	Pqwe
+
+		INC	hites+3
+
+.Pqwe		LDA	ab+2
+		CLC
+		ADC	hites+2
+		STA	ab+2
+
+		LDA	ab+3
+		ADC	hites+3
+		STA	ab+3
+
+.L830		LDA	ab+4
+		BPL	L850
+
+		CMP	#247
+		BCS	L850
+
+		JSR	bounce
+
+		LDA	ab+4
+		EOR	#255
+		SEC
+		SBC	#5
+		STA	ab+4
+
+		LDX	h
+		STX	xy+4
+		BRA	L880
+
+.L850		LDA	h
+		STA	xy+4
+
+		LDA	old_h
+		BEQ	hit_edge
+
+		LDA	h
+		SEC
+		SBC	old_h
+
+		BMI	cont_to_3b
+
+		CMP	#20
+		BCC	cont_to_3b
+
+		LDA	ab+4
+		BPL	cont_to_3b
+
+.hit_edge	STZ	ab+4
+
+		BRA	skip_zm
+
+.cont_to_3b	LDA	h
+		SEC
+		SBC	oxy+4
+		STA	ab+4
+
+
+.skip_zm
+
+
+.L880		LDA	ab+4
+		BMI	N_store_it
+		BEQ	N_store_it
+		CMP	old_v_sp
+		BCC	N_store_it
+
+		LDA	old_v_sp
+		STA	ab+4
+
+.N_store_it	CLC
+		ADC	#4
+		STA	old_v_sp
+
+
+;****************************************
+;****************************************
+
+;		CHN	mc003b

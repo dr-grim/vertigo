@@ -1,1 +1,451 @@
-		TTL	mc000b		; All sprite/screen routines that poke					; directly to the shadow screen memory********************************************************************************poke_section	INY		PHY		TAX		SHADOW	ON,IN		TXAps_loop	STA	(workspace),Y		DEY		BNE	ps_loop		LDA	workspace+1		CMP	#&2F		BEQ	skip_ps		TXA		STA	(workspace)skip_ps	PLY		TYA		CLC		ADC	workspace		STA	workspace		LDA	workspace+1		ADC	#0		STA	workspace+1		SHADOW	ON,OUT		RTS********************************************************************************ball_mask	DFB	60,126,255,255,255,255,126,60c_mask		DS	16		; = 2 * columns of 8actual_ball	DS	24		; = 3 * columns of 8actual_mask	DS	24		; = 3 * columns of 8screen_store	DS	24		; = 3 * columns of 8screen_store2	DS	24		; = 3 * columns of 8		DS	8****************************************shadow_store	DS	1		; = 1 on-screen byte********************************************************************************option_data	DS	&1A0,&FF	; data for invert_option********************************************************************************display_timer	SHADOW	ON,IN		LDA	timer_digits		ASL	A		; * 16		ASL	A		ASL	A		ASL	A		STA	workspace		LDA	timer_frames		ASL	A		CLC		ADC	workspace		TAY		LDX	#0dt_loop1	LDA	timer_chars,Y		STA	&3C28,X		LDA	timer_chars+1,Y		STA	&3C28+8,X		INX		INY		INY		CPX	#8		BNE	dt_loop1* * * * * * * * * * * * * * * * * * * *		LDA	timer_digits+1		ASL	A		; * 16		ASL	A		ASL	A		ASL	A		STA	workspace		LDA	timer_frames+1		ASL	A		CLC		ADC	workspace		TAY		LDX	#0dt_loop2	LDA	timer_chars,Y		STA	&3C28+16,X		LDA	timer_chars+1,Y		STA	&3C28+24,X		INX		INY		INY		CPX	#8		BNE	dt_loop2* * * * * * * * * * * * * * * * * * * *		LDA	timer_digits+2		ASL	A		; * 16		ASL	A		ASL	A		ASL	A		STA	workspace		LDA	timer_frames+2		ASL	A		CLC		ADC	workspace		TAY		LDX	#0dt_loop3	LDA	timer_chars2,Y		STA	&3C28+32,X		LDA	timer_chars2+1,Y		STA	&3C28+40,X		INX		INY		INY		CPX	#8		BNE	dt_loop3****************************************		LDA	timer_frames+2		DEA		BPL	not_eoc4		DEC	timer_digits+2		LDA	timer_digits+2		BPL	not_eoc41		LDA	#9		STA	timer_digits+2not_eoc41	LDA	#7not_eoc4	STA	timer_frames+2* * * * * * * * * * * * * * * * * * * *		LDA	timer_digits+2		CMP	#9		BNE	not_eoc3		LDA	timer_status		ORA	#%00000100		STA	timer_status		LDA	timer_frames+1		DEA		BPL	not_eoc31		DEC	timer_digits+1		LDA	timer_digits+1		BPL	not_eoc32		LDA	#9		STA	timer_digits+1not_eoc32	LDA	#7not_eoc31	STA	timer_frames+1		BRA	not_eoc34* * * * * * * * * * * * * * * * * * * *not_eoc3	LDA	timer_status		AND	#%11111011		STA	timer_statusnot_eoc34	LDA	timer_digits+1		CMP	#9		BNE	not_eoc2		LDA	timer_status		AND	#%00000100		BEQ	not_eoc2		LDA	timer_status		ORA	#%000000010		STA	timer_status		LDA	timer_frames		DEA		BPL	not_eoc21		DEC	timer_digits		LDA	timer_digits		BPL	not_eoc22		LDA	#9		STA	timer_digitsnot_eoc22	LDA	#7not_eoc21	STA	timer_frames		BRA	not_eoc24* * * * * * * * * * * * * * * * * * * *not_eoc2	LDA	timer_status		AND	#%11111101		STA	timer_statusnot_eoc24		JSR	time_bar		JSR	draw_sbars		SHADOW	ON,OUT		RTS********************************************************************************timer_chars	DFB	%01110111,%11101110	; 0		DFB	%00000000,%00000000		DFB	%00010001,%10001000		DFB	%00100010,%01000100		DFB	%00100010,%01000100		DFB	%00100010,%01000100		DFB	%00010001,%10001000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 1		DFB	%00000000,%00000000		DFB	%00000000,%10001000		DFB	%00010001,%10001000		DFB	%00000000,%10001000		DFB	%00000000,%10001000		DFB	%00010001,%11001100		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 2		DFB	%00000000,%00000000		DFB	%00010001,%10001000		DFB	%00100010,%01000100		DFB	%00000000,%10001000		DFB	%00010001,%00000000		DFB	%00110011,%11001100		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 3		DFB	%00000000,%00000000		DFB	%00010001,%10001000		DFB	%00100010,%01000100		DFB	%00000000,%10001000		DFB	%00100010,%01000100		DFB	%00010001,%10001000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 4		DFB	%00000000,%00000000		DFB	%00100010,%00000000		DFB	%00100010,%00000000		DFB	%00100010,%10001000		DFB	%00110011,%11001100		DFB	%00000000,%10001000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 5		DFB	%00000000,%00000000		DFB	%00110011,%11001100		DFB	%00100010,%00000000		DFB	%00110011,%10001000		DFB	%00000000,%01000100		DFB	%00010001,%10001000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 6		DFB	%00000000,%00000000		DFB	%00010001,%10001000		DFB	%00100010,%00000000		DFB	%00110011,%10001000		DFB	%00100010,%01000100		DFB	%00010001,%10001000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 7		DFB	%00000000,%00000000		DFB	%00110011,%11001100		DFB	%00000000,%10001000		DFB	%00010001,%00000000		DFB	%00100010,%00000000		DFB	%00100010,%00000000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 8		DFB	%00000000,%00000000		DFB	%00010001,%10001000		DFB	%00100010,%01000100		DFB	%00010001,%10001000		DFB	%00100010,%01000100		DFB	%00010001,%10001000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 9		DFB	%00000000,%00000000		DFB	%00010001,%10001000		DFB	%00100010,%01000100		DFB	%00010001,%10001000		DFB	%00010001,%00000000		DFB	%00100010,%00000000		DFB	%00000000,%00000000		DFB	%01110111,%11101110	; 0		DFB	%00000000,%00000000		DFB	%00010001,%10001000		DFB	%00100010,%01000100		DFB	%00100010,%01000100		DFB	%00100010,%01000100		DFB	%00010001,%10001000		DFB	%00000000,%00000000********************************************************************************timer_chars2	DFB	%10001000,%00010001	; 0		DFB	%11111111,%11111111		DFB	%11101111,%01111111		DFB	%11011111,%10111111		DFB	%11011111,%10111111		DFB	%11011111,%10111111		DFB	%11101111,%01111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 1		DFB	%11111111,%11111111		DFB	%11111111,%11110111		DFB	%11101111,%01111111		DFB	%11111111,%01111111		DFB	%11111111,%01111111		DFB	%11101111,%00111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 2		DFB	%11111111,%11111111		DFB	%11101111,%01111111		DFB	%11011111,%10111111		DFB	%11111111,%01111111		DFB	%11101111,%11111111		DFB	%11001111,%00111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 3		DFB	%11111111,%11111111		DFB	%11101111,%01111111		DFB	%11011111,%10111111		DFB	%11111111,%01111111		DFB	%11011111,%10111111		DFB	%11101111,%01111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 4		DFB	%11111111,%11111111		DFB	%11011111,%11111111		DFB	%11011111,%11111111		DFB	%11011111,%01111111		DFB	%11001111,%00111111		DFB	%11111111,%01111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 5		DFB	%11111111,%11111111		DFB	%11001111,%00111111		DFB	%11011111,%11111111		DFB	%11001111,%01111111		DFB	%11111111,%10111111		DFB	%11001111,%01111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 6		DFB	%11111111,%11111111		DFB	%11101111,%01111111		DFB	%11011111,%11111111		DFB	%11001111,%01111111		DFB	%11011111,%10111111		DFB	%11101111,%01111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 7		DFB	%11111111,%11111111		DFB	%11001111,%00111111		DFB	%11111111,%01111111		DFB	%11101111,%11111111		DFB	%11011111,%11111111		DFB	%11011111,%11111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 8		DFB	%11111111,%11111111		DFB	%11101111,%01111111		DFB	%11011111,%10111111		DFB	%11101111,%01111111		DFB	%11011111,%10111111		DFB	%11101111,%01111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 9		DFB	%11111111,%11111111		DFB	%11101111,%01111111		DFB	%11011111,%10111111		DFB	%11101111,%01111111		DFB	%11101111,%11111111		DFB	%11011111,%11111111		DFB	%11111111,%11111111		DFB	%10001000,%00010001	; 0		DFB	%11111111,%11111111		DFB	%11101111,%01111111		DFB	%11011111,%10111111		DFB	%11011111,%10111111		DFB	%11011111,%10111111		DFB	%11101111,%01111111		DFB	%11111111,%11111111********************************************************************************timer_digits	DS	3timer_frames	DS	3timer_status	DS	1********************************************************************************		ASC	"It's the top-secret Gadget phone !!!"		CHN	mc000c
+;		TTL	mc000b		; All sprite/screen routines that poke
+						; directly to the shadow screen memory
+;****************************************
+;****************************************
+
+.poke_section	INY
+		PHY
+		TAX
+		SHADOW	ON,IN
+		TXA
+
+.ps_loop	STA	(workspace),Y
+		DEY
+		BNE	ps_loop
+
+		LDA	workspace+1
+		CMP	#&2F
+		BEQ	skip_ps
+
+		TXA
+		STA	(workspace)
+
+.skip_ps	PLY
+		TYA
+		CLC
+		ADC	workspace
+		STA	workspace
+		LDA	workspace+1
+		ADC	#0
+		STA	workspace+1
+
+		SHADOW	ON,OUT
+
+		RTS
+
+;****************************************
+;****************************************
+
+.ball_mask	EQUB	60,126,255,255,255,255,126,60
+
+.c_mask		SKIP	16		; = 2 * columns of 8
+
+.actual_ball	SKIP	24		; = 3 * columns of 8
+
+.actual_mask	SKIP	24		; = 3 * columns of 8
+
+.screen_store	SKIP	24		; = 3 * columns of 8
+.screen_store2	SKIP	24		; = 3 * columns of 8
+		SKIP	8
+
+;****************************************
+
+.shadow_store	SKIP	1		; = 1 on-screen byte
+
+;****************************************
+;****************************************
+
+.option_data	BLOCK	&1A0,&FF	; data for invert_option
+
+;****************************************
+;****************************************
+
+.display_timer	SHADOW	ON,IN
+
+		LDA	timer_digits
+		ASL	A		; * 16
+		ASL	A
+		ASL	A
+		ASL	A
+		STA	workspace
+
+		LDA	timer_frames
+		ASL	A
+		CLC
+		ADC	workspace
+		TAY
+
+		LDX	#0
+
+.dt_loop1	LDA	timer_chars,Y
+		STA	&3C28,X
+		LDA	timer_chars+1,Y
+		STA	&3C28+8,X
+		INX
+		INY
+		INY
+		CPX	#8
+		BNE	dt_loop1
+
+;* * * * * * * * * * * * * * * * * * * *
+
+		LDA	timer_digits+1
+		ASL	A		; * 16
+		ASL	A
+		ASL	A
+		ASL	A
+		STA	workspace
+
+		LDA	timer_frames+1
+		ASL	A
+		CLC
+		ADC	workspace
+		TAY
+
+		LDX	#0
+
+.dt_loop2	LDA	timer_chars,Y
+		STA	&3C28+16,X
+		LDA	timer_chars+1,Y
+		STA	&3C28+24,X
+		INX
+		INY
+		INY
+		CPX	#8
+		BNE	dt_loop2
+
+;* * * * * * * * * * * * * * * * * * * *
+
+		LDA	timer_digits+2
+		ASL	A		; * 16
+		ASL	A
+		ASL	A
+		ASL	A
+		STA	workspace
+
+		LDA	timer_frames+2
+		ASL	A
+		CLC
+		ADC	workspace
+		TAY
+
+		LDX	#0
+
+.dt_loop3	LDA	timer_chars2,Y
+		STA	&3C28+32,X
+		LDA	timer_chars2+1,Y
+		STA	&3C28+40,X
+		INX
+		INY
+		INY
+		CPX	#8
+		BNE	dt_loop3
+
+;****************************************
+
+		LDA	timer_frames+2
+		DEA
+		BPL	not_eoc4
+
+		DEC	timer_digits+2
+
+		LDA	timer_digits+2
+		BPL	not_eoc41
+
+		LDA	#9
+		STA	timer_digits+2
+
+.not_eoc41	LDA	#7
+.not_eoc4	STA	timer_frames+2
+
+;* * * * * * * * * * * * * * * * * * * *
+
+		LDA	timer_digits+2
+		CMP	#9
+		BNE	not_eoc3
+
+		LDA	timer_status
+		ORA	#%00000100
+		STA	timer_status
+
+		LDA	timer_frames+1
+		DEA
+		BPL	not_eoc31
+
+		DEC	timer_digits+1
+		LDA	timer_digits+1
+		BPL	not_eoc32
+
+		LDA	#9
+		STA	timer_digits+1
+
+.not_eoc32	LDA	#7
+.not_eoc31	STA	timer_frames+1
+		BRA	not_eoc34
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.not_eoc3	LDA	timer_status
+		AND	#%11111011
+		STA	timer_status
+
+.not_eoc34	LDA	timer_digits+1
+		CMP	#9
+		BNE	not_eoc2
+
+		LDA	timer_status
+		AND	#%00000100
+		BEQ	not_eoc2
+
+		LDA	timer_status
+		ORA	#%000000010
+		STA	timer_status
+
+		LDA	timer_frames
+		DEA
+		BPL	not_eoc21
+
+		DEC	timer_digits
+		LDA	timer_digits
+		BPL	not_eoc22
+
+		LDA	#9
+		STA	timer_digits
+
+.not_eoc22	LDA	#7
+.not_eoc21	STA	timer_frames
+
+		BRA	not_eoc24
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.not_eoc2	LDA	timer_status
+		AND	#%11111101
+		STA	timer_status
+
+.not_eoc24
+		JSR	time_bar
+
+		JSR	draw_sbars
+
+		SHADOW	ON,OUT
+
+		RTS
+
+;****************************************
+;****************************************
+
+.timer_chars	EQUB	%01110111,%11101110	; 0
+		EQUB	%00000000,%00000000
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00100010,%01000100
+		EQUB	%00100010,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 1
+		EQUB	%00000000,%00000000
+		EQUB	%00000000,%10001000
+		EQUB	%00010001,%10001000
+		EQUB	%00000000,%10001000
+		EQUB	%00000000,%10001000
+		EQUB	%00010001,%11001100
+		EQUB	%00000000,%00000000
+
+
+		EQUB	%01110111,%11101110	; 2
+		EQUB	%00000000,%00000000
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00000000,%10001000
+		EQUB	%00010001,%00000000
+		EQUB	%00110011,%11001100
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 3
+		EQUB	%00000000,%00000000
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00000000,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 4
+		EQUB	%00000000,%00000000
+		EQUB	%00100010,%00000000
+		EQUB	%00100010,%00000000
+		EQUB	%00100010,%10001000
+		EQUB	%00110011,%11001100
+		EQUB	%00000000,%10001000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 5
+		EQUB	%00000000,%00000000
+		EQUB	%00110011,%11001100
+		EQUB	%00100010,%00000000
+		EQUB	%00110011,%10001000
+		EQUB	%00000000,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 6
+		EQUB	%00000000,%00000000
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%00000000
+		EQUB	%00110011,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 7
+		EQUB	%00000000,%00000000
+		EQUB	%00110011,%11001100
+		EQUB	%00000000,%10001000
+		EQUB	%00010001,%00000000
+		EQUB	%00100010,%00000000
+		EQUB	%00100010,%00000000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 8
+		EQUB	%00000000,%00000000
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 9
+		EQUB	%00000000,%00000000
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00010001,%00000000
+		EQUB	%00100010,%00000000
+		EQUB	%00000000,%00000000
+
+		EQUB	%01110111,%11101110	; 0
+		EQUB	%00000000,%00000000
+		EQUB	%00010001,%10001000
+		EQUB	%00100010,%01000100
+		EQUB	%00100010,%01000100
+		EQUB	%00100010,%01000100
+		EQUB	%00010001,%10001000
+		EQUB	%00000000,%00000000
+
+;****************************************
+;****************************************
+
+.timer_chars2	EQUB	%10001000,%00010001	; 0
+		EQUB	%11111111,%11111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11011111,%10111111
+		EQUB	%11011111,%10111111
+		EQUB	%11101111,%01111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 1
+		EQUB	%11111111,%11111111
+		EQUB	%11111111,%11110111
+		EQUB	%11101111,%01111111
+		EQUB	%11111111,%01111111
+		EQUB	%11111111,%01111111
+		EQUB	%11101111,%00111111
+		EQUB	%11111111,%11111111
+
+
+		EQUB	%10001000,%00010001	; 2
+		EQUB	%11111111,%11111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11111111,%01111111
+		EQUB	%11101111,%11111111
+		EQUB	%11001111,%00111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 3
+		EQUB	%11111111,%11111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11111111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11101111,%01111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 4
+		EQUB	%11111111,%11111111
+		EQUB	%11011111,%11111111
+		EQUB	%11011111,%11111111
+		EQUB	%11011111,%01111111
+		EQUB	%11001111,%00111111
+		EQUB	%11111111,%01111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 5
+		EQUB	%11111111,%11111111
+		EQUB	%11001111,%00111111
+		EQUB	%11011111,%11111111
+		EQUB	%11001111,%01111111
+		EQUB	%11111111,%10111111
+		EQUB	%11001111,%01111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 6
+		EQUB	%11111111,%11111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%11111111
+		EQUB	%11001111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11101111,%01111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 7
+		EQUB	%11111111,%11111111
+		EQUB	%11001111,%00111111
+		EQUB	%11111111,%01111111
+		EQUB	%11101111,%11111111
+		EQUB	%11011111,%11111111
+		EQUB	%11011111,%11111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 8
+		EQUB	%11111111,%11111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11101111,%01111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 9
+		EQUB	%11111111,%11111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11101111,%01111111
+		EQUB	%11101111,%11111111
+		EQUB	%11011111,%11111111
+		EQUB	%11111111,%11111111
+
+		EQUB	%10001000,%00010001	; 0
+		EQUB	%11111111,%11111111
+		EQUB	%11101111,%01111111
+		EQUB	%11011111,%10111111
+		EQUB	%11011111,%10111111
+		EQUB	%11011111,%10111111
+		EQUB	%11101111,%01111111
+		EQUB	%11111111,%11111111
+
+;****************************************
+;****************************************
+
+.timer_digits	SKIP	3
+.timer_frames	SKIP	3
+.timer_status	SKIP	1
+
+;****************************************
+;****************************************
+
+		EQUS	"It's the top-secret Gadget phone !!!"

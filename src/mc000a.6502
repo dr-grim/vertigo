@@ -1,1 +1,545 @@
-		TTL	mc000		; All sprite/screen routines that poke					; directly to the shadow screen memory********************************************************************************blck_spr	TYA		CLC		ADC	block_sh		TAY		JSR	calculate_byte		SHADOW	ON,IN		LDA	#8		; width of sprite in bytes		STA	workspace+4bml		LDX	block_sh		LDA	workspace		PHA		AND	#&F8		STA	workspace+5	; copy of screen address MOD,		LDA	workspace+1		STA	workspace+6	; and DIV.		PLA		AND	#7		TAYbdc		LDA	(workspace+5),Y	; LDA screenb_mask		AND	&FFFF,X		; AND maskb_sprite	ORA	&FFFF,X		; OR sprite		STA	(workspace+5),Y	; STA screen		INX			; X will never clock as data = 24 bytesbch		INY		CPX	#72		BEQ	beoc		CPY	#8		BNE	bdc		LDA	workspace+5		ADC	#&7F		STA	workspace+5		LDA	workspace+6		ADC	#2		STA	workspace+6		LDY	#0		BRA	bdcbeoc		LDA	workspace		CLC		ADC	#8		STA	workspace		BCC	bcc		CLC		INC	workspace+1bcc		LDA	b_mask+1		ADC	#72		STA	b_mask+1		BCC	bm_cc		INC	b_mask+2		CLCbm_cc		LDA	b_sprite+1		ADC	#72		STA	b_sprite+1		BCC	bs_cc		INC	b_sprite+2bs_cc		DEC	workspace+4		BNE	bml		SHADOW	ON,OUT		RTS********************************************************************************eor_sprite	JSR	calculate_byte		SHADOW	ON,INes_height	LDA	#&FF		; height of sprite in bytes		STA	es_adc+1		STA	workspace+3es_width	LDA	#&FF		; width of sprite in bytes		STA	workspace+4		LDX	#0ml		LDA	workspace		PHA		AND	#&F8		STA	workspace+5	; copy of screen address MOD,		LDA	workspace+1		STA	workspace+6	; and DIV.		PLA		AND	#7		TAYdc		LDA	(workspace+5),Y	; LDA screensprite		EOR	&FFFF,X		; EOR sprite		STA	(workspace+5),Y	; STA screen		INX		BEQ	dhck		INY		CPX	workspace+3	; end_of_col		BEQ	eoc		CPY	#8		BNE	dc		LDA	workspace+5		ADC	#&7F		STA	workspace+5		LDA	workspace+6		ADC	#2		STA	workspace+6		LDY	#0		BRA	dcdh		INC	sprite+2		BRA	ckeoc		LDA	workspace		CLC		ADC	#8		STA	workspace		BCC	cc		CLC		INC	workspace+1cc		LDA	workspace+3es_adc		ADC	#&FF		STA	workspace+3		DEC	workspace+4		BNE	ml		SHADOW	ON,OUT		RTS********************************************************************************mask_sprite	JSR	calculate_byte		SHADOW	ON,INms_height	LDA	#&FF		; height of sprite in bytes		STA	workspace+2		STA	workspace+3ms_width	LDA	#&FF		; width of sprite in bytes		STA	workspace+4		LDX	#0ml1		LDA	workspace		PHA		AND	#&F8		STA	workspace+5	; copy of screen address MOD,		LDA	workspace+1		STA	workspace+6	; and DIV.		PLA		AND	#7		TAYdc1		LDA	(workspace+5),Y	; LDA screenms_mask	AND	&FFFF,X		; AND maskms_sprite	ORA	&FFFF,X		; OR sprite		STA	(workspace+5),Y	; STA screen		INX			; X will never clock as data = 24 bytes		BEQ	dh1ck1		INY		CPX	workspace+3		BEQ	eoc1		CPY	#8		BNE	dc1		LDA	workspace+5		ADC	#&7F		STA	workspace+5		LDA	workspace+6		ADC	#2		STA	workspace+6		LDY	#0		BRA	dc1dh1		INC	ms_mask+2		INC	ms_sprite+2		BRA	ck1eoc1		LDA	workspace		CLC		ADC	#8		STA	workspace		BCC	cc1		CLC		INC	workspace+1cc1		LDA	workspace+3		ADC	workspace+2		STA	workspace+3		DEC	workspace+4		BNE	ml1		SHADOW	ON,OUT		RTS********************************************************************************save_area	SHADOW	ON,IN		JSR	calculate_bytesa_height	LDA	#8		; height of sprite in bytes		STA	sa_adc+1		STA	workspace+3sa_width	LDA	#3		; width of sprite in bytes		STA	workspace+4		LDX	#0ml2		LDA	workspace		PHA		AND	#&F8		STA	workspace+5	; copy of screen address MOD,		LDA	workspace+1		STA	workspace+6	; and DIV.		PLA		AND	#7		TAYdc2		LDA	(workspace+5),Y	; LDA screensave		STA	screen_store,X	; STA area		INX		BEQ	dh2chk2		INY		CPX	workspace+3		BEQ	eoc2		CPY	#8		BNE	dc2		LDA	workspace+5		ADC	#&7F		STA	workspace+5		LDA	workspace+6		ADC	#2		STA	workspace+6		LDY	#0		BRA	dc2dh2		INC	save+2		BRA	chk2eoc2		LDA	workspace		CLC		ADC	#8		STA	workspace		BCC	cc2		CLC		INC	workspace+1cc2		LDA	workspace+3sa_adc		ADC	#8		STA	workspace+3		DEC	workspace+4		BNE	ml2		SHADOW	ON,OUT		RTS********************************************************************************restore_area	SHADOW	ON,IN		JSR	calculate_bytera_height	LDA	#&FF		; height of sprite in bytes		STA	ra_adc+1		STA	workspace+3ra_width	LDA	#&FF		; width of sprite in bytes		STA	workspace+4		LDX	#0ml3		LDA	workspace		AND	#&F8		STA	workspace+5	; copy of screen address MOD,		LDA	workspace+1		STA	workspace+6	; and DIV.		LDA	workspace		AND	#7		TAYrestore	LDA	&FFFF,X		; restore area		STA	(workspace+5),Y	; to screen		INX			; X will never clock as data = 24 bytes		BEQ	dh3chk3		INY		CPX	workspace+3		BEQ	eoc3		CPY	#8		BNE	restore		LDA	workspace+5		ADC	#&7F		STA	workspace+5		LDA	workspace+6		ADC	#2		STA	workspace+6		LDY	#0		BRA	restoredh3		INC	restore+2		BRA	chk3eoc3		LDA	workspace		CLC		ADC	#8		STA	workspace		BCC	cc3		CLC		INC	workspace+1cc3		LDA	workspace+3ra_adc		ADC	#8		STA	workspace+3		DEC	workspace+4		BNE	ml3		SHADOW	ON,OUT		RTS********************************************************************************calculate_byte	STZ	workspace+1		TYA		AND	#7		STA	workspace 		TYA		LSR	A		LSR	A		AND	#%11111110		TAY		TXA		ASL	A		ROL	workspace+1		ASL	A		ROL	workspace+1		ASL	A		ROL	workspace+1		ADC	workspace		ADC	calc_table,Y		STA	workspace		LDA	calc_table+1,Y		ADC	workspace+1		STA	workspace+1		RTS*****************************************	Table for sprite routine	**					*calc_table	LOOKUP	&3000,&280,32	; Forms a table of &280 multiplication					; starting at <screen>, with 18 entries.*					*********************************************************************************d_shadow	LDX	old_X		; will be same X,		INX		LDY	old_Y2		; but different Y		JSR	calculate_byte		SHADOW	ON,IN		LDA	shadow_store	; deletes old shadow dot		STA	(workspace)		SHADOW	ON,OUT		RTS****************************************sp_shadow	LDX	old_X		INX		LDY	old_Y2		JSR	calculate_byte		SHADOW	ON,IN		LDA	(workspace)		STA	shadow_store		LDA	#%10001000		LDY	pixel_offset		BEQ	sp_no_lsrsp_loop1	LSR	A		DEY		BNE	sp_loop1sp_no_lsr	ORA	(workspace)		STA	(workspace)		SHADOW	ON,OUT		RTS****************************************animate_lives	SHADOW	ON,IN		BANK	4		LDA	#>&3550		STA	workspace+2		LDA	#<&3550		STA	workspace+3		LDA	lives		BEQ	exit_al		CMP	#5		BCC	not_b_5		LDA	#5not_b_5	STA	workspace		LDA	yts		STA	workspace+1al_loop1	LDA	workspace+1		EOR	#frames-1		STA	workspace+1		ASL	A		ASL	A		ASL	A		ASL	A		TAX		LDY	#0al_loop2	LDA	ball_data,X		STA	(workspace+2),Y		INY				INX				CPY	#16		BNE	al_loop2		CLC		LDA	workspace+2		ADC	#16		STA	workspace+2		BCC	al_nc1		INC	workspace+3al_nc1		DEC	workspace		BNE	al_loop1exit_al		LDA	lives		CMP	#5		BEQ	exit_al2		LDA	#5		SEC		SBC	lives		STA	workspaceal_loop3	LDY	#15		LDA	#0al_loop4	STA	(workspace+2),Y		DEY		BPL	al_loop4		CLC		LDA	workspace+2		ADC	#16		STA	workspace+2		BCC	al_nc2		INC	workspace+3al_nc2		DEC	workspace		BNE	al_loop3exit_al2	SHADOW	ON,OUT		BANK	5		RTS********************************************************************************		CHN	mc000b
+;		TTL	mc000		; All sprite/screen routines that poke
+						; directly to the shadow screen memory
+;****************************************
+;****************************************
+
+.blck_spr	TYA
+		CLC
+		ADC	block_sh
+		TAY
+		JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+		LDA	#8		; width of sprite in bytes
+		STA	workspace+4
+
+.bml		LDX	block_sh
+
+		LDA	workspace
+		PHA
+		AND	#&F8
+		STA	workspace+5	; copy of screen address MOD,
+		LDA	workspace+1
+		STA	workspace+6	; and DIV.
+		PLA
+		AND	#7
+		TAY
+
+.bdc		LDA	(workspace+5),Y	; LDA screen
+
+.b_mask		AND	&FFFF,X		; AND mask
+
+.b_sprite	ORA	&FFFF,X		; OR sprite
+
+		STA	(workspace+5),Y	; STA screen
+
+		INX			; X will never clock as data = 24 bytes
+
+.bch		INY
+		CPX	#72
+		BEQ	beoc
+
+		CPY	#8
+		BNE	bdc
+
+		LDA	workspace+5
+		ADC	#&7F
+		STA	workspace+5
+		LDA	workspace+6
+		ADC	#2
+		STA	workspace+6
+
+		LDY	#0
+		BRA	bdc
+
+.beoc		LDA	workspace
+		CLC
+		ADC	#8
+		STA	workspace
+		BCC	bcc
+
+		CLC
+		INC	workspace+1
+
+.bcc		LDA	b_mask+1
+		ADC	#72
+		STA	b_mask+1
+		BCC	bm_cc
+
+		INC	b_mask+2
+		CLC
+
+.bm_cc		LDA	b_sprite+1
+		ADC	#72
+		STA	b_sprite+1
+		BCC	bs_cc
+
+		INC	b_sprite+2
+
+.bs_cc		DEC	workspace+4
+		BNE	bml
+
+		SHADOW	ON,OUT
+		RTS
+
+;****************************************
+;****************************************
+
+.eor_sprite	JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+.es_height	LDA	#&FF		; height of sprite in bytes
+		STA	es_adc+1
+		STA	workspace+3
+
+.es_width	LDA	#&FF		; width of sprite in bytes
+		STA	workspace+4
+
+		LDX	#0
+.ml		LDA	workspace
+		PHA
+		AND	#&F8
+		STA	workspace+5	; copy of screen address MOD,
+		LDA	workspace+1
+		STA	workspace+6	; and DIV.
+		PLA
+		AND	#7
+		TAY
+
+.dc		LDA	(workspace+5),Y	; LDA screen
+
+.sprite		EOR	&FFFF,X		; EOR sprite
+
+		STA	(workspace+5),Y	; STA screen
+
+		INX
+		BEQ	dh
+
+.ck		INY
+		CPX	workspace+3	; end_of_col
+		BEQ	eoc
+
+		CPY	#8
+		BNE	dc
+
+		LDA	workspace+5
+		ADC	#&7F
+		STA	workspace+5
+		LDA	workspace+6
+		ADC	#2
+		STA	workspace+6
+
+		LDY	#0
+		BRA	dc
+
+.dh		INC	sprite+2
+		BRA	ck
+
+.eoc		LDA	workspace
+		CLC
+		ADC	#8
+		STA	workspace
+		BCC	cc
+
+		CLC
+		INC	workspace+1
+
+.cc		LDA	workspace+3
+.es_adc		ADC	#&FF
+		STA	workspace+3
+
+		DEC	workspace+4
+		BNE	ml
+
+		SHADOW	ON,OUT
+
+		RTS
+
+;****************************************
+;****************************************
+
+.mask_sprite	JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+.ms_height	LDA	#&FF		; height of sprite in bytes
+		STA	workspace+2
+		STA	workspace+3
+
+.ms_width	LDA	#&FF		; width of sprite in bytes
+		STA	workspace+4
+
+		LDX	#0
+.ml1		LDA	workspace
+		PHA
+		AND	#&F8
+		STA	workspace+5	; copy of screen address MOD,
+		LDA	workspace+1
+		STA	workspace+6	; and DIV.
+		PLA
+		AND	#7
+		TAY
+
+.dc1		LDA	(workspace+5),Y	; LDA screen
+
+.ms_mask	AND	&FFFF,X		; AND mask
+
+.ms_sprite	ORA	&FFFF,X		; OR sprite
+
+		STA	(workspace+5),Y	; STA screen
+
+		INX			; X will never clock as data = 24 bytes
+		BEQ	dh1
+
+.ck1		INY
+		CPX	workspace+3
+		BEQ	eoc1
+
+		CPY	#8
+		BNE	dc1
+
+		LDA	workspace+5
+		ADC	#&7F
+		STA	workspace+5
+		LDA	workspace+6
+		ADC	#2
+		STA	workspace+6
+
+		LDY	#0
+		BRA	dc1
+
+.dh1		INC	ms_mask+2
+		INC	ms_sprite+2
+		BRA	ck1
+
+.eoc1		LDA	workspace
+		CLC
+		ADC	#8
+		STA	workspace
+		BCC	cc1
+
+		CLC
+		INC	workspace+1
+
+.cc1		LDA	workspace+3
+		ADC	workspace+2
+		STA	workspace+3
+
+		DEC	workspace+4
+		BNE	ml1
+
+		SHADOW	ON,OUT
+		RTS
+
+;****************************************
+;****************************************
+
+.save_area	SHADOW	ON,IN
+
+		JSR	calculate_byte
+
+.sa_height	LDA	#8		; height of sprite in bytes
+		STA	sa_adc+1
+		STA	workspace+3
+
+.sa_width	LDA	#3		; width of sprite in bytes
+		STA	workspace+4
+
+		LDX	#0
+
+.ml2		LDA	workspace
+		PHA
+		AND	#&F8
+		STA	workspace+5	; copy of screen address MOD,
+		LDA	workspace+1
+		STA	workspace+6	; and DIV.
+		PLA
+		AND	#7
+		TAY
+
+.dc2		LDA	(workspace+5),Y	; LDA screen
+
+.save		STA	screen_store,X	; STA area
+
+		INX
+		BEQ	dh2
+
+.chk2		INY
+		CPX	workspace+3
+		BEQ	eoc2
+
+		CPY	#8
+		BNE	dc2
+
+		LDA	workspace+5
+		ADC	#&7F
+		STA	workspace+5
+		LDA	workspace+6
+		ADC	#2
+		STA	workspace+6
+
+		LDY	#0
+		BRA	dc2
+
+.dh2		INC	save+2
+		BRA	chk2
+
+.eoc2		LDA	workspace
+		CLC
+		ADC	#8
+		STA	workspace
+		BCC	cc2
+
+		CLC
+		INC	workspace+1
+
+.cc2		LDA	workspace+3
+.sa_adc		ADC	#8
+		STA	workspace+3
+
+		DEC	workspace+4
+		BNE	ml2
+
+		SHADOW	ON,OUT
+		RTS
+
+;****************************************
+;****************************************
+
+.restore_area	SHADOW	ON,IN
+
+		JSR	calculate_byte
+
+.ra_height	LDA	#&FF		; height of sprite in bytes
+		STA	ra_adc+1
+		STA	workspace+3
+
+.ra_width	LDA	#&FF		; width of sprite in bytes
+		STA	workspace+4
+
+		LDX	#0
+
+.ml3		LDA	workspace
+		AND	#&F8
+		STA	workspace+5	; copy of screen address MOD,
+		LDA	workspace+1
+		STA	workspace+6	; and DIV.
+		LDA	workspace
+		AND	#7
+		TAY
+
+.restore	LDA	&FFFF,X		; restore area
+
+		STA	(workspace+5),Y	; to screen
+
+		INX			; X will never clock as data = 24 bytes
+		BEQ	dh3
+
+.chk3		INY
+		CPX	workspace+3
+		BEQ	eoc3
+
+		CPY	#8
+		BNE	restore
+
+		LDA	workspace+5
+		ADC	#&7F
+		STA	workspace+5
+		LDA	workspace+6
+		ADC	#2
+		STA	workspace+6
+
+		LDY	#0
+		BRA	restore
+
+.dh3		INC	restore+2
+		BRA	chk3
+
+.eoc3		LDA	workspace
+		CLC
+		ADC	#8
+		STA	workspace
+		BCC	cc3
+
+		CLC
+		INC	workspace+1
+
+.cc3		LDA	workspace+3
+.ra_adc		ADC	#8
+		STA	workspace+3
+
+		DEC	workspace+4
+		BNE	ml3
+
+		SHADOW	ON,OUT
+		RTS
+
+;****************************************
+;****************************************
+
+.calculate_byte	STZ	workspace+1
+		TYA
+		AND	#7
+		STA	workspace
+ 		TYA
+		LSR	A
+		LSR	A
+		AND	#%11111110
+		TAY
+		TXA
+		ASL	A
+		ROL	workspace+1
+		ASL	A
+		ROL	workspace+1
+		ASL	A
+		ROL	workspace+1
+		ADC	workspace
+		ADC	calc_table,Y
+		STA	workspace
+		LDA	calc_table+1,Y
+		ADC	workspace+1
+		STA	workspace+1
+
+		RTS
+
+;****************************************
+;*	Table for sprite routine	*
+;*					*
+.calc_table	LOOKUP	&3000,&280,32	; Forms a table of &280 multiplication
+					; starting at <screen>, with 18 entries.
+;*					*
+;****************************************
+;****************************************
+
+.d_shadow	LDX	old_X		; will be same X,
+		INX
+		LDY	old_Y2		; but different Y
+		JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+		LDA	shadow_store	; deletes old shadow dot
+		STA	(workspace)
+
+		SHADOW	ON,OUT
+
+		RTS
+
+;****************************************
+
+.sp_shadow	LDX	old_X
+		INX
+		LDY	old_Y2
+		JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+		LDA	(workspace)
+		STA	shadow_store
+
+		LDA	#%10001000
+		LDY	pixel_offset
+		BEQ	sp_no_lsr
+
+.sp_loop1	LSR	A
+		DEY
+		BNE	sp_loop1
+
+.sp_no_lsr	ORA	(workspace)
+		STA	(workspace)
+
+		SHADOW	ON,OUT
+
+		RTS
+
+;****************************************
+
+.animate_lives	SHADOW	ON,IN
+
+		BANK	4
+
+		LDA	#LO(&3550)
+		STA	workspace+2
+		LDA	#HI(&3550)
+		STA	workspace+3
+
+		LDA	lives
+		BEQ	exit_al
+		CMP	#5
+		BCC	not_b_5
+		LDA	#5
+
+.not_b_5	STA	workspace
+
+		LDA	yts
+		STA	workspace+1
+
+.al_loop1	LDA	workspace+1
+		EOR	#frames-1
+		STA	workspace+1
+		ASL	A
+		ASL	A
+		ASL	A
+		ASL	A
+		TAX
+
+		LDY	#0
+.al_loop2	LDA	ball_data,X
+		STA	(workspace+2),Y
+		INY		
+		INX		
+		CPY	#16
+		BNE	al_loop2
+
+		CLC
+		LDA	workspace+2
+		ADC	#16
+		STA	workspace+2
+
+		BCC	al_nc1
+
+		INC	workspace+3
+
+.al_nc1		DEC	workspace
+		BNE	al_loop1
+
+
+.exit_al
+
+		LDA	lives
+		CMP	#5
+		BEQ	exit_al2
+
+		LDA	#5
+		SEC
+		SBC	lives
+		STA	workspace
+
+.al_loop3	LDY	#15
+		LDA	#0
+
+.al_loop4	STA	(workspace+2),Y
+		DEY
+		BPL	al_loop4
+
+		CLC
+		LDA	workspace+2
+		ADC	#16
+		STA	workspace+2
+
+		BCC	al_nc2
+
+		INC	workspace+3
+
+.al_nc2		DEC	workspace
+		BNE	al_loop3
+
+.exit_al2	SHADOW	ON,OUT
+
+		BANK	5
+		RTS
+
+;****************************************
+;****************************************

@@ -1,1 +1,373 @@
-		TTL	mc006b		; envelopes,music & filenames data*********************************************************************************	= The Sherlock Jingle		*jingle1	DFB	6,1,0,0,0,0,0,0,80,-1,0,-1,80,60	; envelope 1		DFB	7,1,0,0,0,0,0,0,50,-3,-2,-3,60,57	; envelope 2		DFB	8,4,1,-1,1,1,2,1,4,1,0,-1,80,125	; envelope 3		DW	j1bass,j1arpeg,j1melodyj1bass		DFB	111,32,119,32,123,32,131,32,111,32,119,32		DFB	123,32,131,32,0,0j1arpeg	DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4		DFB	0,20,0,20,0,20,0,0j1melody	DFB	193,28,185,4,157,28,165,4,173,32,153,32		DFB	193,28,185,4,157,28,165,4,173,32,153,32		DFB	0,0 * * * * * * * * * * * * * * * * * * * **	= The American Jingle		*jingle2	DFB	6,1,0,0,0,0,0,0,60,-1,0,-1,60,45	; envelope 1		DFB	7,1,0,0,0,0,0,0,10,-1,0,0,40,25		; envelope 2		DFB	8,1,0,0,0,0,0,0,30,-1,-1,0,100,99	; envelope 3		DW	j2bass,j2arpeg,j2melodyj2bass		DFB	142,6,142,6,142,6,142,6,138,6,138,6,138,6,138,6		DFB	130,6,130,6,130,6,130,6,122,6,122,6,122,6,122,6		DFB	114,6,114,6,114,6,114,6,122,6,122,6,122,6,122,6		DFB	142,24,0,0j2arpeg	DFB	137,24,129,24,121,24,117,24,121,24,129,24,149,24		DFB	0,20,0,20,0,20,0,0j2melody	DFB	197,30,213,6,217,6,225,6,233,12,225,12,213,16,197,6		DFB	217,6,213,6,197,12,205,12,197,14,197,24,0,0 * * * * * * * * * * * * * * * * * * * **	= The Trill Jingle		*jingle3	DFB	6,1,0,0,0,0,0,0,60,-1,0,-1,60,45	; envelope 1		DFB	7,1,0,0,0,0,0,0,50,-3,-2,-3,60,57	; envelope 2		DFB	8,1,0,0,0,0,0,0,80,-1,0,-1,80,60	; envelope 3		DW	j3bass,j3arpeg,j3melodyj3bass		DFB	177,6,201,6,213,6,225,6,213,6,201,6,177,12,0,0j3arpeg	DFB	0,36,141,2,149,2,141,2,149,2,141,2,149,2,141,2,149,2		DFB	141,2,149,2,141,2,149,2,141,6,0,20,0,20,0,20,0,0j3melody	DFB	77,6,101,6,113,6,125,6,113,6,101,6,77,12,0,0********************************************************************************jnote0		DFB	0,&01,6,0,3,0,&FF,0jnote1		DFB	1,&01,0,0,&FF,0,&FF,0jnote2		DFB	2,0,7,0,&FF,0,&FF,0jnote3		DFB	3,0,8,0,&FF,0,&FF,0********************************************************************************	STR	"Last night I dreamt that Ra was holding up a mirror"	STR	"To my heart but all was darkness so I prayed to all the Gods that I might see"	STR	""	STR	"And as they showed me my mortality the Hidden-one"	STR	"Revealed himself in voice alone and spoke in condescending tones to me"	STR	""	DFB	34	STR	"You are the Pharaoh you will journey through the after life"	ASC	"And HE-WHO-LOOKS-BEHIND will ask the questions you must answer to be free"	DFB	34,13	STR	""	STR	"Osiris weigh my soul and let me pass beyond so I may"	STR	"Row the boat of Ra and be as one with all the Gods that set me free"********************************************************************************setup_jingle	STX	workspace		STY	workspace+1		LDA	#8		JSR	osword		LDA	workspace		CLC		ADC	#14		STA	workspace		TAX		LDA	workspace+1		ADC	#0		STA	workspace+1		TAY		LDA	#8		JSR	osword			LDA	workspace		CLC		ADC	#14		STA	workspace		TAX		LDA	workspace+1		ADC	#0		STA	workspace+1		TAY		LDA	#8		JSR	osword			LDA	workspace		CLC		ADC	#14		STA	workspace		LDA	workspace+1		ADC	#0		STA	workspace+1		LDA	(workspace)		STA	bass_pointer		LDY	#1		LDA	(workspace),Y		STA	bass_pointer+1		INY		LDA	(workspace),Y		STA	arpeg_pointer		INY		LDA	(workspace),Y		STA	arpeg_pointer+1		INY		LDA	(workspace),Y		STA	main_pointer		INY		LDA	(workspace),Y		STA	main_pointer+1		LDA	menu_st		AND	#128		BNE	jingle_ok*		JSR	envelope_off	JSR	music_onoffjingle_ok	LDA	#15		LDX	#0		JSR	osbyte		LDA	#8		STA	jnote1+6		STZ	jnote1		LDA	#7		LDX	#>jnote1		LDY	#<jnote1		JSR	osword		LDA	#2		STA	jnote1		LDA	#7		LDX	#>jnote1		LDY	#<jnote1		JSR	osword		LDA	#3		STA	jnote1		LDA	#7		LDX	#>jnote1		LDY	#<jnote1		JSR	osword		LDA	#1		STA	jnote1		LDA	#7		LDX	#>jnote1		LDY	#<jnote1		JMP	osword********************************************************************************update_jingle	LDA	#128		LDY	#0		LDX	#-6		JSR	osbyte		CPX	#2		BLT	skip_jbass		LDY	#1		LDA	(bass_pointer),Y		BEQ	skip_jbass		JSR	do_jbass		BRA	update_jingleskip_jbass	LDA	#128		LDY	#0		LDX	#-7		JSR	osbyte		CPX	#2		BLT	skip_jarpeg		LDY	#1		LDA	(arpeg_pointer),Y		BEQ	skip_jarpeg		JSR	do_jarpeg		BRA	skip_jbassskip_jarpeg	LDA	#128		LDY	#0		LDX	#-8		JSR	osbyte		CPX	#2		BLT	skip_jmain		LDY	#1		LDA	(main_pointer),Y		BEQ	skip_jmain		JSR	do_jmain		BRA	skip_jarpegskip_jmain	RTS********************************************************************************		do_jbass	LDA	(bass_pointer)		STA	jnote1+4		LDA	(bass_pointer),Y		STA	jnote1+6		STA	jnote0+6		LDA	bass_pointer		CLC		ADC	#2		STA	bass_pointer		LDA	bass_pointer+1		ADC	#0		STA	bass_pointer+1		LDA	#7		LDX	#>jnote0		LDY	#<jnote0		JSR	osword		LDA	#7		LDX	#>jnote1		LDY	#<jnote1		JMP	osword********************************************************************************		do_jarpeg	LDA	(arpeg_pointer)		STA	jnote2+4		BNE	not_jarest		LDA	#0		STA	jnote2+2not_jarest	LDA	(arpeg_pointer),Y		STA	jnote2+6		LDA	#7		LDX	#>jnote2		LDY	#<jnote2		JSR	osword		LDA	(arpeg_pointer)		BNE	not_jarest2		LDA	#7		STA	jnote2+2not_jarest2	LDA	arpeg_pointer		CLC		ADC	#2		STA	arpeg_pointer		LDA	arpeg_pointer+1		ADC	#0		STA	arpeg_pointer+1		RTS********************************************************************************		do_jmain	LDA	(main_pointer)		STA	jnote3+4		LDA	(main_pointer),Y		STA	jnote3+6		LDA	main_pointer		CLC		ADC	#2		STA	main_pointer		LDA	main_pointer+1		ADC	#0		STA	main_pointer+1		LDA	#7		LDX	#>jnote3		LDY	#<jnote3		JMP	osword********************************************************************************check_eojingle	LDA	#128		LDY	#0		LDX	#-6		JSR	osbyte		CPX	#15		BEQ	checkc2		RTScheckc2	LDA	#128		LDY	#0		LDX	#-7		JSR	osbyte		CPX	#15		BEQ	checkc3		RTScheckc3	LDA	#128		LDY	#0		LDX	#-8		JSR	osbyte		CPX	#15		RTS********************************************************************************		CHN	mc007
+;		TTL	mc006b		; envelopes,music & filenames data
+
+;****************************************
+;****************************************
+;*	= The Sherlock Jingle		*
+
+.jingle1	EQUB	6,1,0,0,0,0,0,0,80,-1,0,-1,80,60	; envelope 1
+		EQUB	7,1,0,0,0,0,0,0,50,-3,-2,-3,60,57	; envelope 2
+		EQUB	8,4,1,-1,1,1,2,1,4,1,0,-1,80,125	; envelope 3
+
+		EQUW	j1bass,j1arpeg,j1melody
+
+.j1bass		EQUB	111,32,119,32,123,32,131,32,111,32,119,32
+		EQUB	123,32,131,32,0,0
+
+.j1arpeg	EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	85,4,65,4,49,4,85,4,65,4,49,4,85,4,65,4
+		EQUB	0,20,0,20,0,20,0,0
+
+.j1melody	EQUB	193,28,185,4,157,28,165,4,173,32,153,32
+		EQUB	193,28,185,4,157,28,165,4,173,32,153,32
+		EQUB	0,0
+
+; * * * * * * * * * * * * * * * * * * * *
+;*	= The American Jingle		*
+
+.jingle2	EQUB	6,1,0,0,0,0,0,0,60,-1,0,-1,60,45	; envelope 1
+		EQUB	7,1,0,0,0,0,0,0,10,-1,0,0,40,25		; envelope 2
+		EQUB	8,1,0,0,0,0,0,0,30,-1,-1,0,100,99	; envelope 3
+
+		EQUW	j2bass,j2arpeg,j2melody
+
+.j2bass		EQUB	142,6,142,6,142,6,142,6,138,6,138,6,138,6,138,6
+		EQUB	130,6,130,6,130,6,130,6,122,6,122,6,122,6,122,6
+		EQUB	114,6,114,6,114,6,114,6,122,6,122,6,122,6,122,6
+		EQUB	142,24,0,0
+
+.j2arpeg	EQUB	137,24,129,24,121,24,117,24,121,24,129,24,149,24
+		EQUB	0,20,0,20,0,20,0,0
+
+.j2melody	EQUB	197,30,213,6,217,6,225,6,233,12,225,12,213,16,197,6
+		EQUB	217,6,213,6,197,12,205,12,197,14,197,24,0,0
+
+; * * * * * * * * * * * * * * * * * * * *
+;*	= The Trill Jingle		*
+
+.jingle3	EQUB	6,1,0,0,0,0,0,0,60,-1,0,-1,60,45	; envelope 1
+		EQUB	7,1,0,0,0,0,0,0,50,-3,-2,-3,60,57	; envelope 2
+		EQUB	8,1,0,0,0,0,0,0,80,-1,0,-1,80,60	; envelope 3
+
+		EQUW	j3bass,j3arpeg,j3melody
+
+.j3bass		EQUB	177,6,201,6,213,6,225,6,213,6,201,6,177,12,0,0
+
+.j3arpeg	EQUB	0,36,141,2,149,2,141,2,149,2,141,2,149,2,141,2,149,2
+		EQUB	141,2,149,2,141,2,149,2,141,6,0,20,0,20,0,20,0,0
+
+.j3melody	EQUB	77,6,101,6,113,6,125,6,113,6,101,6,77,12,0,0
+
+;****************************************
+;****************************************
+
+.jnote0		EQUB	0,&01,6,0,3,0,&FF,0
+.jnote1		EQUB	1,&01,0,0,&FF,0,&FF,0
+.jnote2		EQUB	2,0,7,0,&FF,0,&FF,0
+.jnote3		EQUB	3,0,8,0,&FF,0,&FF,0
+
+;****************************************
+;****************************************
+
+	EQUS	"Last night I dreamt that Ra was holding up a mirror", &0D
+	EQUS	"To my heart but all was darkness so I prayed to all the Gods that I might see", &0D
+	EQUS	&0D
+	EQUS	"And as they showed me my mortality the Hidden-one", &0D
+	EQUS	"Revealed himself in voice alone and spoke in condescending tones to me", &0D
+	EQUS	&0D
+	EQUB	34
+	EQUS	"You are the Pharaoh you will journey through the after life", &0D
+	EQUS	"And HE-WHO-LOOKS-BEHIND will ask the questions you must answer to be free", &0D
+	EQUB	34,13
+	EQUS	&0D
+	EQUS	"Osiris weigh my soul and let me pass beyond so I may", &0D
+	EQUS	"Row the boat of Ra and be as one with all the Gods that set me free", &0D
+
+;****************************************
+;****************************************
+
+.setup_jingle	STX	workspace
+		STY	workspace+1
+
+		LDA	#8
+		JSR	osword
+
+		LDA	workspace
+		CLC
+		ADC	#14
+		STA	workspace
+		TAX
+		LDA	workspace+1
+		ADC	#0
+		STA	workspace+1
+		TAY
+		LDA	#8
+		JSR	osword	
+
+		LDA	workspace
+		CLC
+		ADC	#14
+		STA	workspace
+		TAX
+		LDA	workspace+1
+		ADC	#0
+		STA	workspace+1
+		TAY
+		LDA	#8
+		JSR	osword	
+
+		LDA	workspace
+		CLC
+		ADC	#14
+		STA	workspace
+		LDA	workspace+1
+		ADC	#0
+		STA	workspace+1
+
+		LDA	(workspace)
+		STA	bass_pointer
+		LDY	#1
+		LDA	(workspace),Y
+		STA	bass_pointer+1
+
+		INY
+		LDA	(workspace),Y
+		STA	arpeg_pointer
+		INY
+		LDA	(workspace),Y
+		STA	arpeg_pointer+1
+
+		INY
+		LDA	(workspace),Y
+		STA	main_pointer
+		INY
+		LDA	(workspace),Y
+		STA	main_pointer+1
+
+		LDA	menu_st
+		AND	#128
+		BNE	jingle_ok
+
+;*		JSR	envelope_off
+
+	JSR	music_onoff
+
+.jingle_ok	LDA	#15
+		LDX	#0
+		JSR	osbyte
+
+		LDA	#8
+		STA	jnote1+6
+
+		STZ	jnote1
+
+		LDA	#7
+		LDX	#LO(jnote1)
+		LDY	#HI(jnote1)
+		JSR	osword
+
+		LDA	#2
+		STA	jnote1
+
+		LDA	#7
+		LDX	#LO(jnote1)
+		LDY	#HI(jnote1)
+		JSR	osword
+
+		LDA	#3
+		STA	jnote1
+
+		LDA	#7
+		LDX	#LO(jnote1)
+		LDY	#HI(jnote1)
+		JSR	osword
+
+		LDA	#1
+		STA	jnote1
+
+		LDA	#7
+		LDX	#LO(jnote1)
+		LDY	#HI(jnote1)
+		JMP	osword
+
+;****************************************
+;****************************************
+
+.update_jingle	LDA	#128
+		LDY	#0
+		; LDX	#-6
+		LOAD_TWOS_COMPLEMENT 'X', -6
+		JSR	osbyte
+
+		CPX	#2
+		BLT	skip_jbass
+
+		LDY	#1
+		LDA	(bass_pointer),Y
+		BEQ	skip_jbass
+
+		JSR	do_jbass
+		BRA	update_jingle
+
+.skip_jbass	LDA	#128
+		LDY	#0
+		; LDX	#-7
+		LOAD_TWOS_COMPLEMENT 'X', -7
+		JSR	osbyte
+
+		CPX	#2
+		BLT	skip_jarpeg
+
+		LDY	#1
+		LDA	(arpeg_pointer),Y
+		BEQ	skip_jarpeg
+
+		JSR	do_jarpeg
+		BRA	skip_jbass
+
+.skip_jarpeg	LDA	#128
+		LDY	#0
+		; LDX	#-8
+		LOAD_TWOS_COMPLEMENT 'X', -8
+		JSR	osbyte
+
+		CPX	#2
+		BLT	skip_jmain
+
+		LDY	#1
+		LDA	(main_pointer),Y
+		BEQ	skip_jmain
+
+		JSR	do_jmain
+		BRA	skip_jarpeg
+
+.skip_jmain	RTS
+
+;****************************************
+;****************************************
+		
+.do_jbass	LDA	(bass_pointer)
+		STA	jnote1+4
+
+		LDA	(bass_pointer),Y
+		STA	jnote1+6
+		STA	jnote0+6
+
+		LDA	bass_pointer
+		CLC
+		ADC	#2
+		STA	bass_pointer
+		LDA	bass_pointer+1
+		ADC	#0
+		STA	bass_pointer+1
+
+		LDA	#7
+		LDX	#LO(jnote0)
+		LDY	#HI(jnote0)
+		JSR	osword
+
+		LDA	#7
+		LDX	#LO(jnote1)
+		LDY	#HI(jnote1)
+		JMP	osword
+
+;****************************************
+;****************************************
+		
+.do_jarpeg	LDA	(arpeg_pointer)
+		STA	jnote2+4
+		BNE	not_jarest
+
+		LDA	#0
+		STA	jnote2+2
+
+.not_jarest	LDA	(arpeg_pointer),Y
+		STA	jnote2+6
+
+		LDA	#7
+		LDX	#LO(jnote2)
+		LDY	#HI(jnote2)
+		JSR	osword
+
+		LDA	(arpeg_pointer)
+		BNE	not_jarest2
+
+		LDA	#7
+		STA	jnote2+2
+
+.not_jarest2	LDA	arpeg_pointer
+		CLC
+		ADC	#2
+		STA	arpeg_pointer
+		LDA	arpeg_pointer+1
+		ADC	#0
+		STA	arpeg_pointer+1
+
+		RTS
+
+;****************************************
+;****************************************
+		
+.do_jmain	LDA	(main_pointer)
+		STA	jnote3+4
+
+		LDA	(main_pointer),Y
+		STA	jnote3+6
+
+		LDA	main_pointer
+		CLC
+		ADC	#2
+		STA	main_pointer
+		LDA	main_pointer+1
+		ADC	#0
+		STA	main_pointer+1
+
+		LDA	#7
+		LDX	#LO(jnote3)
+		LDY	#HI(jnote3)
+		JMP	osword
+
+;****************************************
+;****************************************
+
+.check_eojingle	LDA	#128
+		LDY	#0
+		; LDX	#-6
+		LOAD_TWOS_COMPLEMENT 'X', -6
+		JSR	osbyte
+
+		CPX	#15
+		BEQ	checkc2
+
+		RTS
+
+
+.checkc2	LDA	#128
+		LDY	#0
+		; LDX	#-7
+		LOAD_TWOS_COMPLEMENT 'X', -7
+		JSR	osbyte
+
+		CPX	#15
+		BEQ	checkc3
+
+		RTS
+
+.checkc3	LDA	#128
+		LDY	#0
+		; LDX	#-8
+		LOAD_TWOS_COMPLEMENT 'X', -8
+		JSR	osbyte
+
+		CPX	#15
+		RTS
+
+;****************************************
+;****************************************
+
+;		CHN	mc007

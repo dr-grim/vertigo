@@ -1,1 +1,113 @@
-		TTL	mc012		; Congratulations routine*********************************************************************************congrats	BANK	5**		LDA	#250*		JSR	key_delay**		LDA	#250*		JSR	key_delay**		LDA	#100*		JSR	key_delay**		LDA	controller*		AND	#3*		BEQ	cheat_off**		JMP	exit_creds**cheat_off	JSR	venetian**		JSR	code**		JSR	display_finscr**		LDA	#5*		STA	drmem**cd_loop3	LDA	#200*		JSR	key_delay**		JSR	ting**		JSR	code**		DEC	drmem*		BNE	cd_loop3***		LDA	#10*		STA	drmem**cd_loop2	LDA	#15*		STA	drmem+1**cd_loop	LDA	#100*		JSR	key_delay**		DEC	drmem+1*		BNE	cd_loop***		DEC	drmem*		BNE	cd_loop2**exit_creds	BANK	4*		RTS*********************************************************************************read_js	LDX	#1		LDA	#128		JSR	osbyte		TYA		LSR	A		LSR	A		LSR	A		LSR	A		LSR	A		LSR	A		STA	js		LDX	#2		LDA	#128		JSR	osbyte		TYA		LSR	A		LSR	A		LSR	A		LSR	A		AND	#12		ORA	js		TAY		LDA	js_lookup,Y		STA	js		RTS****************************************js		DS	1js_lookup	DFB	2,10,10,8		DFB	6,0,0,9		DFB	6,0,0,9		DFB	4,5,5,1********************************************************************************		CHN	mc999
+;		TTL	mc012		; Congratulations routine
+
+;****************************************
+;****************************************
+
+;*congrats	BANK	5
+;*
+;*		LDA	#250
+;*		JSR	key_delay
+;*
+;*		LDA	#250
+;*		JSR	key_delay
+;*
+;*		LDA	#100
+;*		JSR	key_delay
+;*
+;*		LDA	controller
+;*		AND	#3
+;*		BEQ	cheat_off
+;*
+;*		JMP	exit_creds
+;*
+;*cheat_off	JSR	venetian
+;*
+;*		JSR	code
+;*
+;*		JSR	display_finscr
+;*
+;*		LDA	#5
+;*		STA	drmem
+;*
+;*cd_loop3	LDA	#200
+;*		JSR	key_delay
+;*
+;*		JSR	ting
+;*
+;*		JSR	code
+;*
+;*		DEC	drmem
+;*		BNE	cd_loop3
+;*
+;*
+;*		LDA	#10
+;*		STA	drmem
+;*
+;*cd_loop2	LDA	#15
+;*		STA	drmem+1
+;*
+;*cd_loop	LDA	#100
+;*		JSR	key_delay
+;*
+;*		DEC	drmem+1
+;*		BNE	cd_loop
+;*
+;*
+;*		DEC	drmem
+;*		BNE	cd_loop2
+;*
+;*exit_creds	BANK	4
+;*		RTS
+;*
+;****************************************
+;****************************************
+
+.read_js	LDX	#1
+		LDA	#128
+		JSR	osbyte
+
+		TYA
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+
+		STA	js
+
+		LDX	#2
+		LDA	#128
+		JSR	osbyte
+
+		TYA
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+
+		AND	#12
+
+		ORA	js
+
+		TAY
+
+		LDA	js_lookup,Y
+		STA	js
+
+		RTS
+
+
+;****************************************
+
+.js		SKIP	1
+
+.js_lookup	EQUB	2,10,10,8
+		EQUB	6,0,0,9
+		EQUB	6,0,0,9
+		EQUB	4,5,5,1
+
+;****************************************
+;****************************************
+
+;		CHN	mc999

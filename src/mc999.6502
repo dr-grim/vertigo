@@ -1,1 +1,36 @@
-		TTL	mc999		; end of level animation bits**********************************************************************************test_animbits	LDA	screen_number*		PHA*		LDA	level_number*		PHA**		JSR	venetian**		JSR	eolevel1**		JSR	eolevel2**		JSR	eolevel3**		JSR	eolevel4**		JSR	eolevel5**		JSR	eolevel5ch**		PLA*		STA	level_number*		PLA*		STA	screen_number**		LDA	#255*		RTS*********************************************************************************		CHN	mctemp
+;		TTL	mc999		; end of level animation bits
+
+;****************************************
+;****************************************
+;*
+;*test_animbits	LDA	screen_number
+;*		PHA
+;*		LDA	level_number
+;*		PHA
+;*
+;*		JSR	venetian
+;*
+;*		JSR	eolevel1
+;*
+;*		JSR	eolevel2
+;*
+;*		JSR	eolevel3
+;*
+;*		JSR	eolevel4
+;*
+;*		JSR	eolevel5
+;*
+;*		JSR	eolevel5ch
+;*
+;*		PLA
+;*		STA	level_number
+;*		PLA
+;*		STA	screen_number
+;*
+;*		LDA	#255
+;*		RTS
+;*
+;****************************************
+;****************************************
+
+;		CHN	mctemp

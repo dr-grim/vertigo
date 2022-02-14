@@ -1,1 +1,582 @@
-		TTL	mc009a		; Handles all menu related code****************************************mc_off		=	menu_data+&11D0mc_on		=	mc_off+&1A0jstk		=	mc_on+&1A0kbrd		=	jstk+&1A0mse		=	kbrd+&1A0sd_on		=	mse+&1A0sd_off		=	sd_on+&1A0****************************************menu_X		=	25menu_Y		=	40********************************************************************************l_X_lim	=	menu_X+2r_X_lim	=	l_X_lim+24t_Y_lim	=	menu_Y+48b_Y_lim	=	t_Y_lim+94********************************************************************************draw_menu	LDA	ra_height+1		STA	m_rah+1		LDA	ms_height+1		STA	m_msh+1		LDA	sa_height+1		STA	m_sah+1		LDA	ra_width+1		STA	m_raw+1		LDA	ms_width+1		STA	m_msw+1		LDA	sa_width+1		STA	m_saw+1		LDA	restore+1		STA	m_r1+1		LDA	restore+2		STA	m_r2+1		LDA	save+1		STA	m_s1+1		LDA	save+2		STA	m_s2+1		LDA	ms_mask+1		STA	m_ma1+1		LDA	ms_mask+2		STA	m_ma2+1		LDA	ms_sprite+1		STA	m_sp1+1		LDA	ms_sprite+2		STA	m_sp2+1		LDA	sprite+1		STA	spr1+1		LDA	sprite+2		STA	spr2+1		LDA	#152		STA	ra_height+1		STA	sa_height+1		LDA	#30		STA	ra_width+1		STA	sa_width+1		LDA	#>menu_data		STA	restore+1		LDA	#<menu_data		STA	restore+2		LDA	#>&8000		STA	save+1		LDA	#<&8000		STA	save+2		BANK	7		LDX	#menu_X		LDY	#menu_Y		JSR	save_area		BANK	4		LDA	#>ptr_sve		STA	save+1		LDA	#<ptr_sve		STA	save+2		LDX	#menu_X		LDY	#menu_Y		JSR	restore_area		LDA	#l_X_lim+13		STA	arrows_X			; arrow's X co-ordinate		LDA	#t_Y_lim+8		STA	arrows_Y		STZ	arrows_framemenu_loop	LDA	#16		STA	ra_height+1		LDA	#26		STA	ra_width+1		LDA	menu_st		AND	#128		BEQ	m_is_off		LDA	#>mc_on		STA	restore+1		LDA	#<mc_on		STA	restore+2		BRA	skip_mm_is_off	LDA	#>mc_off		STA	restore+1		LDA	#<mc_off		STA	restore+2skip_m		LDX	#menu_X+2		LDY	#menu_Y+48		JSR	restore_area		LDA	menu_st		AND	#64		BEQ	sd_is_off		LDA	#>sd_on		STA	restore+1		LDA	#<sd_on		STA	restore+2		BRA	skip_sdsd_is_off	LDA	#>sd_off		STA	restore+1		LDA	#<sd_off		STA	restore+2skip_sd	LDX	#menu_X+2		LDY	#menu_Y+64		JSR	restore_area		LDA	menu_st		AND	#3		BNE	not_kbrd		LDA	#>kbrd		STA	restore+1		LDA	#<kbrd		STA	restore+2		BRA	skip_ctrlnot_kbrd	CMP	#1		BNE	not_jstk		LDA	#>jstk		STA	restore+1		LDA	#<jstk		STA	restore+2		BRA	skip_ctrlnot_jstk	LDA	#>mse		STA	restore+1		LDA	#<mse		STA	restore+2skip_ctrl	LDX	#menu_X+2		LDY	#menu_Y+96		JSR	restore_area		LDA	#11		STA	ra_height+1		STA	ms_height+1		STA	sa_height+1		LDA	#4		STA	ra_width+1		STA	ms_width+1		STA	sa_width+1		LDA	#>ptr_sve		STA	restore+1		LDA	#<ptr_sve		STA	restore+2		JSR	music_onoff		JSR	choose_option		LDA	menu_st		AND	#3		CMP	#2		BEQ	passwd_notsel		LDA	last_selected		BNE	music_nsel		LDA	menu_st		EOR	#128		STA	menu_st	AND	#128	BEQ	cutmusic	LDA	#3	BNE	domuscutmusic	LDA	#0domus	STA	music_volume		JMP	menu_loopmusic_nsel	CMP	#1		BNE	sound_nsel		LDA	menu_st		EOR	#64		STA	menu_st	AND	#64	BEQ	cutsound	LDA	#3	BNE	dosoucutsound	LDA	#0dosou	STA	sound_volume		JMP	menu_loopsound_nsel	CMP	#2		BNE	credits_nsel		JSR	credits		JMP	menu_loopcredits_nsel	CMP	#3		BNE	control_nsel		LDA	menu_st		EOR	#1		STA	menu_st		JMP	menu_loopcontrol_nsel	CMP	#4		BNE	passwd_notsel*		LDA	controller*		AND	#128*		BNE	passwd_notsel		JSR	password		CMP	#0		BEQ	m_not_ds		JSR	restore_bits		LDA	#255 		RTS*		JMP	dsm_not_ds	JMP	menu_looppasswd_notsel	JMP	restore_bits****************************************restore_bits	LDA	#>&8000		STA	restore+1		LDA	#<&8000		STA	restore+2		BANK	7		LDA	#152		STA	ra_height+1		LDA	#30		STA	ra_width+1		LDX	#menu_X		LDY	#menu_Y		JSR	restore_aream_rah		LDA	#&FF		; EXIT using <GAME> option		STA	ra_height+1m_msh		LDA	#&FF		STA	ms_height+1m_sah		LDA	#&FF		STA	sa_height+1m_raw		LDA	#&FF		STA	ra_width+1m_msw		LDA	#&FF		STA	ms_width+1m_saw		LDA	#&FF		STA	sa_width+1m_r1		LDA	#&FF		STA	restore+1m_r2		LDA	#&FF		STA	restore+2m_ma1		LDA	#&FF		STA	ms_mask+1m_ma2		LDA	#&FF		STA	ms_mask+2m_sp1		LDA	#&FF		STA	ms_sprite+1m_sp2		LDA	#&FF		STA	ms_sprite+2spr1		LDA	#&FF		STA	sprite+1spr2		LDA	#&FF		STA	sprite+2m_s1		LDA	#&FF		STA	save+1m_s2		LDA	#&FF		STA	save+2		BANK	5		LDA	#0		RTS********************************************************************************choose_option	LDA	#255		STA	last_selectedco_loop1	INKEY	-74		BNE	co_loop1		JSR	showpointeron_same_option	JSR	movepointer		JSR	code		INKEY	-74		BNE	selected	; If <RETURN> is pressed, option					; is selected		LDA	arrows_Y		SEC		SBC	#t_Y_lim		LSR	A		LSR	A		LSR	A		LSR	A		CMP	last_selected		BEQ	on_same_option		PHA		JSR	hidepointer		PLA		PHA		JSR	invert_option	; inverts option no. in A ( A = no.*2 )		LDA	last_selected		CMP	#255		BEQ	none_before		JSR	invert_option	; inverts option no. in A ( A = no.*2 )none_before	PLA		STA	last_selected		JSR	showpointer		JMP	on_same_optionselected	JSR	hidepointer		LDA	arrows_Y		SEC		SBC	#t_Y_lim		LSR	A		LSR	A		LSR	A		LSR	A		STA	last_selected		JSR	invert_option		RTS********************************************************************************showpointer	LDX	arrows_X		LDY	arrows_Y		JSR	save_area		LDA	#0		CLC		LDX	arrows_frame		BEQ	skip_addsh_loop	ADC	#44		DEX		BNE	sh_loopskip_add	PHA		ADC	#>ptr_msk		STA	ms_mask+1		LDA	#<ptr_msk		ADC	#0		STA	ms_mask+2		PLA		ADC	#>ptr_spr		STA	ms_sprite+1		LDA	#<ptr_spr		ADC	#0		STA	ms_sprite+2		LDX	arrows_X		LDY	arrows_Y		JMP	mask_sprite********************************************************************************movepointer	INKEY	-26		BEQ	not_left		JMP	leftnot_left	INKEY	-122		BEQ	not_right		JMP	rightnot_right	INKEY	-58		BEQ	not_up		JMP	upnot_up		INKEY	-42		BEQ	jump		JMP	downjump		RTS********************************************************************************hidepointer	LDA	#19		JSR	osbyte		LDX	arrows_X		LDY	arrows_Y		JSR	restore_area		RTS********************************************************************************left		LDA	arrows_frame		BNE	not_l0		LDA	arrows_X				CMP	#l_X_lim		BNE	not_l_limit		RTSnot_l_limit	JSR	hidepointer		LDA	#3		STA	arrows_frame		DEC	arrows_X		BRA	l_jumpnot_l0		DEC	arrows_frame		JSR	hidepointerl_jump		JMP	showpointer********************************************************************************right		LDA	arrows_frame		CMP	#3		BNE	not_r0		LDA	arrows_X		CMP	#r_X_lim		BNE	not_r_lim		RTSnot_r_lim	JSR	hidepointer		STZ	arrows_frame		INC	arrows_X		BRA	r_jumpnot_r0		INC	arrows_frame		JSR	hidepointerr_jump		JMP	showpointer********************************************************************************up		LDA	arrows_Y		CMP	#t_Y_lim		BNE	not_u_limit		RTSnot_u_limit	JSR	hidepointer		DEC	arrows_Y		JSR	showpointer		RTS********************************************************************************down		LDA	arrows_Y		CMP	#b_Y_lim		BNE	not_b_limit		RTSnot_b_limit	JSR	hidepointer		INC	arrows_Y		JSR	showpointer		RTS********************************************************************************invert_option	ASL	A		ASL	A		ASL	A		ASL	A		ADC	#t_Y_lim		TAY		LDX	#l_X_lim		LDA	#16		STA	es_height+1		LDA	#26		STA	es_width+1		LDA	#>option_data		STA	sprite+1		LDA	#<option_data		STA	sprite+2		JSR	eor_sprite		RTS********************************************************************************		CHN	mc009b
+;		TTL	mc009a		; Handles all menu related code
+
+;****************************************
+
+mc_off		=	menu_data+&11D0
+mc_on		=	mc_off+&1A0
+jstk		=	mc_on+&1A0
+kbrd		=	jstk+&1A0
+mse			=	kbrd+&1A0
+sd_on		=	mse+&1A0
+sd_off		=	sd_on+&1A0
+
+;****************************************
+
+menu_X		=	25
+menu_Y		=	40
+
+;****************************************
+;****************************************
+
+l_X_lim	=	menu_X+2
+r_X_lim	=	l_X_lim+24
+t_Y_lim	=	menu_Y+48
+b_Y_lim	=	t_Y_lim+94
+
+;****************************************
+;****************************************
+
+.draw_menu	LDA	ra_height+1
+		STA	m_rah+1
+		LDA	ms_height+1
+		STA	m_msh+1
+		LDA	sa_height+1
+		STA	m_sah+1
+
+		LDA	ra_width+1
+		STA	m_raw+1
+		LDA	ms_width+1
+		STA	m_msw+1
+		LDA	sa_width+1
+		STA	m_saw+1
+
+		LDA	restore+1
+		STA	m_r1+1
+		LDA	restore+2
+		STA	m_r2+1
+
+		LDA	save+1
+		STA	m_s1+1
+		LDA	save+2
+		STA	m_s2+1
+
+		LDA	ms_mask+1
+		STA	m_ma1+1
+		LDA	ms_mask+2
+		STA	m_ma2+1
+
+		LDA	ms_sprite+1
+		STA	m_sp1+1
+		LDA	ms_sprite+2
+		STA	m_sp2+1
+
+		LDA	sprite+1
+		STA	spr1+1
+		LDA	sprite+2
+		STA	spr2+1
+
+
+		LDA	#152
+		STA	ra_height+1
+		STA	sa_height+1
+		LDA	#30
+		STA	ra_width+1
+		STA	sa_width+1
+
+		LDA	#>menu_data
+		STA	restore+1
+		LDA	#<menu_data
+		STA	restore+2
+
+		LDA	#LO(&8000)
+		STA	save+1
+		LDA	#HI(&8000)
+		STA	save+2
+
+		BANK	7
+
+		LDX	#menu_X
+		LDY	#menu_Y
+		JSR	save_area
+
+		BANK	4
+
+		LDA	#>ptr_sve
+		STA	save+1
+		LDA	#<ptr_sve
+		STA	save+2
+
+		LDX	#menu_X
+		LDY	#menu_Y
+		JSR	restore_area
+
+		LDA	#l_X_lim+13
+		STA	arrows_X			; arrow's X co-ordinate
+
+		LDA	#t_Y_lim+8
+		STA	arrows_Y
+
+		STZ	arrows_frame
+
+.menu_loop	LDA	#16
+		STA	ra_height+1
+		LDA	#26
+		STA	ra_width+1
+
+		LDA	menu_st
+		AND	#128
+		BEQ	m_is_off
+
+		LDA	#>mc_on
+		STA	restore+1
+		LDA	#<mc_on
+		STA	restore+2
+
+		BRA	skip_m
+
+.m_is_off	LDA	#>mc_off
+		STA	restore+1
+		LDA	#<mc_off
+		STA	restore+2
+
+.skip_m		LDX	#menu_X+2
+		LDY	#menu_Y+48
+		JSR	restore_area
+
+		LDA	menu_st
+		AND	#64
+		BEQ	sd_is_off
+
+		LDA	#>sd_on
+		STA	restore+1
+		LDA	#<sd_on
+		STA	restore+2
+
+		BRA	skip_sd
+
+.sd_is_off	LDA	#>sd_off
+		STA	restore+1
+		LDA	#<sd_off
+		STA	restore+2
+
+.skip_sd	LDX	#menu_X+2
+		LDY	#menu_Y+64
+		JSR	restore_area
+
+		LDA	menu_st
+		AND	#3
+		BNE	not_kbrd
+
+		LDA	#LO(kbrd)
+		STA	restore+1
+		LDA	#HI(kbrd)
+		STA	restore+2
+
+		BRA	skip_ctrl
+
+.not_kbrd	CMP	#1
+		BNE	not_jstk
+
+		LDA	#LO(jstk)
+		STA	restore+1
+		LDA	#HI(jstk)
+		STA	restore+2
+
+		BRA	skip_ctrl
+
+.not_jstk	LDA	#LO(mse)
+		STA	restore+1
+		LDA	#HI(mse)
+		STA	restore+2
+
+.skip_ctrl	LDX	#menu_X+2
+		LDY	#menu_Y+96
+		JSR	restore_area
+
+		LDA	#11
+		STA	ra_height+1
+		STA	ms_height+1
+		STA	sa_height+1
+
+		LDA	#4
+		STA	ra_width+1
+		STA	ms_width+1
+		STA	sa_width+1
+
+		LDA	#>ptr_sve
+		STA	restore+1
+		LDA	#<ptr_sve
+		STA	restore+2
+
+		JSR	music_onoff
+
+		JSR	choose_option
+
+		LDA	menu_st
+		AND	#3
+		CMP	#2
+		BEQ	passwd_notsel
+
+		LDA	last_selected
+		BNE	music_nsel
+
+		LDA	menu_st
+		EOR	#128
+		STA	menu_st
+
+	AND	#128
+	BEQ	cutmusic
+
+	LDA	#3
+	BNE	domus
+
+.cutmusic
+	LDA	#0
+
+.domus	STA	music_volume
+
+		JMP	menu_loop
+
+.music_nsel	CMP	#1
+		BNE	sound_nsel
+
+		LDA	menu_st
+		EOR	#64
+		STA	menu_st
+
+	AND	#64
+	BEQ	cutsound
+
+	LDA	#3
+	BNE	dosou
+
+.cutsound
+	LDA	#0
+
+.dosou	STA	sound_volume
+
+		JMP	menu_loop
+
+.sound_nsel	CMP	#2
+		BNE	credits_nsel
+
+		JSR	credits
+
+		JMP	menu_loop
+
+.credits_nsel	CMP	#3
+		BNE	control_nsel
+
+		LDA	menu_st
+		EOR	#1
+		STA	menu_st
+
+		JMP	menu_loop
+
+.control_nsel	CMP	#4
+		BNE	passwd_notsel
+
+;*		LDA	controller
+;*		AND	#128
+;*		BNE	passwd_notsel
+
+		JSR	password
+		CMP	#0
+		BEQ	m_not_ds
+
+		JSR	restore_bits
+
+		LDA	#255
+ 		RTS
+;*		JMP	ds
+
+.m_not_ds	JMP	menu_loop
+
+.passwd_notsel	JMP	restore_bits
+
+;****************************************
+
+.restore_bits	LDA	#LO(&8000)
+		STA	restore+1
+		LDA	#HI(&8000)
+		STA	restore+2
+
+		BANK	7
+
+		LDA	#152
+		STA	ra_height+1
+		LDA	#30
+		STA	ra_width+1
+
+		LDX	#menu_X
+		LDY	#menu_Y
+		JSR	restore_area
+
+.m_rah		LDA	#&FF		; EXIT using <GAME> option
+		STA	ra_height+1
+.m_msh		LDA	#&FF
+		STA	ms_height+1
+.m_sah		LDA	#&FF
+		STA	sa_height+1
+
+.m_raw		LDA	#&FF
+		STA	ra_width+1
+.m_msw		LDA	#&FF
+		STA	ms_width+1
+.m_saw		LDA	#&FF
+		STA	sa_width+1
+
+.m_r1		LDA	#&FF
+		STA	restore+1
+.m_r2		LDA	#&FF
+		STA	restore+2
+
+.m_ma1		LDA	#&FF
+		STA	ms_mask+1
+.m_ma2		LDA	#&FF
+		STA	ms_mask+2
+
+.m_sp1		LDA	#&FF
+		STA	ms_sprite+1
+.m_sp2		LDA	#&FF
+		STA	ms_sprite+2
+
+.spr1		LDA	#&FF
+		STA	sprite+1
+.spr2		LDA	#&FF
+		STA	sprite+2
+
+.m_s1		LDA	#&FF
+		STA	save+1
+.m_s2		LDA	#&FF
+		STA	save+2
+
+		BANK	5
+
+		LDA	#0
+		RTS
+
+;****************************************
+;****************************************
+
+.choose_option	LDA	#255
+		STA	last_selected
+
+.co_loop1	INKEY	-74
+		BNE	co_loop1
+
+		JSR	showpointer
+
+.on_same_option	JSR	movepointer
+
+		JSR	code
+
+		INKEY	-74
+		BNE	selected	; If <RETURN> is pressed, option
+					; is selected
+
+		LDA	arrows_Y
+		SEC
+		SBC	#t_Y_lim
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+
+		CMP	last_selected
+		BEQ	on_same_option
+
+		PHA
+		JSR	hidepointer
+		PLA
+		PHA
+		JSR	invert_option	; inverts option no. in A ( A = no.*2 )
+
+		LDA	last_selected
+		CMP	#255
+		BEQ	none_before
+		JSR	invert_option	; inverts option no. in A ( A = no.*2 )
+
+.none_before	PLA
+		STA	last_selected
+
+		JSR	showpointer
+		JMP	on_same_option
+
+.selected	JSR	hidepointer
+
+		LDA	arrows_Y
+		SEC
+		SBC	#t_Y_lim
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+
+		STA	last_selected
+
+		JSR	invert_option
+
+		RTS
+
+;****************************************
+;****************************************
+
+.showpointer	LDX	arrows_X
+		LDY	arrows_Y
+		JSR	save_area
+
+		LDA	#0
+		CLC
+		LDX	arrows_frame
+		BEQ	skip_add
+
+.sh_loop	ADC	#44
+		DEX
+		BNE	sh_loop
+
+.skip_add	PHA
+		ADC	#>ptr_msk
+		STA	ms_mask+1
+		LDA	#<ptr_msk
+		ADC	#0
+		STA	ms_mask+2
+
+		PLA
+		ADC	#>ptr_spr
+		STA	ms_sprite+1
+		LDA	#<ptr_spr
+		ADC	#0
+		STA	ms_sprite+2
+
+		LDX	arrows_X
+		LDY	arrows_Y
+		JMP	mask_sprite
+
+;****************************************
+;****************************************
+
+.movepointer	INKEY	-26
+		BEQ	not_left
+		JMP	left
+
+.not_left	INKEY	-122
+		BEQ	not_right
+		JMP	right
+
+.not_right	INKEY	-58
+		BEQ	not_up
+		JMP	up
+
+.not_up		INKEY	-42
+		BEQ	jump
+		JMP	down
+
+.jump		RTS
+
+;****************************************
+;****************************************
+
+.hidepointer	LDA	#19
+		JSR	osbyte
+
+		LDX	arrows_X
+		LDY	arrows_Y
+		JSR	restore_area
+
+		RTS
+
+;****************************************
+;****************************************
+
+.left		LDA	arrows_frame
+		BNE	not_l0
+
+		LDA	arrows_X		
+		CMP	#l_X_lim
+		BNE	not_l_limit
+
+		RTS
+
+.not_l_limit	JSR	hidepointer
+		LDA	#3
+		STA	arrows_frame
+		DEC	arrows_X
+		BRA	l_jump
+
+.not_l0		DEC	arrows_frame
+		JSR	hidepointer
+
+.l_jump		JMP	showpointer
+
+;****************************************
+;****************************************
+
+.right		LDA	arrows_frame
+		CMP	#3
+		BNE	not_r0
+
+		LDA	arrows_X
+		CMP	#r_X_lim
+		BNE	not_r_lim
+
+		RTS
+
+.not_r_lim	JSR	hidepointer
+		STZ	arrows_frame
+		INC	arrows_X
+		BRA	r_jump
+
+.not_r0		INC	arrows_frame
+		JSR	hidepointer
+
+.r_jump		JMP	showpointer
+
+;****************************************
+;****************************************
+
+.up		LDA	arrows_Y
+		CMP	#t_Y_lim
+		BNE	not_u_limit
+
+		RTS
+
+.not_u_limit	JSR	hidepointer
+		DEC	arrows_Y
+		JSR	showpointer
+		RTS
+
+;****************************************
+;****************************************
+
+.down		LDA	arrows_Y
+		CMP	#b_Y_lim
+		BNE	not_b_limit
+
+		RTS
+
+.not_b_limit	JSR	hidepointer
+		INC	arrows_Y
+		JSR	showpointer
+		RTS
+
+;****************************************
+;****************************************
+
+.invert_option	ASL	A
+		ASL	A
+		ASL	A
+		ASL	A
+		ADC	#t_Y_lim
+		TAY
+		LDX	#l_X_lim
+
+		LDA	#16
+		STA	es_height+1
+
+		LDA	#26
+		STA	es_width+1
+
+		LDA	#>option_data
+		STA	sprite+1
+		LDA	#<option_data
+		STA	sprite+2
+
+		JSR	eor_sprite
+
+		RTS
+
+;****************************************
+;****************************************
+
+;		CHN	mc009b

@@ -1,1 +1,335 @@
-		TTL	e.mctemp2********************************************************************************jingonoff	DFB	0********************************************************************************print_text	STX	workspace		STY	workspace+1		LDY	#0pt1		LDA	(workspace),Y		BEQ	pt2		JSR	oswrch		INY		BRA	pt1pt2		RTS********************************************************************************show_mes	STA	jingonoff		PHX		PHY		BANK	4		LDA	#4		STA	workspace		LDA	#14		STA	workspace+1		LDX	#30		LDY	#4		JSR	box		PLY		PLX		JSR	print_text		STZ	lb_frame		LDA	#100		STA	dea_frcounteolX1		LDA	#19		JSR	osbyte		JSR	osbyte		JSR	osbyte		LDA	lb_frame		LDX	#12		LDY	#128		JSR	disp_lball		LDA	lb_frame		EOR	#15		LDX	#64		LDY	#128		JSR	disp_lball		JSR	inclb		LDA	jingonoff		BEQ	do_code		JSR	update_jingle		JSR	check_eojingle		BNE	eolX1		JSR	init_music		JMP	venetiando_code	JSR	code		DEC	dea_frcount		BNE	eolX1		JMP	venetian********************************************************************************eolevel1	LDX	#>levmes1		LDY	#<levmes1		LDA	#0		JMP	show_mes********************************************************************************eolevel2	LDX	#>levmes2		LDY	#<levmes2		LDA	#0		JSR	show_mes		LDX	#>levmes2b		LDY	#<levmes2b		LDA	#0		JSR	show_mes		LDX	#>levmes2c		LDY	#<levmes2c		LDA	#0		JMP	show_mes********************************************************************************eolevel3	LDX	#>jingle2		LDY	#<jingle2		JSR	setup_jingle		LDX	#>levmes3		LDY	#<levmes3		LDA	#255		JSR	show_mes		LDA	#6		STA	level_number		LDA	#3		STA	screen_number		JSR	screen		BANK	4		JSR	reset_cols		STZ	frame		STZ	lb_frame		LDA	#32 		; X co-ord		STA	xy		STZ	xy+1		STA	xy+2		; Y co-ord		STZ	xy+3		LDA	#20		; height		STA	xy+4		JSR	setup_ball		JSR	tel2		LDA	#1		STA	indicator * * * * * * * * * * * * * * * * * * * *f_lpX		JSR	anim_doframe		LDA	#19		JSR	osbyte		JSR	osbyte		INC	frame		LDA	frame		CMP	#frames		BLT	nfclX		STZ	framenfclX		LDA	xy		CLC		ADC	#8		STA	xy		STA	xy+2		LDA	xy+1		ADC	#0		STA	xy+1		STA	xy+3		LDA	xy+1		CMP	#2		BLT	f_lpX		LDA	xy		CMP	#&A0		BLT	f_lpX * * * * * * * * * * * * * * * * * * * *		JSR	bounce		JSR	venetian		LDX	#>levmes3b		LDY	#<levmes3b		LDA	#0		JMP	show_mes********************************************************************************eolevel4	LDX	#>jingle1		LDY	#<jingle1		JSR	setup_jingle		LDX	#>levmes4		LDY	#<levmes4		LDA	#255		JSR	show_mes		JSR	do_toasanim		LDX	#>levmes4b		LDY	#<levmes4b		LDA	#0		JMP	show_mes********************************************************************************eolevel5	LDA	screen_number 		PHA		LDA	level_number		PHA		LDX	#>jingle3		LDY	#<jingle3		JSR	setup_jingle		LDX	#>levmes5		LDY	#<levmes5		LDA	#255		JSR	show_mes		JSR	do_endanim		LDX	#>levmes5b		LDY	#<levmes5b		LDA	#0		JSR	show_mes		PLA		STA	level_number		PLA		STA	screen_number		RTS********************************************************************************eolevel5ch	LDX	#>levmes5c		LDY	#<levmes5c		LDA	#0		JMP	show_mes********************************************************************************levmes1	DFB	31,9,16		ASC	"You're doing great !!!"		DFB	31,11,17		ASC	"Now try level 2 !!!"		DFB	0 * * * * * * * * * * * * * * * * * * * *levmes2	DFB	31,12,16		ASC	"20 screens down,"		DFB	31,11,17		ASC	"30 left to go !!!"		DFB	0levmes2b	DFB	31,11,16		ASC	"So go for it !!!"		DFB	31,9,17		ASC	"If you're really good,"		DFB	0levmes2c	DFB	31,9,16		ASC	"maybe some animation !"		DFB	31,11,17		ASC	"( Next time !!! )"		DFB	0 * * * * * * * * * * * * * * * * * * * *levmes3	DFB	31,13,16		ASC	"One small jump"		DFB	31,14,17		ASC	"for ball ..."		DFB	0levmes3b	DFB	31,11,16		ASC	"... one giant leap"		DFB	31,11,17		ASC	"for bouncykind !!!"		DFB	0 * * * * * * * * * * * * * * * * * * * *levmes4	DFB	31,9,16		ASC	"And now for something"		DFB	31,13,17		ASC	"completely ..."		DFB	0levmes4b	DFB	31,12,16		ASC	"... Different."		DFB	31,14,17		ASC	"( Boing ! )"		DFB	0 * * * * * * * * * * * * * * * * * * * *levmes5	DFB	31,10,16		ASC	"Yahoo !!! It's bacon"		DFB	31,11,17		ASC	"sandwich time !!!"		DFB	0levmes5b	DFB	31,9,16		ASC	"( But maybe I'll wait"		DFB	31,11,17		ASC	"until breakfast )."		DFB	0   *   *   *   *   *   *   *   *   *   *levmes5c	DFB	31,10,16		ASC	"Well done ! Now try"		DFB	31,10,17		ASC	"it without cheating."		DFB	0********************************************************************************
+;		TTL	e.mctemp2
+
+;****************************************
+;****************************************
+
+.jingonoff	EQUB	0
+
+;****************************************
+;****************************************
+
+.print_text	STX	workspace
+		STY	workspace+1
+
+		LDY	#0
+.pt1		LDA	(workspace),Y
+		BEQ	pt2
+
+		JSR	oswrch
+		INY
+		BRA	pt1
+
+.pt2		RTS
+
+;****************************************
+;****************************************
+
+.show_mes	STA	jingonoff
+		PHX
+		PHY
+
+		BANK	4
+
+		LDA	#4
+		STA	workspace
+		LDA	#14
+		STA	workspace+1
+
+		LDX	#30
+		LDY	#4
+		JSR	box
+
+		PLY
+		PLX
+		JSR	print_text
+
+		STZ	lb_frame
+		LDA	#100
+		STA	dea_frcount
+
+.eolX1		LDA	#19
+		JSR	osbyte
+		JSR	osbyte
+		JSR	osbyte
+
+		LDA	lb_frame
+		LDX	#12
+		LDY	#128
+		JSR	disp_lball
+
+		LDA	lb_frame
+		EOR	#15
+		LDX	#64
+		LDY	#128
+		JSR	disp_lball
+
+		JSR	inclb
+
+		LDA	jingonoff
+		BEQ	do_code
+
+		JSR	update_jingle
+		JSR	check_eojingle
+		BNE	eolX1
+		JSR	init_music
+		JMP	venetian
+
+.do_code	JSR	code
+		DEC	dea_frcount
+		BNE	eolX1
+
+		JMP	venetian
+
+;****************************************
+;****************************************
+
+.eolevel1	LDX	#LO(levmes1)
+		LDY	#HI(levmes1)
+		LDA	#0
+		JMP	show_mes
+
+;****************************************
+;****************************************
+
+.eolevel2	LDX	#LO(levmes2)
+		LDY	#HI(levmes2)
+		LDA	#0
+		JSR	show_mes
+
+		LDX	#LO(levmes2b)
+		LDY	#HI(levmes2b)
+		LDA	#0
+		JSR	show_mes
+
+		LDX	#LO(levmes2c)
+		LDY	#HI(levmes2c)
+		LDA	#0
+		JMP	show_mes
+
+;****************************************
+;****************************************
+
+.eolevel3	LDX	#LO(jingle2)
+		LDY	#HI(jingle2)
+		JSR	setup_jingle
+
+		LDX	#LO(levmes3)
+		LDY	#HI(levmes3)
+		LDA	#255
+		JSR	show_mes
+
+		LDA	#6
+		STA	level_number
+		LDA	#3
+		STA	screen_number
+		JSR	screen
+
+		BANK	4
+
+		JSR	reset_cols
+
+		STZ	frame
+		STZ	lb_frame
+
+		LDA	#32 		; X co-ord
+		STA	xy
+		STZ	xy+1
+
+		STA	xy+2		; Y co-ord
+		STZ	xy+3
+
+		LDA	#20		; height
+		STA	xy+4
+
+		JSR	setup_ball
+
+		JSR	tel2
+
+		LDA	#1
+		STA	indicator
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.f_lpX		JSR	anim_doframe
+
+		LDA	#19
+		JSR	osbyte
+		JSR	osbyte
+
+		INC	frame
+
+		LDA	frame
+		CMP	#frames
+		BLT	nfclX
+
+		STZ	frame
+
+.nfclX		LDA	xy
+		CLC
+		ADC	#8
+		STA	xy
+		STA	xy+2
+		LDA	xy+1
+		ADC	#0
+		STA	xy+1
+		STA	xy+3
+
+		LDA	xy+1
+		CMP	#2
+		BLT	f_lpX
+
+		LDA	xy
+		CMP	#&A0
+		BLT	f_lpX
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		JSR	bounce
+
+		JSR	venetian
+
+		LDX	#LO(levmes3b)
+		LDY	#HI(levmes3b)
+		LDA	#0
+		JMP	show_mes
+
+;****************************************
+;****************************************
+
+.eolevel4	LDX	#LO(jingle1)
+		LDY	#HI(jingle1)
+		JSR	setup_jingle
+
+		LDX	#LO(levmes4)
+		LDY	#HI(levmes4)
+		LDA	#255
+		JSR	show_mes
+
+		JSR	do_toasanim
+
+		LDX	#LO(levmes4b)
+		LDY	#HI(levmes4b)
+		LDA	#0
+		JMP	show_mes
+
+;****************************************
+;****************************************
+
+.eolevel5	LDA	screen_number
+ 		PHA
+		LDA	level_number
+		PHA
+
+		LDX	#LO(jingle3)
+		LDY	#HI(jingle3)
+		JSR	setup_jingle
+
+		LDX	#LO(levmes5)
+		LDY	#HI(levmes5)
+		LDA	#255
+		JSR	show_mes
+
+		JSR	do_endanim
+
+		LDX	#LO(levmes5b)
+		LDY	#HI(levmes5b)
+		LDA	#0
+		JSR	show_mes
+
+		PLA
+		STA	level_number
+		PLA
+		STA	screen_number
+
+		RTS
+
+;****************************************
+;****************************************
+
+.eolevel5ch	LDX	#LO(levmes5c)
+		LDY	#HI(levmes5c)
+		LDA	#0
+		JMP	show_mes
+
+;****************************************
+;****************************************
+
+.levmes1	EQUB	31,9,16
+		EQUS	"You're doing great !!!"
+		EQUB	31,11,17
+		EQUS	"Now try level 2 !!!"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes2	EQUB	31,12,16
+		EQUS	"20 screens down,"
+		EQUB	31,11,17
+		EQUS	"30 left to go !!!"
+		EQUB	0
+
+.levmes2b	EQUB	31,11,16
+		EQUS	"So go for it !!!"
+		EQUB	31,9,17
+		EQUS	"If you're really good,"
+		EQUB	0
+
+.levmes2c	EQUB	31,9,16
+		EQUS	"maybe some animation !"
+		EQUB	31,11,17
+		EQUS	"( Next time !!! )"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes3	EQUB	31,13,16
+		EQUS	"One small jump"
+		EQUB	31,14,17
+		EQUS	"for ball ..."
+		EQUB	0
+
+.levmes3b	EQUB	31,11,16
+		EQUS	"... one giant leap"
+		EQUB	31,11,17
+		EQUS	"for bouncykind !!!"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes4	EQUB	31,9,16
+		EQUS	"And now for something"
+		EQUB	31,13,17
+		EQUS	"completely ..."
+		EQUB	0
+
+.levmes4b	EQUB	31,12,16
+		EQUS	"... Different."
+		EQUB	31,14,17
+		EQUS	"( Boing ! )"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes5	EQUB	31,10,16
+		EQUS	"Yahoo !!! It's bacon"
+		EQUB	31,11,17
+		EQUS	"sandwich time !!!"
+		EQUB	0
+
+.levmes5b	EQUB	31,9,16
+		EQUS	"( But maybe I'll wait"
+		EQUB	31,11,17
+		EQUS	"until breakfast )."
+		EQUB	0
+
+;   *   *   *   *   *   *   *   *   *   *
+
+.levmes5c	EQUB	31,10,16
+		EQUS	"Well done ! Now try"
+		EQUB	31,10,17
+		EQUS	"it without cheating."
+		EQUB	0
+
+;****************************************
+;****************************************
+

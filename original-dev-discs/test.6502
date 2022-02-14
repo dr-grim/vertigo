@@ -1,0 +1,23 @@
+**** Example 6502 source in ADE+ format ****
+**** Bogus code useful for quick tests! ****
+
+     TTL NameOfFile.   ; print page title
+     LDA #6
+label   STA &6000  ; test
+    STA etc
+    LDA #<address+16
+    LDA #<address+16 ; test2
+    STA &60
+    LDA # >&8000     ; test
+    LDA # >&7000
+    STA &72
+****************************************
+******** ignore
+       ***** and this
+     DFB 1,2,3
+     DW &FFEE
+     DS 3
+     STR "Hello world"
+     ASC "Goodbye world"
+
+     CHN otherfile

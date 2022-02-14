@@ -1,1 +1,637 @@
-		TTL	mc010		; Credits subroutine & text data********************************************************************************credits	BANK	7		LDA	#44		STA	sa_width+1		LDA	#56		STA	sa_height+1		LDA	#>credits_save		STA	save+1		LDA	#<credits_save		STA	save+2		LDX	#18		LDY	#96		JSR	save_area		LDA	#>ptr_sve		STA	save+1		LDA	#<ptr_sve		STA	save+2		LDA	#9		STA	workspace		LDA	#12		STA	workspace+1		LDX	#20		LDY	#5		JSR	boxcopy_pressed	INKEY	-74		BNE	copy_pressed		LDA	#>credit_text		STA	workspace		LDA	#<credit_text		STA	workspace+1cred_loop	LDA	(workspace)		JSR	oswrch		INKEY	-74		BNE	exit_credits		JSR	code		LDA	#5		LDX	#0		LDY	#1		JSR	sound_effect		LDA	#40		JSR	key_delay		LDA	(workspace)		CMP	#13		BNE	not_return		JSR	ting_v2		LDA	#10		JSR	oswrch		LDA	#160		JSR	key_delaynot_return	INC	workspace		BNE	not_clocked		INC	workspace+1not_clocked	LDA	(workspace)		BNE	cred_loopexit_credits	LDA	#26		JSR	oswrch		LDA	#44		STA	ra_width+1		LDA	#56		STA	ra_height+1		LDA	#>credits_save		STA	restore+1		LDA	#<credits_save		STA	restore+2		LDX	#18		LDY	#96		JSR	restore_area		BANK	4		RTS********************************************************************************key_delay	STA	workspace+2		STZ	workspace+3key_delay_loop	DEC	workspace+3		BNE	key_delay_loop		JSR	code		DEC	workspace+2		BNE	key_delay_loop		RTS********************************************************************************credit_text	DFB	28,10,17,29,13,12	; text window		ASC	" APEX was written by"		ASC	"Ian and James and an"		STR	"infinite number of"		ASC	"highly trained ( and"		STR	"highly improbable )"		STR	"monkeys."		STR	" The music was"		STR	"written by Gareth"		STR	"Rees-Hayward, and"		STR	"was computerised by"		STR	"Ian."		STR	" The BBC 'B' only"		STR	"version was remixed"		STR	"from this version"		STR	"by Ian."		STR	" Credits written by"		STR	" ( SUPRISE !!! )"		STR	"James."		STR	" Fancy writing on"		STR	"the title page by"		STR	"James, with the"		STR	"rest filled in by"		STR	"Ian."		STR	" All posey routines"		STR	"( eg. ball bouncing"		STR	"& go-behind-routine"		ASC	") by James, with all"		STR	"Graphics ( albeit"		STR	"small, but needs"		STR	"must ... ) by Ian."		STR	" Main 'concept' by"		ASC	"James ... with silly"		STR	"intro by Ian."		STR	"BACON SANDWICH,"		STR	"anyone ???"		STR	""		ASC	" We used most of the"		STR	"computer equipment"		ASC	"in the Bristle area,"		STR	"even including some"		ASC	"of our own ( but not"		STR	"too much ). Thanks"		STR	"to System Software"		STR	"for writing ADE+."		STR	""		STR	"  Le plot :"		STR	""		ASC	"  Your ball ( with a"		STR	"crystal heart ) is"		STR	"trapped on a moon"		STR	"circling his home"		STR	"planet of"		STR	"Abac Onsan Dwiche"		STR	"( translation :"		STR	"A Bacon Sandwich )"		STR	"having been"		ASC	"transported there by"		ASC	"Mr.X (from somewhere"		STR	"in the vicinity of"		STR	"Yorkshire )."		ASC	"  To be get home,you"		STR	"must collect the"		STR	"parts for the Solar"		STR	"Anti-entiminiser"		STR	"to open an Inter-"		STR	"Dimensional Gateway"		STR	"back home back to"		STR	"your bacon sandwich"		STR	"( Shurely shome"		STR	"mishtake - Ed )."		STR	""		STR	"  The moon is split"		STR	"up into 5 levels,"		STR	"each of which is"		ASC	"sub-divided into ten"		ASC	"screens,with a spare"		STR	"part on each which"		ASC	"must be collected in"		STR	"order from start to"		STR	"finish to effect"		STR	"your escape. Some"		STR	"screens are guarded"		STR	"by a robot ball"		STR	"charged with a"		STR	"million volts of"		STR	"static electricity"		ASC	"which will discharge"		STR	"into you should you"		STR	"get too close,"		STR	"fusing your crystal"		STR	"heart. You have 3"		STR	"spare energy"		ASC	"crystals to recharge"		STR	"your heart and each"		STR	"level contains one"		STR	"more. Losing all of"		ASC	"your energy crystals"		STR	"will result in you"		STR	"being terminally"		STR	"late for breakfast,"		STR	"and never seeing"		STR	"Abac Onsan Dwiche"		STR	"again."		STR	""		STR	""		STR	"  We would like to"		STR	"thank the following"		STR	"people for keeping"		STR	"us insane :"		STR	""		STR	"Me,"		STR	"Him,"		STR	"Richard Hanson,"		STR	"The Vitamin C gang,"		STR	"The Blues Brothers,"		STR	"Douglas Adams,"		STR	"Ta Lki N Ghe Ads,"		STR	"Level 42,"		STR	"LIVE AFTER DEATH"		STR	"Mike Smith"		STR	"( only joking ! ),"		STR	"Inspector Gadget,"		STR	"Slaine,"		STR	"Danger Mouse,"		STR	"Rogue Trooper,"		STR	"Venus Blue Genes,"		STR	"Halo Jones,"		STR	"Garfield,"		STR	"Dirk Gently,"		STR	"Bilbo"		STR	"( & company ),"		STR	"Da 'rganisation,"		STR	"Viz,"		STR	"The Truth,"		STR	"Mrs.T for making it"		ASC	" so unlikely that we"		STR	" would get a job"		STR	" that we started"		ASC	" programming instead"		STR	"Stan the man,"		STR	"Steve Wright,"		STR	"( In the afternoon )"		STR	"Kronenburg,"		STR	"Fish,"		ASC	"Save the human fund,"		STR	"Grolsch,"		STR	""		STR	""		STR	""		ASC	"Late football result"		STR	""		STR	"  Real Madrid : 1"		ASC	"Sureal Madrid : Fish"		STR	""		STR	"Arf! Arf!"		STR	""		STR	""		STR	"Dolphins,"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"Lemon Curry"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"Brian the Messiah"		STR	""		STR	""		STR	""		STR	"( But we all know"		STR	"that Zarquon was"		STR	"the true messiah )."		STR	""		STR	""		STR	""		STR	" 'Bye !!!"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"'Bye 'bye !!!"		STR	""		STR	""		STR	""		STR	""				STR	""		STR	""		STR	""		STR	""		STR	""		STR	"Look, I'm going"		STR	"now, OK ?"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		ASC	"Still here, are we ?"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"Goodness me,"		STR	"some people ..."		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""				STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"By the way, there"		STR	"IS a cheat mode ..."		STR	""		STR	" - it's -"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""				STR	""		STR	""		STR	""		STR	"BOO !"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"WELL,ACTUALLY ITS :"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"'CHEATA'"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""				STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""				STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""				STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"NEXT TIME,GADGET;"		STR	"NEXT TIME !!!"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"Okay, so I lied !"		STR	"It's :"		STR	""		STR	"'WOWZER'"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"And the real cheat"		STR	"mode is :"		STR	""		STR	"GADGET"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	"Ta ta !!!"		DS	200,13		STR	"WE WANT INFORMATION"		STR	"- INFORMATION ..."		STR	""		STR	""		STR	"WHO ARE YOU ???"		STR	""		STR	""		STR	""		STR	"I AM NUMBER 2"		STR	""		STR	""		STR	"WHO IS NUMBER 1 ?"		STR	""		STR	""		STR	""		STR	"YOU ARE THE NEW"		STR	"NUMBER 6."		STR	""		STR	""		STR	"I AM NOT A NUMBER;"		STR	"- I AM A FREE MAN !"		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		STR	""		DFB	0********************************************************************************		CHN	mc011
+;		TTL	mc010		; Credits subroutine & text data
+
+;****************************************
+;****************************************
+
+.credits	BANK	7
+
+		LDA	#44
+		STA	sa_width+1
+		LDA	#56
+		STA	sa_height+1
+
+		LDA	#>credits_save
+		STA	save+1
+		LDA	#<credits_save
+		STA	save+2
+
+		LDX	#18
+		LDY	#96
+		JSR	save_area
+
+		LDA	#>ptr_sve
+		STA	save+1
+		LDA	#<ptr_sve
+		STA	save+2
+
+		LDA	#9
+		STA	workspace
+		LDA	#12
+		STA	workspace+1
+		LDX	#20
+		LDY	#5
+		JSR	box
+
+.copy_pressed	INKEY	-74
+		BNE	copy_pressed
+
+		LDA	#>credit_text
+		STA	workspace
+		LDA	#<credit_text
+		STA	workspace+1
+
+.cred_loop	LDA	(workspace)
+		JSR	oswrch
+
+		INKEY	-74
+		BNE	exit_credits
+
+		JSR	code
+
+		LDA	#5
+		LDX	#0
+		LDY	#1
+		JSR	sound_effect
+
+		LDA	#40
+		JSR	key_delay
+
+		LDA	(workspace)
+		CMP	#13
+		BNE	not_return
+
+		JSR	ting_v2
+		LDA	#10
+		JSR	oswrch
+		LDA	#160
+		JSR	key_delay
+
+.not_return	INC	workspace
+		BNE	not_clocked
+
+		INC	workspace+1
+
+.not_clocked	LDA	(workspace)
+		BNE	cred_loop
+
+.exit_credits	LDA	#26
+		JSR	oswrch
+
+		LDA	#44
+		STA	ra_width+1
+		LDA	#56
+		STA	ra_height+1
+
+		LDA	#>credits_save
+		STA	restore+1
+		LDA	#<credits_save
+		STA	restore+2
+
+		LDX	#18
+		LDY	#96
+		JSR	restore_area
+
+		BANK	4
+
+		RTS
+
+;****************************************
+;****************************************
+
+.key_delay	STA	workspace+2
+		STZ	workspace+3
+
+.key_delay_loop	DEC	workspace+3
+		BNE	key_delay_loop
+
+		JSR	code
+
+		DEC	workspace+2
+		BNE	key_delay_loop
+
+		RTS
+
+;****************************************
+;****************************************
+
+.credit_text	EQUB	28,10,17,29,13,12	; text window
+
+		EQUS	" APEX was written by"
+		EQUS	"Ian and James and an"
+		EQUS	"infinite number of", &0D
+		EQUS	"highly trained ( and"
+		EQUS	"highly improbable )", &0D
+		EQUS	"monkeys.", &0D
+		EQUS	" The music was", &0D
+		EQUS	"written by Gareth", &0D
+		EQUS	"Rees-Hayward, and", &0D
+		EQUS	"was computerised by", &0D
+		EQUS	"Ian.", &0D
+		EQUS	" The BBC 'B' only", &0D
+		EQUS	"version was remixed", &0D
+		EQUS	"from this version", &0D
+		EQUS	"by Ian.", &0D
+		EQUS	" Credits written by", &0D
+		EQUS	" ( SUPRISE !!! )", &0D
+		EQUS	"James.", &0D
+		EQUS	" Fancy writing on", &0D
+		EQUS	"the title page by", &0D
+		EQUS	"James, with the", &0D
+		EQUS	"rest filled in by", &0D
+		EQUS	"Ian.", &0D
+		EQUS	" All posey routines", &0D
+		EQUS	"( eg. ball bouncing", &0D
+		EQUS	"& go-behind-routine", &0D
+		EQUS	") by James, with all"
+		EQUS	"Graphics ( albeit", &0D
+		EQUS	"small, but needs", &0D
+		EQUS	"must ... ) by Ian.", &0D
+		EQUS	" Main 'concept' by", &0D
+		EQUS	"James ... with silly"
+		EQUS	"intro by Ian.", &0D
+		EQUS	"BACON SANDWICH,", &0D
+		EQUS	"anyone ???", &0D
+		EQUS	&0D
+		EQUS	" We used most of the"
+		EQUS	"computer equipment", &0D
+		EQUS	"in the Bristle area,"
+		EQUS	"even including some", &0D
+		EQUS	"of our own ( but not"
+		EQUS	"too much ). Thanks", &0D
+		EQUS	"to System Software", &0D
+		EQUS	"for writing ADE+.", &0D
+		EQUS	&0D
+		EQUS	"  Le plot :", &0D
+		EQUS	&0D
+		EQUS	"  Your ball ( with a"
+		EQUS	"crystal heart ) is", &0D
+		EQUS	"trapped on a moon", &0D
+		EQUS	"circling his home", &0D
+		EQUS	"planet of", &0D
+		EQUS	"Abac Onsan Dwiche", &0D
+		EQUS	"( translation :", &0D
+		EQUS	"A Bacon Sandwich )", &0D
+		EQUS	"having been", &0D
+		EQUS	"transported there by"
+		EQUS	"Mr.X (from somewhere"
+		EQUS	"in the vicinity of", &0D
+		EQUS	"Yorkshire ).", &0D
+		EQUS	"  To be get home,you"
+		EQUS	"must collect the", &0D
+		EQUS	"parts for the Solar", &0D
+		EQUS	"Anti-entiminiser", &0D
+		EQUS	"to open an Inter-", &0D
+		EQUS	"Dimensional Gateway", &0D
+		EQUS	"back home back to", &0D
+		EQUS	"your bacon sandwich", &0D
+		EQUS	"( Shurely shome", &0D
+		EQUS	"mishtake - Ed ).", &0D
+		EQUS	&0D
+		EQUS	"  The moon is split", &0D
+		EQUS	"up into 5 levels,", &0D
+		EQUS	"each of which is", &0D
+		EQUS	"sub-divided into ten"
+		EQUS	"screens,with a spare"
+		EQUS	"part on each which", &0D
+		EQUS	"must be collected in"
+		EQUS	"order from start to", &0D
+		EQUS	"finish to effect", &0D
+		EQUS	"your escape. Some", &0D
+		EQUS	"screens are guarded", &0D
+		EQUS	"by a robot ball", &0D
+		EQUS	"charged with a", &0D
+		EQUS	"million volts of", &0D
+		EQUS	"static electricity", &0D
+		EQUS	"which will discharge"
+		EQUS	"into you should you", &0D
+		EQUS	"get too close,", &0D
+		EQUS	"fusing your crystal", &0D
+		EQUS	"heart. You have 3", &0D
+		EQUS	"spare energy", &0D
+		EQUS	"crystals to recharge"
+		EQUS	"your heart and each", &0D
+		EQUS	"level contains one", &0D
+		EQUS	"more. Losing all of", &0D
+		EQUS	"your energy crystals"
+		EQUS	"will result in you", &0D
+		EQUS	"being terminally", &0D
+		EQUS	"late for breakfast,", &0D
+		EQUS	"and never seeing", &0D
+		EQUS	"Abac Onsan Dwiche", &0D
+		EQUS	"again.", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"  We would like to", &0D
+		EQUS	"thank the following", &0D
+		EQUS	"people for keeping", &0D
+		EQUS	"us insane :", &0D
+		EQUS	&0D
+		EQUS	"Me,", &0D
+		EQUS	"Him,", &0D
+		EQUS	"Richard Hanson,", &0D
+		EQUS	"The Vitamin C gang,", &0D
+		EQUS	"The Blues Brothers,", &0D
+		EQUS	"Douglas Adams,", &0D
+		EQUS	"Ta Lki N Ghe Ads,", &0D
+		EQUS	"Level 42,", &0D
+		EQUS	"LIVE AFTER DEATH", &0D
+		EQUS	"Mike Smith", &0D
+		EQUS	"( only joking ! ),", &0D
+		EQUS	"Inspector Gadget,", &0D
+		EQUS	"Slaine,", &0D
+		EQUS	"Danger Mouse,", &0D
+		EQUS	"Rogue Trooper,", &0D
+		EQUS	"Venus Blue Genes,", &0D
+		EQUS	"Halo Jones,", &0D
+		EQUS	"Garfield,", &0D
+		EQUS	"Dirk Gently,", &0D
+		EQUS	"Bilbo", &0D
+		EQUS	"( & company ),", &0D
+		EQUS	"Da 'rganisation,", &0D
+		EQUS	"Viz,", &0D
+		EQUS	"The Truth,", &0D
+		EQUS	"Mrs.T for making it", &0D
+		EQUS	" so unlikely that we"
+		EQUS	" would get a job", &0D
+		EQUS	" that we started", &0D
+		EQUS	" programming instead"
+		EQUS	"Stan the man,", &0D
+		EQUS	"Steve Wright,", &0D
+		EQUS	"( In the afternoon )", &0D
+		EQUS	"Kronenburg,", &0D
+		EQUS	"Fish,", &0D
+		EQUS	"Save the human fund,"
+		EQUS	"Grolsch,", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Late football result"
+		EQUS	&0D
+		EQUS	"  Real Madrid : 1", &0D
+		EQUS	"Sureal Madrid : Fish"
+		EQUS	&0D
+		EQUS	"Arf! Arf!", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Dolphins,", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Lemon Curry", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Brian the Messiah", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"( But we all know", &0D
+		EQUS	"that Zarquon was", &0D
+		EQUS	"the true messiah ).", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	" 'Bye !!!", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"'Bye 'bye !!!", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Look, I'm going", &0D
+		EQUS	"now, OK ?", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Still here, are we ?", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Goodness me,", &0D
+		EQUS	"some people ...", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"By the way, there", &0D
+		EQUS	"IS a cheat mode ...", &0D
+		EQUS	&0D
+		EQUS	" - it's -", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"BOO !", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"WELL,ACTUALLY ITS :", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"'CHEATA'", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D		
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"NEXT TIME,GADGET;", &0D
+		EQUS	"NEXT TIME !!!", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Okay, so I lied !", &0D
+		EQUS	"It's :", &0D
+		EQUS	&0D
+		EQUS	"'WOWZER'", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"And the real cheat", &0D
+		EQUS	"mode is :", &0D
+		EQUS	&0D
+		EQUS	"GADGET", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"Ta ta !!!", &0D
+
+		;SKIP	200,13
+		BLOCK	200, 13
+
+		EQUS	"WE WANT INFORMATION", &0D
+		EQUS	"- INFORMATION ...", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"WHO ARE YOU ???", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"I AM NUMBER 2", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"WHO IS NUMBER 1 ?", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"YOU ARE THE NEW", &0D
+		EQUS	"NUMBER 6.", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	"I AM NOT A NUMBER;", &0D
+		EQUS	"- I AM A FREE MAN !", &0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
+
+		EQUB	0
+
+;****************************************
+;****************************************
+
+;		CHN	mc011
