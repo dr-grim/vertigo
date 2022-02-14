@@ -1,0 +1,9 @@
+RESET
+MODE 128
+OPT E
+INPUT 9
+OUTPUT 2
+ASM :4.$.Mcode=e.mc
+*DRIVE 4
+*DIR $
+
