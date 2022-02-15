@@ -10,18 +10,18 @@
 		LDA	#56
 		STA	sa_height+1
 
-		LDA	#>credits_save
+		LDA	#LO(credits_save)
 		STA	save+1
-		LDA	#<credits_save
+		LDA	#HI(credits_save)
 		STA	save+2
 
 		LDX	#18
 		LDY	#96
 		JSR	save_area
 
-		LDA	#>ptr_sve
+		LDA	#LO(ptr_sve)
 		STA	save+1
-		LDA	#<ptr_sve
+		LDA	#HI(ptr_sve)
 		STA	save+2
 
 		LDA	#9
@@ -35,9 +35,9 @@
 .copy_pressed	INKEY	-74
 		BNE	copy_pressed
 
-		LDA	#>credit_text
+		LDA	#LO(credit_text)
 		STA	workspace
-		LDA	#<credit_text
+		LDA	#HI(credit_text)
 		STA	workspace+1
 
 .cred_loop	LDA	(workspace)
@@ -82,9 +82,9 @@
 		LDA	#56
 		STA	ra_height+1
 
-		LDA	#>credits_save
+		LDA	#LO(credits_save)
 		STA	restore+1
-		LDA	#<credits_save
+		LDA	#HI(credits_save)
 		STA	restore+2
 
 		LDX	#18
@@ -311,6 +311,7 @@
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
+		EQUS	&0D
 		EQUS	"Look, I'm going", &0D
 		EQUS	"now, OK ?", &0D
 		EQUS	&0D
@@ -320,7 +321,7 @@
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
-		EQUS	"Still here, are we ?", &0D
+		EQUS	"Still here, are we ?"
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
@@ -333,6 +334,7 @@
 		EQUS	&0D
 		EQUS	"Goodness me,", &0D
 		EQUS	"some people ...", &0D
+		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
@@ -592,7 +594,6 @@
 		EQUS	&0D
 		EQUS	"Ta ta !!!", &0D
 
-		;SKIP	200,13
 		BLOCK	200, 13
 
 		EQUS	"WE WANT INFORMATION", &0D

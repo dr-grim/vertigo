@@ -81,7 +81,7 @@
 					; TABLE <start>,<step>,<number>
 		MACRO LOOKUP start, step, number
 {		
-		FOR n, 0, number
+		FOR n, 0, number-1
 		EQUW start + (n*step)
 		NEXT
 ;temp@0		=	@1
@@ -98,7 +98,7 @@
 ;****************************************
 
 		MACRO BLOCK  size, bytePattern
-		FOR n, 0, size
+		FOR n, 0, size-1
 		EQUB	bytePattern
 		NEXT
 		ENDMACRO

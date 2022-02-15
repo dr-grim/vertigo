@@ -73,9 +73,9 @@ b_Y_lim	=	t_Y_lim+94
 		STA	ra_width+1
 		STA	sa_width+1
 
-		LDA	#>menu_data
+		LDA	#LO(menu_data)
 		STA	restore+1
-		LDA	#<menu_data
+		LDA	#HI(menu_data)
 		STA	restore+2
 
 		LDA	#LO(&8000)
@@ -91,9 +91,9 @@ b_Y_lim	=	t_Y_lim+94
 
 		BANK	4
 
-		LDA	#>ptr_sve
+		LDA	#LO(ptr_sve)
 		STA	save+1
-		LDA	#<ptr_sve
+		LDA	#HI(ptr_sve)
 		STA	save+2
 
 		LDX	#menu_X
@@ -117,16 +117,16 @@ b_Y_lim	=	t_Y_lim+94
 		AND	#128
 		BEQ	m_is_off
 
-		LDA	#>mc_on
+		LDA	#LO(mc_on)
 		STA	restore+1
-		LDA	#<mc_on
+		LDA	#HI(mc_on)
 		STA	restore+2
 
 		BRA	skip_m
 
-.m_is_off	LDA	#>mc_off
+.m_is_off	LDA	#LO(mc_off)
 		STA	restore+1
-		LDA	#<mc_off
+		LDA	#HI(mc_off)
 		STA	restore+2
 
 .skip_m		LDX	#menu_X+2
@@ -137,16 +137,16 @@ b_Y_lim	=	t_Y_lim+94
 		AND	#64
 		BEQ	sd_is_off
 
-		LDA	#>sd_on
+		LDA	#LO(sd_on)
 		STA	restore+1
-		LDA	#<sd_on
+		LDA	#HI(sd_on)
 		STA	restore+2
 
 		BRA	skip_sd
 
-.sd_is_off	LDA	#>sd_off
+.sd_is_off	LDA	#LO(sd_off)
 		STA	restore+1
-		LDA	#<sd_off
+		LDA	#HI(sd_off)
 		STA	restore+2
 
 .skip_sd	LDX	#menu_X+2
@@ -193,9 +193,9 @@ b_Y_lim	=	t_Y_lim+94
 		STA	ms_width+1
 		STA	sa_width+1
 
-		LDA	#>ptr_sve
+		LDA	#LO(ptr_sve)
 		STA	restore+1
-		LDA	#<ptr_sve
+		LDA	#HI(ptr_sve)
 		STA	restore+2
 
 		JSR	music_onoff
@@ -426,16 +426,16 @@ b_Y_lim	=	t_Y_lim+94
 		BNE	sh_loop
 
 .skip_add	PHA
-		ADC	#>ptr_msk
+		ADC	#LO(ptr_msk)
 		STA	ms_mask+1
-		LDA	#<ptr_msk
+		LDA	#HI(ptr_msk)
 		ADC	#0
 		STA	ms_mask+2
 
 		PLA
-		ADC	#>ptr_spr
+		ADC	#LO(ptr_spr)
 		STA	ms_sprite+1
-		LDA	#<ptr_spr
+		LDA	#HI(ptr_spr)
 		ADC	#0
 		STA	ms_sprite+2
 
@@ -567,9 +567,9 @@ b_Y_lim	=	t_Y_lim+94
 		LDA	#26
 		STA	es_width+1
 
-		LDA	#>option_data
+		LDA	#LO(option_data)
 		STA	sprite+1
-		LDA	#<option_data
+		LDA	#HI(option_data)
 		STA	sprite+2
 
 		JSR	eor_sprite

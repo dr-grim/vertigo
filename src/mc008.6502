@@ -150,7 +150,7 @@
 
 		EQUB	0
 
-		EQUS	"Hello, Chief ??? I'm on my way.", &0D
+		EQUS	"Hello, Chief ??? I'm on my way."
 
 
 .S6L1		ENEMYSTART	160,160
@@ -586,7 +586,7 @@
 
 		EQUB	0
 
-		EQUS	"I'll get you next time, Gadget, next time !!!", &0D
+		EQUS	"I'll get you next time, Gadget, next time !!!"
 
 .S9L5		ENEMYSTART	288,288
 

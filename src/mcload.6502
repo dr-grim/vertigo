@@ -174,7 +174,12 @@ load_workspace	=	&70
 		OSCLI	load_panel2
 		SHADOW	ON,OUT
 
-		OSCLI	run_main_game
+		; Swap so we can use JMP not JSR
+		; OSCLI	run_main_game
+
+		LDX	#LO(run_main_game)
+		LDY	#HI(run_main_game)
+		JMP	oscli
 
 ;****************************************
 ;****************************************

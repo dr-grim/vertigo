@@ -82,7 +82,7 @@
 	EQUS	&0D
 	EQUB	34
 	EQUS	"You are the Pharaoh you will journey through the after life", &0D
-	EQUS	"And HE-WHO-LOOKS-BEHIND will ask the questions you must answer to be free", &0D
+	EQUS	"And HE-WHO-LOOKS-BEHIND will ask the questions you must answer to be free"
 	EQUB	34,13
 	EQUS	&0D
 	EQUS	"Osiris weigh my soul and let me pass beyond so I may", &0D

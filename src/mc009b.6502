@@ -212,8 +212,8 @@
 .cheat_mode	CPX	#1
 		BNE	real_cheat
 
-		LDX	#>cheat_text2
-		LDY	#<cheat_text2
+		LDX	#LO(cheat_text2)
+		LDY	#HI(cheat_text2)
 		JSR	print_pwtxt
 
 		LDA	menu_st
@@ -228,8 +228,8 @@
 .real_cheat	CPX	#0
 		BNE	not_real_cheat
 
-		LDX	#>cheat_text
-		LDY	#<cheat_text
+		LDX	#LO(cheat_text)
+		LDY	#HI(cheat_text)
 		JSR	print_pwtxt
 
 		LDA	controller
@@ -244,8 +244,8 @@
 .not_real_cheat	CPX	#2
 		BNE	not_mascot
 
-		LDX	#>mascot_text
-		LDY	#<mascot_text
+		LDX	#LO(mascot_text)
+		LDY	#HI(mascot_text)
 		JSR	print_pwtxt
 
 		STZ	timer1
@@ -258,8 +258,8 @@
 .not_mascot	CPX	#3
 		BNE	not_sounds
 
-		LDX	#>sounds_text
-		LDY	#<sounds_text
+		LDX	#LO(sounds_text)
+		LDY	#HI(sounds_text)
 		JSR	print_pwtxt
 
 		JSR	ting
@@ -287,8 +287,8 @@
 .not_sounds	CPX	#4
 		BNE	not_guess
 
-		LDX	#>guess_text
-		LDY	#<guess_text
+		LDX	#LO(guess_text)
+		LDY	#HI(guess_text)
 		JSR	print_pwtxt
 
 		BRA	exit_pass99
@@ -296,8 +296,8 @@
 .not_guess	CPX	#5
 		BNE	not_freddy
 
-		LDX	#>freddy_text
-		LDY	#<freddy_text
+		LDX	#LO(freddy_text)
+		LDY	#HI(freddy_text)
 		JSR	print_pwtxt
 
 		BRA	exit_pass99
@@ -305,8 +305,8 @@
 .not_freddy	CPX	#6
 		BNE	not_silly
 
-		LDX	#>silly_text
-		LDY	#<silly_text
+		LDX	#LO(silly_text)
+		LDY	#HI(silly_text)
 		JSR	print_pwtxt
 
 		BRA	exit_pass99
@@ -315,8 +315,8 @@
 ;*	CPX	#7
 ;*		BNE	not_silly2
 
-		LDX	#>silly_text2
-		LDY	#<silly_text2
+		LDX	#LO(silly_text2)
+		LDY	#HI(silly_text2)
 		JSR	print_pwtxt
 
 ;*		BRA	exit_pass99

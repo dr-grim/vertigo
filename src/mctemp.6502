@@ -346,14 +346,14 @@
 		LDA	#4
 		STA	ms_width+1
 
-		LDA	#>lb_mask
+		LDA	#LO(lb_mask)
 		STA	ms_mask+1
-		LDA	#<lb_mask
+		LDA	#HI(lb_mask)
 		STA	ms_mask+2
 
-		LDA	#>lb_sprt
+		LDA	#LO(lb_sprt)
 		STA	ms_sprite+1
-		LDA	#<lb_sprt
+		LDA	#HI(lb_sprt)
 		STA	ms_sprite+2
 
 		PLA
