@@ -12,7 +12,7 @@ The discs were copied to `ADFS` using [DDOS2ADFS](https://github.com/dr-grim/bee
 Note that the development machine had an Opus Challenger 3-in-1, which had a 512kB RAM disc. The scripts `SETUP` and `BACKUP` send sub volumes to/from the RAM disc, where the assembly took place. Drive `4` mapped to `0A`, drive 5 to `0B` (256kB each). It madew for a very fast assembly process with ADE+ - we didn't use the object linker, it was fast enough with raw text files. Other projects I used the linker option and it was amazingly fast for an 8-bit machine.
 
 ## Discs recovered
-Discs recovered are listed below, each disc is in a separaate folder.
+Discs recovered are listed below, each disc is in a separate folder.
 
 Disc | Name | Contents
 -|-|-
