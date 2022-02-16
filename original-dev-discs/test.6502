@@ -1,6 +1,13 @@
 **** Example 6502 source in ADE+ format ****
 **** Bogus code useful for quick tests! ****
 
+DUMMY MACRO
+  LDA #@1
+  STA @2
+ENDM
+
+oswrch  EQU &FFEE
+
      TTL NameOfFile.   ; print page title
      LDA #6
 label   STA &6000  ; test
@@ -18,6 +25,8 @@ label   STA &6000  ; test
      DW &FFEE
      DS 3
      STR "Hello world"
+
+     LST ON
      ASC "Goodbye world"
 
      CHN otherfile
