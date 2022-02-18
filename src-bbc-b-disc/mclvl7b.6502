@@ -1,0 +1,657 @@
+;	TTL	level7b
+
+;********************************
+;********************************
+
+.frame9	EQUB	%11111110
+	EQUB	%11111101
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111101
+	EQUB	%11111101
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111011
+
+	EQUB	%00111111
+	EQUB	%11000111
+	EQUB	%10111011
+	EQUB	%10011101
+	EQUB	%10011101
+	EQUB	%10011101
+	EQUB	%10111101
+	EQUB	%00111001
+	EQUB	%00000010
+	EQUB	%00000101
+
+;********************************
+;********************************
+
+.frame10
+	EQUB	%11111110
+	EQUB	%11111101
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111101
+	EQUB	%11111101
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111011
+
+	EQUB	%00111111
+	EQUB	%11000011
+	EQUB	%11011101
+	EQUB	%01001110
+	EQUB	%11000110
+	EQUB	%11001110
+	EQUB	%11011110
+	EQUB	%00011101
+	EQUB	%00000010
+	EQUB	%00000101
+
+;********************************
+;********************************
+
+.frame11
+	EQUB	%11111110
+	EQUB	%11111101
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111100
+	EQUB	%11111101
+	EQUB	%11111101
+	EQUB	%11111100
+	EQUB	%11111011
+
+	EQUB	%00000011
+	EQUB	%11011101
+	EQUB	%01000110
+	EQUB	%01000110
+	EQUB	%01000110
+	EQUB	%11011110
+	EQUB	%11011101
+	EQUB	%00000010
+	EQUB	%00000101
+
+;********************************
+;********************************
+
+.frame12
+	EQUB	%11111100
+	EQUB	%11111011
+	EQUB	%11111010
+	EQUB	%11111010
+	EQUB	%11111010
+	EQUB	%11111011
+	EQUB	%11111011
+	EQUB	%11111100
+	EQUB	%11111011
+
+	EQUB	%01100011
+	EQUB	%10011101
+	EQUB	%01010010
+	EQUB	%01010010
+	EQUB	%01010010
+	EQUB	%11011110
+	EQUB	%10011101
+	EQUB	%00000010
+	EQUB	%00000101
+
+;********************************
+;********************************
+
+.frame13
+	EQUB	%11111110
+	EQUB	%11111101
+	EQUB	%11111010
+	EQUB	%11111010
+	EQUB	%11111010
+	EQUB	%11111011
+	EQUB	%11111001
+	EQUB	%11111100
+	EQUB	%11111011
+
+	EQUB	%01110011
+	EQUB	%10101101
+	EQUB	%01010010
+	EQUB	%01010010
+	EQUB	%01010010
+	EQUB	%11011110
+	EQUB	%10001100
+	EQUB	%00000001
+	EQUB	%00000110
+
+;********************************
+;********************************
+
+.frame14
+	EQUB	%11111110
+	EQUB	%11111100
+
+	EQUB	%01110011
+	EQUB	%00100001
+
+;********************************
+;********************************
+
+.frame15
+	EQUB	%11111110
+	EQUB	%11111101
+	EQUB	%11111010
+
+	EQUB	%01110011
+	EQUB	%01010010
+	EQUB	%01110010
+
+;********************************
+;********************************
+
+.frame16
+	EQUB	%11111110
+	EQUB	%11111100
+	EQUB	%11111011
+	EQUB	%11111110
+
+	EQUB	%01110011
+	EQUB	%00100001
+	EQUB	%11111110
+	EQUB	%01110011
+
+;********************************
+;********************************
+
+.frame17
+	EQUB	%11111111
+	EQUB	%11111110
+	EQUB	%11111100
+	EQUB	%11111011
+	EQUB	%11111111
+	EQUB	%11111110
+
+	EQUB	%01110111
+	EQUB	%00100011
+	EQUB	%11111001
+	EQUB	%11111110
+	EQUB	%11111111
+	EQUB	%01110011
+
+;********************************
+;********************************
+
+.frame18
+	EQUB	%11111110
+
+	EQUB	%01110011
+
+;********************************
+;********************************
+
+.frame19
+	EQUB	%11111111
+	EQUB	%10011111
+	EQUB	%11001111
+	EQUB	%11010011
+	EQUB	%11101100
+	EQUB	%11101111
+	EQUB	%11011111
+	EQUB	%11011000
+	EQUB	%10110111
+	EQUB	%10110111
+	EQUB	%01110111
+	EQUB	%10111011
+	EQUB	%11011011
+	EQUB	%11101101
+	EQUB	%11110100
+	EQUB	%11101101
+	EQUB	%11011110
+	EQUB	%10011110
+	EQUB	%11100011
+	EQUB	%11111101
+	EQUB	%11111011
+	EQUB	%11111011
+	EQUB	%11111011
+	EQUB	%11110111
+	EQUB	%11110110
+	EQUB	%11110001
+	EQUB	%11111111
+	EQUB	%11111111
+	EQUB	%11111111
+
+	EQUB	%11111011
+	EQUB	%11111001
+	EQUB	%11110110
+	EQUB	%11110111
+	EQUB	%11101111
+	EQUB	%00011111
+	EQUB	%11111111
+	EQUB	%00111111
+	EQUB	%11011111
+	EQUB	%11101111
+	EQUB	%11101100
+	EQUB	%11011011
+	EQUB	%11010111
+	EQUB	%10101111
+	EQUB	%01101111
+	EQUB	%11101111
+	EQUB	%11101111
+	EQUB	%11101111
+	EQUB	%01101111
+	EQUB	%01110111
+	EQUB	%01111011
+	EQUB	%10111100
+	EQUB	%10111111
+	EQUB	%11111111
+	EQUB	%00111110
+	EQUB	%11011101
+	EQUB	%11011011
+	EQUB	%11100111
+	EQUB	%11101111
+
+	EQUB	%11111110
+	EQUB	%11111101
+	EQUB	%11111011
+	EQUB	%01110111
+	EQUB	%10101111
+	EQUB	%11011111
+	EQUB	%11110000
+	EQUB	%11110111
+	EQUB	%11110111
+	EQUB	%11110111
+	EQUB	%11110111
+	EQUB	%01110111
+	EQUB	%10110110
+	EQUB	%11010001
+	EQUB	%11010111
+	EQUB	%11011011
+	EQUB	%11011011
+	EQUB	%11011011
+	EQUB	%11011011
+	EQUB	%10111011
+	EQUB	%01111011
+	EQUB	%11111011
+	EQUB	%11111011
+	EQUB	%11111111
+	EQUB	%11111011
+	EQUB	%01110101
+	EQUB	%10101110
+	EQUB	%11001111
+	EQUB	%11101111
+
+	EQUB	%11111111
+	EQUB	%01111111
+	EQUB	%10111111
+	EQUB	%11011100
+	EQUB	%11100010
+	EQUB	%11111110
+	EQUB	%01111110
+	EQUB	%10111010
+	EQUB	%11011010
+	EQUB	%11010110
+	EQUB	%10110101
+	EQUB	%01110101
+	EQUB	%11101101
+	EQUB	%11101011
+	EQUB	%11011101
+	EQUB	%11011110
+	EQUB	%11011001
+	EQUB	%10110111
+	EQUB	%10110111
+	EQUB	%11111011
+	EQUB	%01111101
+	EQUB	%01111101
+	EQUB	%11111110
+	EQUB	%11111000
+	EQUB	%11100111
+	EQUB	%11101111
+	EQUB	%11011111
+	EQUB	%01011111
+	EQUB	%10011111
+
+;********************************
+;********************************
+
+.frame_table			; = frame address,width,height,x offset,y offset
+	EQUW	frame0		; 0
+	EQUB	2,17
+	EQUB	2,15
+
+	EQUW	frame1		; 1
+	EQUB	2,21
+	EQUB	2,11
+
+	EQUW	frame2		; 2
+	EQUB	3,24
+	EQUB	1,8
+
+	EQUW	frame3		; 3
+	EQUB	3,24
+	EQUB	1,2
+
+	EQUW	frame4		; 4
+	EQUB	3,25
+	EQUB	1,0
+
+	EQUW	frame5		; 5
+	EQUB	2,25
+	EQUB	1,2
+
+	EQUW	frame6		; 6
+	EQUB	3,25
+	EQUB	0,7
+
+	EQUW	frame7		; 7
+	EQUB	3,21
+	EQUB	0,11
+
+	EQUW	frame8		; 8
+	EQUB	2,21
+	EQUB	2,11
+
+	EQUW	frame4		; 9
+	EQUB	3,25
+	EQUB	2,0
+
+	EQUW	frame3		; 10
+	EQUB	3,24
+	EQUB	2,0
+
+	EQUW	frame5		; 11
+	EQUB	2,25
+	EQUB	2,0
+
+	EQUW	frame9		; 12
+	EQUB	2,10
+	EQUB	2,11
+
+	EQUW	frame10		; 13
+	EQUB	2,10
+	EQUB	2,11
+
+	EQUW	frame11		; 14
+	EQUB	2,9
+	EQUB	2,12
+
+	EQUW	frame12		; 15
+	EQUB	2,9
+	EQUB	2,12
+
+	EQUW	frame13		; 16
+	EQUB	2,9
+	EQUB	2,12
+
+	EQUW	frame14		; 17
+	EQUB	2,2
+	EQUB	2,11
+
+	EQUW	frame15		; 18
+	EQUB	2,3
+	EQUB	2,10
+
+	EQUW	frame16		; 19
+	EQUB	2,4
+	EQUB	2,9
+
+	EQUW	frame17		; 20
+	EQUB	2,6
+	EQUB	2,7
+
+	EQUW	frame4		; 21
+	EQUB	3,25
+	EQUB	2,3
+
+	EQUW	frame18		; 22
+	EQUB	2,1
+	EQUB	2,12
+
+	EQUW	frame19		; 23
+	EQUB	4,29
+	EQUB	0,8
+
+;********************************
+;********************************
+
+.setup_shades
+	ASL	A
+	STA	shades_add1+1
+	ASL	A
+.shades_add1
+	ADC	#&FF
+	TAX
+
+	RTS
+
+;********************************
+;********************************
+
+.shades_do_frame
+	JSR	setup_shades
+
+	LDA	frame_table,X
+	STA	restore+1
+	LDA	frame_table+1,X
+	STA	restore+2
+
+.display_shades
+	LDA	frame_table+2,X
+	PHA
+
+	LDA	frame_table+3,X
+	STA	ra_height+1
+
+	LDA	frame_table+5,X
+	CLC
+	ADC	shades_y
+	TAY
+
+	LDA	frame_table+4,X
+	ADC	shades_x
+	TAX
+
+	PLA
+	JMP	restore_area
+
+;********************************
+;********************************
+
+.shades_remove_frame
+	JSR	setup_shades
+
+	LDA	#LO(block_mask2)
+	STA	restore+1
+	LDA	#HI(block_mask2)
+	STA	restore+2
+
+	JMP	display_shades
+
+;********************************
+;********************************
+
+.shades_complete
+	PHA
+	JSR	shades_do_frame
+
+	JSR	fx194
+
+	PLA
+	JMP	shades_remove_frame
+
+;********************************
+;********************************
+
+shades_sl	=	workspace+9
+shades_pointer	=	workspace+7
+
+.shades_sequence
+	ASL	A
+	TAX
+	LDA	sequence_table,X
+	STA	shades_pointer	
+	LDA	sequence_table+1,X
+	STA	shades_pointer+1
+
+	LDA	#0
+	STA	shades_sl
+
+.ss_loop
+	LDY	shades_sl
+	LDA	(shades_pointer),Y
+	CMP	#255
+	BEQ	exit_ss
+
+	JSR	shades_complete
+
+	INC	shades_sl
+	JMP	ss_loop
+	
+.exit_ss
+	RTS
+
+;********************************
+;********************************
+
+.sequence_table
+	EQUW	sequence0
+	EQUW	sequence1
+	EQUW	sequence2
+	EQUW	sequence3
+	EQUW	sequence4
+	EQUW	sequence5
+	EQUW	sequence6
+
+;********************************
+;********************************
+
+.sequence0
+	EQUB	0,1,2,3,4,5,6,7,255
+
+.sequence1
+	EQUB	0,8,21,9,10,9,11,9,21,8,255
+
+.sequence2
+	EQUB	12,13,14,15,16,255
+
+.sequence3
+	EQUB	15,14,13,12,8,255
+
+.sequence4
+	EQUB	17,18,19,20,19,18,17,22,255
+
+.sequence5
+	EQUB	23,23,23,23,23,23,255
+
+.sequence6
+	EQUB	0,1,2,3,255
+
+;********************************
+;********************************
+
+.hi_from_shades
+	EQUB	31,11,9
+	EQUS	"Hi from the Grim ..."
+	EQUB	31,10,22
+	EQUS	"try ijg@uk.ac.cf.cm"
+	EQUB	0
+
+;********************************
+;********************************
+
+.shades	JSR	venetian
+
+	LDA	#7
+	JSR	vdu19
+
+	LDX	#LO(hi_from_shades)
+	LDY	#HI(hi_from_shades)
+	JSR	print_text
+
+	LDX	#0
+.sh_lp2	LDA	#255
+.sh_lp	STA	&6700,X
+	STA	block_mask2,X
+	DEX
+	BNE	sh_lp
+	INC	sh_lp+2
+	LDA	sh_lp+2
+	CMP	#&71
+	BNE	sh_lp2
+
+	LDA	#36
+	STA	shades_x
+	LDA	#112
+	STA	shades_y
+
+.shades_loop1
+	LDA	#0
+	JSR	shades_sequence
+
+	LDX	shades_x
+	DEX
+	DEX
+	STX	shades_x
+	CPX	#36-(9*2)
+	BNE	shades_loop1
+
+	LDA	#8
+	JSR	shades_do_frame
+
+	LDA	#2
+	JSR	shades_sequence
+
+	LDA	#16
+	JSR	shades_do_frame
+
+	LDA	#4
+	JSR	shades_sequence
+	LDA	#4
+	JSR	shades_sequence
+
+	LDA	#3
+	JSR	shades_sequence
+
+	LDA	#1
+	JSR	shades_sequence
+
+.shades_loop5
+	LDA	#0
+	JSR	shades_sequence
+
+	LDX	shades_x
+	DEX
+	DEX
+	STX	shades_x
+	CPX	#8
+	BNE	shades_loop5
+
+	LDA	#6
+	JSR	shades_sequence
+
+	LDA	#5
+	JSR	shades_sequence
+
+	LDA	#4
+	STA	shades_x
+
+.sf_lp	JSR	fx194
+	DEC	shades_x
+	BNE	sf_lp
+
+	RTS
+
+	PLA
+	RTS
+
+.end_of_level7;	LST	ON
+;		LST	OFF
+
+;	IF	*>zzzzdatast
+;	IF	#
+;	STOP	Level 7 code is too big for level block
+;	FI
+;	FI
+
+;********************************
+;********************************
+
+;	RESUME

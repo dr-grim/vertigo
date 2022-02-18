@@ -1,0 +1,648 @@
+;		TTL	mc000c		; All sprite/screen routines that poke
+					; directly to the shadow screen memory
+;****************************************
+;****************************************
+
+top		=	&58A0
+
+pntr1		=	workspace
+pntr2		=	workspace+2
+max_width	=	workspace+4
+counter	=	workspace+5
+lines		=	workspace+6
+v_frame	=	workspace+7
+v_count	=	workspace+9
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.clocked1	INC	pntr1+1
+		LDA	counter
+		ORA	#128
+		STA	counter
+		BNE	not_clocked1
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.clocked2	DEC	pntr2+1
+		LDA	counter
+		ORA	#64
+		STA	counter
+		BNE	not_clocked2
+
+;****************************************
+
+.venetian	LDA	#0
+		STA	v_frame
+
+.vml		JSR	fx193
+
+		LDA	#10
+		STA	v_count
+
+		LDA	#LO(top)
+		CLC
+		ADC	v_frame
+		STA	pntr1
+		LDA	#HI(top)
+		ADC	#0
+		STA	pntr1+1
+
+		LDA	#LO((top-&100))
+		ADC	v_frame
+		STA	pntr2
+		LDA	#HI((top-&100))
+		ADC	#0
+		STA	pntr2+1
+
+		LDA	#5
+		STA	max_width
+
+		LDA	#0
+		STA	counter
+		STA	lines
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.vouter_loop	LDY	#0
+		LDX	max_width
+
+		CLC
+.vloop1		LDA	#0
+		STA	(pntr1),Y
+		TYA
+		ADC	#8
+		TAY
+		BCS	clocked1
+.not_clocked1	DEX
+		BNE	vloop1
+
+;* * * * * * * * * * * * * * * * * * * *
+
+		LDY	#248
+		LDX	max_width
+
+		SEC
+.vloop2		LDA	#0
+		STA	(pntr2),Y
+		TYA
+		SBC	#8
+		TAY
+		BCC	clocked2
+.not_clocked2	DEX
+		BNE	vloop2
+
+;* * * * * * * * * * * * * * * * * * * *
+
+		LDA	counter
+		AND	#128
+		BEQ	no_add21
+
+		LDA	counter
+		AND	#1+2+4+8+16+32+64+000
+		STA	counter
+		DEC	pntr1+1
+
+.no_add21	LDA	pntr1
+		CLC
+		ADC	#LO(&140)
+		STA	pntr1
+		LDA	pntr1+1
+		ADC	#HI(&140)
+		STA	pntr1+1
+
+;* * * * * * * * * * * * * * * * * * * *
+
+		LDA	counter
+		AND	#64
+		BEQ	no_add22
+
+		LDA	counter
+		AND	#1+2+4+8+16+32+00+128
+		STA	counter
+		INC	pntr2+1
+
+.no_add22	LDA	pntr2
+		CLC
+		ADC	#LO(&140)
+		STA	pntr2
+		LDA	pntr2+1
+		ADC	#HI(&140)
+		STA	pntr2+1
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.no_extra2	LDA	counter
+		AND	#48
+		BNE	not_top
+		INC	counter
+
+;* * * * * * * * * * * * * * * * * * * *
+
+		DEC	v_count
+
+		LDX	v_count
+		BMI	nol_1
+		LDA	widths,X
+		STA	max_width
+
+		JMP	vouter_loop
+
+.nol_1		LDA	counter
+		AND	#1+2+4+8+00+00+64+128
+		ORA	#16
+		STA	counter
+		LDA	#20
+		STA	max_width
+		LDA	#0
+		STA	lines
+		BEQ	no_extra2
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.not_top	CMP	#16
+		BNE	not_middle
+		INC	lines
+		LDA	lines
+		CMP	#11
+		BEQ	nol_2
+
+		JMP	vouter_loop
+
+.nol_2		LDA	counter
+		AND	#0+0+0+8+00+00+64+128
+		ORA	#32
+		STA	counter
+
+		LDA	#255
+		STA	v_count
+
+		BNE	no_extra2
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.not_middle	INC	counter
+
+		INC	v_count
+		LDX	v_count
+		LDA	widths,X
+		STA	max_width
+
+		LDA	pntr1+1
+		BMI	nol_3
+
+		JMP	vouter_loop
+
+.nol_3		INC	v_frame
+		LDA	v_frame
+		CMP	#8
+		BEQ	exit
+
+		JMP	vml
+
+.exit		RTS
+
+;****************************************
+
+.widths		EQUB	20,16,15,13,12,10,8,7,5,5,5
+
+;****************************************
+;****************************************
+
+b_or_screen	=	workspace
+b_or_width	=	workspace+2
+b_or_height	=	workspace+3
+
+b_screen	=	workspace+4
+b_width	=	workspace+6
+b_height	=	workspace+7
+
+;****************************************
+
+.box		STA	workspace+1
+		STX	b_or_width
+		STY	b_or_height
+
+		LDA	b_or_screen
+		TAX
+
+.box2		LDA	b_or_screen+1
+		ASL	A
+		ASL	A
+		ASL	A
+		TAY
+
+		JSR	calculate_byte
+
+		LDA	b_or_screen
+		STA	b_screen
+		LDA	b_or_screen+1
+		STA	b_screen+1
+		LDA	b_or_width
+		STA	b_width
+		LDA	#0
+		STA	b_height
+
+		LDY	#7
+.b_loop1	LDA	(b_screen),Y
+		AND	bs_tl_mask,Y
+		ORA	bs_top_left,Y
+		STA	(b_screen),Y
+		DEY
+		BPL	b_loop1
+
+		JSR	addtbscrn
+
+.b_loop2out	LDY	#7
+.b_loop2	LDA	bs_horiz,Y
+		STA	(b_screen),Y		
+		DEY
+		BPL	b_loop2
+
+		JSR	addtbscrn
+
+		DEC	b_width
+		BNE	b_loop2out
+
+.b_n1		LDY	#7
+.b_loop3	LDA	(b_screen),Y
+		AND	bs_tr_mask,Y
+		ORA	bs_top_right,Y
+		STA	(b_screen),Y
+		DEY
+		BPL	b_loop3
+
+		LDA	b_or_screen
+		CLC
+		ADC	#LO(&140)
+		STA	b_screen		
+		LDA	b_or_screen+1
+		ADC	#HI(&140)
+		STA	b_screen+1
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.b_ml		LDA	b_or_width
+		STA	b_width
+
+		LDY	#7
+.b_mloop1	LDA	bs_verti,Y
+		STA	(b_screen),Y
+		DEY
+		BPL	b_mloop1
+
+		JSR	addtbscrn
+
+.b_mloop2out	LDY	#7
+;*b_col
+		LDA	#0
+.b_mloop2	STA	(b_screen),Y		
+		DEY
+		BPL	b_mloop2
+
+		JSR	addtbscrn
+
+		DEC	b_width
+		BNE	b_mloop2out
+
+.b_n2		LDY	#7
+.b_mloop3	LDA	bs_verti,Y
+		STA	(b_screen),Y
+		DEY
+		BPL	b_mloop3
+
+		INC	b_height
+
+		LDA	b_or_screen
+		STA	b_screen
+		LDA	b_or_screen+1
+		STA	b_screen+1
+
+		LDX	b_height
+
+.b_add_loop	LDA	b_screen
+		CLC
+		ADC	#LO(&140)
+		STA	b_screen		
+		LDA	b_screen+1
+		ADC	#HI(&140)
+		STA	b_screen+1
+		DEX
+		BPL	b_add_loop
+
+		LDA	b_height
+		CMP	b_or_height
+		BEQ	b_do_bottom
+
+		JMP	b_ml
+
+;* * * * * * * * * * * * * * * * * * * *
+
+.b_do_bottom	LDA	b_or_width
+		STA	b_width
+
+		LDY	#7
+		LDX	#0
+.b_bloop1	LDA	(b_screen),Y
+		AND	bs_tl_mask,X
+		ORA	bs_top_left,X
+		STA	(b_screen),Y
+		INX
+		DEY
+		BPL	b_bloop1
+
+		JSR	addtbscrn
+
+.b_bloop2out	LDY	#7
+.b_bloop2	LDA	bs_horiz,Y
+		STA	(b_screen),Y		
+		DEY
+		BPL	b_bloop2
+
+		JSR	addtbscrn
+
+		DEC	b_width
+		BNE	b_bloop2out
+
+.b_n3		LDY	#7
+		LDX	#0
+.b_bloop3	LDA	(b_screen),Y
+		AND	bs_tr_mask,X
+		ORA	bs_top_right,X
+		STA	(b_screen),Y
+		INX
+		DEY
+		BPL	b_bloop3
+
+.exit_box	RTS
+
+;****************************************
+;****************************************
+
+.bs_top_left	EQUB	%00000000
+		EQUB	%00000010
+		EQUB	%00011111
+		EQUB	%00111111
+		EQUB	%00111111
+		EQUB	%01111111
+		EQUB	%00111110
+		EQUB	%01111110
+
+.bs_tl_mask	EQUB	%11110000
+		EQUB	%11000000
+		EQUB	%10000000
+		EQUB	%10000000
+		EQUB	%00000000
+		EQUB	%00000000
+		EQUB	%00000000
+		EQUB	%00000000
+
+.bs_horiz	EQUB	%00000000
+		EQUB	%10101010
+		EQUB	%11111111
+		EQUB	%11111111
+		EQUB	%11111111
+		EQUB	%11111111
+		EQUB	%10101010
+		EQUB	%00000000
+
+.bs_top_right	EQUB	%00000000
+		EQUB	%10100000
+		EQUB	%11111000
+		EQUB	%11111100
+		EQUB	%11111100
+		EQUB	%11111110
+		EQUB	%01111100
+		EQUB	%01111110
+
+.bs_tr_mask	EQUB	%00001111
+		EQUB	%00000011
+		EQUB	%00000001
+		EQUB	%00000001
+		EQUB	%00000000
+		EQUB	%00000000
+		EQUB	%00000000
+		EQUB	%00000000
+
+
+.bs_verti	EQUB	%00111100
+		EQUB	%01111110
+		EQUB	%00111100
+		EQUB	%01111110
+		EQUB	%00111100
+		EQUB	%01111110
+		EQUB	%00111100
+		EQUB	%01111110
+
+;****************************************
+;****************************************
+
+.fx193		JSR	fx19
+		JSR	osbyte
+		JMP	osbyte
+
+;****************************************
+;****************************************
+
+.fx194		JSR	fx19
+		JMP	fx193
+
+;****************************************
+;****************************************
+
+.addtbscrn	LDA	b_screen
+		CLC
+		ADC	#8
+		STA	b_screen
+		BCC	xit_atbs
+
+		INC	b_screen+1
+
+.xit_atbs	RTS
+
+;****************************************
+;****************************************
+
+sb_pointer	=	workspace
+barsize	=	workspace+2
+
+;****************************************
+
+.draw_sbars	LDX	#LO(&7D38)
+		LDY	#HI(&7D38)
+		LDA	x_bar
+		JSR	do_bar
+
+		LDX	#LO(&7D38+8)
+		LDY	#HI(&7D38+8)
+		LDA	y_bar
+		JSR	do_bar
+
+		LDX	#LO(&7D38+16)
+		LDY	#HI(&7D38+16)
+		LDA	h_bar
+;*		JMP	do_bar
+
+;****************************************
+;****************************************
+
+.do_bar		AND	#15
+		STA	barsize
+
+		STX	sb_pointer
+		STY	sb_pointer+1
+
+		LDX	barsize
+		BEQ	exit_bar2
+
+.sb_loop1	LDY	#7
+
+.sb_loop2 	LDA	(sb_pointer),Y
+		AND	#%11110001
+		ORA	#%00001110
+		STA	(sb_pointer),Y
+
+		DEX
+		BEQ	exit_bar1
+
+		DEY
+		BPL	sb_loop2
+
+		JSR	sb_upaline
+
+		BNE	sb_loop1
+
+.exit_bar1	DEY
+		BPL	exit_bar3
+
+		JSR	sb_upaline
+
+.exit_bar2	LDY	#7
+
+.exit_bar3	LDA	#15
+		SEC
+		SBC	barsize
+		TAX
+		BEQ	exit_bar
+
+.sb_loop22	LDA	(sb_pointer),Y
+		AND	#%11110001
+		STA	(sb_pointer),Y
+
+		DEX
+		BEQ	exit_bar
+
+		DEY
+		BPL	sb_loop22
+
+		JSR	sb_upaline
+
+		LDY	#7
+
+		BNE	sb_loop22
+
+.exit_bar	RTS
+
+;****************************************
+;****************************************
+
+.sb_upaline	LDA	sb_pointer
+		SEC
+		SBC	#LO(&140)
+		STA	sb_pointer
+		LDA	sb_pointer+1
+		SBC	#HI(&140)
+		STA	sb_pointer+1
+
+		RTS
+
+;****************************************
+;****************************************
+
+.nasty_dshad	LDA	n_bhi
+		BEQ	exit_nds
+
+		LDX	ny_oldX
+		LDY	ny_oldY
+		JSR	calculate_byte
+
+		LDY	#0
+		LDA	ny_shstore
+		STA	(workspace),Y
+
+.exit_nds	RTS
+
+;****************************************
+;****************************************
+
+.nasty_spshad	LDA	n_bhi
+		BNE	not_on_holen
+
+		RTS
+
+.not_on_holen	LDX	old_EX
+
+		LDA	enemy_z
+		CMP	ny_oldY
+		BCC	nss_sk1
+
+		LDA	#0
+		CLC
+		ADC	enemy_z
+		SEC
+		SBC	ny_oldY
+		LSR	A
+		LSR	A
+		CLC
+		ADC	old_EY
+		BNE	nss_sk2
+
+.nss_sk1	LDA	old_EY
+
+.nss_sk2	ADC	#8
+		STA	ny_oldY
+		TAY
+
+		LDA	ny_pixoffset
+		AND	#4
+		BEQ	under42
+
+		INX
+		LDA	#%01111111
+		BNE	skip_u42
+
+.under42	LDA	#%11110111
+
+.skip_u42	PHA
+		STX	ny_oldX
+		JSR	calculate_byte
+
+		LDY	#0
+		LDA	(workspace),Y
+		STA	ny_shstore
+
+		LDA	ny_pixoffset
+		AND	#3
+		TAX
+
+		PLA
+
+		CPX	#0
+		BEQ	sp_no_lsr2
+
+		SEC
+.sp_loop2	ROR	A
+		DEX
+		BNE	sp_loop2
+
+.sp_no_lsr2	STA	sp_and2+1
+
+		LDA	(workspace),Y
+.sp_and2	AND	#&FF
+		STA	(workspace),Y
+
+		RTS
+
+;****************************************
+;****************************************
+
+;		INCLUDE	"mc001"

@@ -12,11 +12,11 @@
 ;****************************************
 ;****************************************
 
-.execute	LDA	#200
+.execute	LDA	#200	; clear memory on break, disable escape key
 		LDX	#3
 		JSR	osbyte
 
-		LDA	#&4C
+		LDA	#&4C	; store JMP &0287 at break vector to lock machine up! (!)
 		STA	&287
 		LDA	#&87
 		STA	&288
@@ -28,7 +28,7 @@
 		LDY	#0
 		JSR	osbyte
 
-		LDA	#4
+		LDA	#4	; Disable copy editing, cursor keys return codes instead
 		LDX	#1
 		JSR	osbyte
 

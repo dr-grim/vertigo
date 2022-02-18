@@ -1,0 +1,457 @@
+;		TTL	mc009		; Handles all password code
+
+;****************************************
+;****************************************
+
+.password	LDA	pointer4
+		PHA
+		LDA	pointer4+1
+		PHA
+
+		LDY	#6
+		LDA	#32
+.Pblank		STA	PW,Y		; Fill your HS plice with spaces
+		DEY
+		BPL	Pblank
+
+		LDX	#LO(PWtxt)
+		LDY	#HI(PWtxt)
+		JSR	print_pwtxt
+
+		LDA	#11
+		LDX	#0
+		JSR	osbyte
+
+
+		LDX	#4
+		LDY	#29
+		JSR	move_cursor
+
+
+		LDA	#0
+		STA	workspace	; Type in password routine
+
+		LDA	#21
+		LDX	#0
+		LDY	#0
+		JSR	osbyte
+
+.all_here	LDX	#1
+		LDY	#0
+		LDA	#&81
+		JSR	osbyte		; Read key(in X centiseconds)
+		CPY	#&1B
+		BNE	nEsc		; Escape hit?(if not skip next lines)
+		LDA	#&7E
+		JSR	osbyte		; Acknowledge Escape
+		JMP	all_here	; Try 'gain
+
+.nEsc		CPY	#255
+		BEQ	all_here	; Time-Out...Try 'gain
+		LDA	workspace
+		CPX	#13		; RETURN?
+		BEQ	PW_fin
+		CMP	#6
+		BNE	skipbit		; End of password?
+		CPX	#127		; DELETE?
+		BEQ	skipbit
+		BNE	all_here
+
+.skipbit	CPX	#32
+		BCC	all_here	; Is char<32
+		CPX	#128
+		BCS	all_here	; or >127
+		CPX	#127		; DELETE?
+		BEQ	Delete_hit
+		LDA	workspace
+		CMP	#6
+		BEQ	all_here
+		TAY
+		TXA
+		STA	PW,Y
+		JSR	oswrch
+		INC	workspace
+		JMP	all_here
+
+.Delete_hit	LDA	workspace
+		BEQ	all_here
+		TAY
+		LDA	#32
+		STA	PW,Y
+		DEC	workspace
+		LDA	#127
+		JSR	oswrch
+		LDA	#46
+		JSR	oswrch
+		LDA	#8
+		JSR	oswrch
+		JMP	all_here
+
+.PW_fin		LDX	#0		; Screen counter ( 0 to 50 )
+
+.PW2		LDY	#0		; Character Counter ( 0 to 5 )
+
+		STX	workspace
+
+		TXA
+		JSR	calc_PW		
+
+.PW1		LDA	PW,Y
+		STY	workspace+4
+		STA	workspace+6
+		TAX
+		INY
+		TYA
+		EOR	workspace+6
+		STA	workspace+5
+		LDA	(pointer4),Y
+		EOR	workspace+5
+
+		LDX	workspace+5
+		TAY
+		TXA
+		EOR	workspace+6
+		EOR	workspace+5
+		TYA
+		LDY	workspace+4
+
+		CMP	(pointer4),Y
+
+		BNE	nextPW
+
+		INY
+		CPY	#6
+		BNE	PW1
+
+;****************************************
+;*					*
+;*	PASSWORD MATCHES SCREEN X	*
+;*					*
+;****************************************
+
+		LDX	workspace
+		LDY	#1
+
+.PW5		CPX	#10
+		BCC	PW6
+
+		INY
+		TXA
+;*		SEC
+		SBC	#10
+		TAX
+
+		JMP	PW5
+
+.PW6		CPY	#6
+		BEQ	cheat_mode
+
+		INX
+		STX	screen_number
+		STY	level_number
+
+		LDA	controller
+		ORA	#2
+		STA	controller
+
+		JSR	reset_status
+
+		LDX	#LO(PWtxt3)
+		LDY	#HI(PWtxt3)
+		JSR	print_pwtxt
+
+		JSR	ting
+
+		JMP	PW4
+
+;****************************************
+
+.nextPW		INC	workspace	; ***** ALTER THIS LINE IF *****
+		LDX	workspace	; ***** YOU CHANGE THE NO. *****
+		CPX	#53		; *****  OF PASSWORDS !!!  *****
+		BEQ	not_PW2
+
+		JMP	PW2
+
+.not_PW2	LDX	#LO(PWtxt2)
+		LDY	#HI(PWtxt2)
+		JSR	print_pwtxt
+
+		JMP	exit_pass99
+
+.PW4		LDX	#255
+		JMP	exit_pass
+
+;****************************************
+;****************************************
+
+.cheat_mode	CPX	#1
+		BNE	real_cheat
+
+		LDX	#LO(cheat_text2)
+		LDY	#HI(cheat_text2)
+		JSR	print_pwtxt
+
+		LDA	menu_st
+		AND	#3
+		ORA	#2
+		STA	menu_st
+
+		LDA	#0
+		STA	lives
+		BEQ	exit_pass99
+
+.real_cheat	CPX	#2
+		BEQ	do_shades
+
+		LDX	#LO(cheat_text)
+		LDY	#HI(cheat_text)
+		JSR	print_pwtxt
+
+		LDA	controller
+		ORA	#1
+		STA	controller
+
+		LDA	#5
+		STA	lives
+
+.exit_pass99	LDX	#0
+
+.exit_pass	PLA
+		STA	pointer4+1
+		PLA
+		STA	pointer4
+		TXA
+		RTS
+
+;****************************************
+;****************************************
+
+.do_shades
+	LDA	#'7'
+	STA	file_level+9
+
+	LDA	#7
+	STA	old_level2
+
+;*	LDX	#LO(window)
+;*	LDY	#HI(window)
+;*	JSR	print_text
+;*
+;*	LDX	#LO(ff_tape)
+;*	LDY	#HI(ff_tape)
+;*	JSR	print_text
+;*
+;*	LDX	#LO(press_play)
+;*	LDY	#HI(press_play)
+;*	JSR	print_text
+;*
+;*	LDA	#'7'
+;*	JSR	OSWRCH
+
+	LDX	#LO(file_level)
+	LDY	#HI(file_level)
+	JSR	oscli
+
+;*	LDA	#26
+;*	JSR	OSWRCH
+
+IF FALSE
+	JSR	shades
+ENDIF
+
+	PLA
+	STA	pointer4+1
+	PLA
+	STA	pointer4
+
+	LDA	#0
+	STA	old_level2
+
+	JSR	screen
+
+	LDX	#0
+	RTS
+
+;****************************************
+;****************************************
+
+.print_password	LDX	#4
+		LDY	#29
+		JSR	move_cursor
+
+.pp_bra1	LDX	level_number
+		LDY	screen_number
+		DEY
+		TYA
+		CLC
+
+.pp_loop2	DEX
+		BEQ	pp_bra2
+
+		ADC	#10
+		JMP	pp_loop2
+
+.pp_bra2	JSR	calc_PW
+
+		LDY	#0
+		
+.pp_loop3	LDA	(pointer4),Y
+		TAX
+		STA	workspace
+		STY	workspace+2
+
+		INY
+		TYA
+		EOR	workspace
+		STA	workspace+1
+		TXA
+		LDA	(pointer4),Y
+		EOR	workspace+1
+		AND	#255
+		STA	workspace
+		TAX
+		ORA	workspace
+
+		JSR	oswrch
+		LDY	workspace+2
+		INY
+		CPY	#6
+		BNE	pp_loop3
+
+		LDX	workspace
+
+		RTS
+
+;****************************************
+;****************************************
+
+.print_pwtxt	STX	ppt_loop+1
+		STY	ppt_loop+2
+
+		LDX	#4
+		LDY	#29
+		JSR	move_cursor
+
+		LDY	#0
+
+.ppt_loop	LDA	&FFFF,Y
+		JSR	oswrch
+		INY
+		CPY	#6
+		BCC	ppt_loop
+
+		RTS
+
+;****************************************
+;****************************************
+
+.PW		EQUS	"1234567"
+
+.demo_text	EQUS	"*DEMO*"
+.pause_text	EQUS	"PAUSED"
+
+.PWtxt		EQUS	"......"
+.PWtxt2		EQUS	"NOPE.."
+.PWtxt3		EQUS	"<OKAY>"
+
+.cheat_text	EQUS	"TutTut"
+.cheat_text2	EQUS	"HurHur"
+
+;****************************************
+;****************************************
+
+.calc_PW	STA	cPW_cc1+1
+
+		LDA	#HI(PW_1_1)
+		STA	pointer4+1
+
+		LDA	cPW_cc1+1
+		ASL	A
+		STA	cPW_adc+1
+		ASL	A
+.cPW_adc	ADC	#&FF
+		BCC	cPW_cc1
+
+		CLC
+		INC	pointer4+1
+
+.cPW_cc1	ADC	#&FF
+		BCC	cPW_cc3
+
+		CLC
+		INC	pointer4+1
+
+.cPW_cc3	ADC	#LO(PW_1_1)
+		STA	pointer4
+		BCC	cPW_cc2
+
+		INC	pointer4+1
+
+.cPW_cc2	RTS
+
+;****************************************
+;****************************************
+
+.key_delay	STA	workspace+2
+		LDA	#0
+		STA	workspace+3
+
+.key_delay_loop	DEC	workspace+3
+		BNE	key_delay_loop
+
+		DEC	workspace+2
+		BNE	key_delay_loop
+
+		RTS
+
+;****************************************
+;****************************************
+
+.read_js	LDX	#1
+		LDA	#128
+		JSR	osbyte
+
+		TYA
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+
+		STA	js
+
+		LDX	#2
+		LDA	#128
+		JSR	osbyte
+
+		TYA
+		LSR	A
+		LSR	A
+		LSR	A
+		LSR	A
+
+		AND	#12
+
+		ORA	js
+
+		TAY
+
+		LDA	js_lookup,Y
+		STA	js
+
+		RTS
+
+
+;****************************************
+
+.js_lookup	EQUB	2,10,10,8
+		EQUB	6,0,0,9
+		EQUB	6,0,0,9
+		EQUB	4,5,5,1
+
+;****************************************
+;****************************************
+
+;		INCLUDE	"mc998"

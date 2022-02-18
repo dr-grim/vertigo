@@ -16,11 +16,14 @@ Discs recovered are listed below, each disc is in a separate folder.
 
 Disc | Name | Contents
 -|-|-
-![Vertigo master backup](Vertigo-master-backup/thumbnail.jpeg) | [Vertigo master backup](Vertigo-master-backup/) | Backup of BBC Master 128k variant ov "Vertigo", bitmaps show "(C) 1989", so older than released copy ("(C) 1991")
+![Vertigo master backup](Vertigo-master-backup/thumbnail.jpeg) | [Vertigo master backup](Vertigo-master-backup/) | Backup of BBC Master 128k variant of "Vertigo", bitmaps show "(C) 1989", so older than released copy ("(C) 1991")
+![Vertigo BBC 'B' disc version](Vertigo-BBC-B-disc/thumbnail.jpeg) | [Vertigo BBC 'B' disc version](Vertigo-BBC-B-disc/) | The disc (rather than) cassette version for the BBC 'B'; more recent than the BBC Master 128k backup, as bitmaps show "(C) 1991".
 
 ## Conversion notes from `ADE+` to `beebasm`
 
 These notes were used to create `convert_6502_src.sh`, which does the heavy lifting from `ADE+` to `beebasm` - the user still has to check and tidy, tho'!
+
+Note that memory addresses for code blocks are left to user to sort out - e.g. `ORG`, `DSECT`, `DEND`, `RESUME` etc. They are commented out by the script, but you may wish to leave them in the source to trigger an error and hence flag where they are.
 
 ### Patterns looked for
 * Rename `sourcefile` -> `sourcefile.6502`
@@ -32,11 +35,17 @@ These notes were used to create `convert_6502_src.sh`, which does the heavy lift
 * `DS` -> `SKIP`
 * `STR string` -> `EQUS string, &0D` (as MACROs don't support string parameters)
 * `ASC` -> `EQUS`
+* `^\.(\S+)(\s+)MACRO(\s+)(.*)` -> `\t\tMACRO\t\1\3\4` (start work to map vector definitions - over to user to sort arguments)
 * `ENDM` -> `ENDMACRO`
 * `CHN(.+)` -> `INCLUDE "\1"`
 * `EQU` -> `=`
+* `^\.(.+)=(.+)`-> `\1=\2` (remove prepended `.` to a label if its an `=` assignment, we don't need it)
 * `TTL` -> comment out (set page title when printing a listing)
 * `LST` -> comment out (switches on-screen listing on/off)
+* `DSECT` -> comment out (define memory section - let user sort out)
+* `DEND` -> comment out (end of memory section - let user sort out)
+* `EMBED` -> comment out (changes compilation memory address to that of where it is actually compiled - let user sort out)
+* `OBJ` -> comment out (sets compilation address let user sort out)
 * negative numbers not supported in immediate mode; use AND &FF to get 8 lsb
 * ADE+ and beebasm `>` and `<` operator meanings are flipped (used to perform `MOD` and `DIV` 256), viz:
 
@@ -45,6 +54,6 @@ These notes were used to create `convert_6502_src.sh`, which does the heavy lift
     `>` | MOD 256 | DIV 256
     `<` | DIV 256 | MOD 256
 
-* `<([&a-z0-9A-Z]*)` -> `HI($1)`
 * `>([&a-z0-9A-Z]*)` -> `LO($1)`
+* `<([&a-z0-9A-Z]*)` -> `HI($1)`
   

@@ -1,0 +1,117 @@
+;		TTL	e.mcdata
+
+;****************************************
+;****************************************
+
+;		RESUME
+
+;****************************************
+;****************************************
+
+.execute	LDA	#200	; clear memory on break, disable escape key
+		LDX	#3
+		JSR	osbyte
+
+		LDA	#&4C	; store JMP &0287 at break vector to lock machine up! (!)
+		STA	&287
+		LDA	#&87
+		STA	&288
+		LDA	#&02
+		STA	&289
+
+	LDA	#13	; Disable VSYNC event
+	LDX	#4
+	JSR	osbyte
+
+	SEI	; disable interrupts
+
+		LDX	#253	; Set stack pointer to 253; stack starts at 255 and 
+		TXS			; is decremented when items are pushed.
+
+		LDA	#LO(&6A20-1)	; Load source and target addresses
+		STA	workspace		; passed at workspace, but to recycle code
+		LDA	#HI(&6A20-1)	; its loaded into A,X,Y and the move_panel
+		LDX	#LO(&5800-1)	; routine stored it in workspace (0 page)
+		LDY	#HI(&5800-1)
+		JSR	move_panel
+
+		LDA	#LO(&6A20+&4B0-1)
+		STA	workspace
+		LDA	#HI(&6A20+&4B0-1)
+		LDX	#LO(&58C8-1)
+		LDY	#HI(&58C8-1)
+		JSR	move_panel
+
+		LDA	#1
+		STA	old_screen
+		STA	old_level
+
+ 		LDA	#LO(brk)
+		STA	&202
+		LDA	#HI(brk)
+		STA	&203
+
+	LDA	#LO(code)
+	STA	&220
+	LDA	#HI(code)
+	STA	&221
+
+		LDA	#26
+		JSR	oswrch
+
+		LDA	#%11000000	; menu status
+		STA	menu_st
+
+	CLI
+
+	JSR	init_music
+
+	LDA	#14
+	LDX	#4
+	JSR	osbyte
+
+		JMP	exec2
+
+;****************************************
+;****************************************
+
+.move_panel	STA	workspace+1
+		STX	workspace+2
+		STY	workspace+3
+
+		LDX	#10
+
+.mp_loop1	LDY	#15*8
+
+.mp_loop2	LDA	(workspace),Y
+		STA	(workspace+2),Y
+		DEY
+		BNE	mp_loop2
+
+		LDA	workspace
+		CLC
+		ADC	#15*8
+		STA	workspace
+		LDA	workspace+1
+		ADC	#0
+		STA	workspace+1
+
+		LDA	workspace+2
+		ADC	#&40
+		STA	workspace+2
+		LDA	workspace+3
+		ADC	#1
+		STA	workspace+3
+
+		DEX
+		BNE	mp_loop1
+
+		RTS
+
+.end_of_program;	LST	ON
+;		LST	OFF
+
+;****************************************
+;****************************************
+
+;		INCLUDE	"mclvl7a"

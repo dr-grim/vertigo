@@ -1,0 +1,288 @@
+;		TTL	e.mc999
+
+;****************************************
+;****************************************
+
+.print_text	STX	workspace
+		STY	workspace+1
+
+		LDY	#0
+.pt1		LDA	(workspace),Y
+		BEQ	pt2
+
+		JSR	oswrch
+		INY
+		BNE	pt1
+
+.pt2		RTS
+
+;****************************************
+;****************************************
+
+.show_mes	TXA
+		PHA
+		TYA
+		PHA
+
+		JSR	venetian
+
+		LDA	#4
+		STA	workspace
+		LDA	#14
+		LDX	#30
+		LDY	#4
+		JSR	box
+
+		PLA
+		TAY
+		PLA
+		TAX
+		JSR	print_text
+
+		LDA	#0
+		STA	lb_frame
+		LDA	#100
+		STA	dea_frcount
+
+.eolX1		JSR	fx193
+
+		LDA	lb_frame
+		LDX	#6
+		LDY	#128
+		JSR	disp_lball
+
+		LDA	lb_frame
+		EOR	#15
+		LDX	#32
+		LDY	#128
+		JSR	disp_lball
+
+		JSR	inclb
+
+		DEC	dea_frcount
+		BNE	eolX1
+
+		RTS
+
+;****************************************
+;****************************************
+
+.eolevel1	LDX	#LO(levmes1)
+		LDY	#HI(levmes1)
+		JSR	show_mes
+
+		JMP	nls3
+
+;****************************************
+;****************************************
+
+.eolevel2	LDX	#LO(levmes2)
+		LDY	#HI(levmes2)
+		JSR	show_mes
+
+		LDX	#LO(levmes2b)
+		LDY	#HI(levmes2b)
+		JSR	show_mes
+
+		LDX	#LO(levmes2c)
+		LDY	#HI(levmes2c)
+		JSR	show_mes
+
+		JMP	nls3
+
+;****************************************
+;****************************************
+
+.eolevel3	LDX	#LO(levmes3)
+		LDY	#HI(levmes3)
+		JSR	show_mes
+
+		LDA	#3
+		JSR	flat_run
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		JSR	d_shadow
+
+		JSR	do_ra
+
+		JSR	bounce
+
+		JSR	venetian
+
+		LDX	#LO(levmes3b)
+		LDY	#HI(levmes3b)
+		JSR	show_mes
+
+		JMP	nls3
+
+;****************************************
+;****************************************
+
+.do_ra		LDA	#2
+		LDX	old_X
+		LDY	old_Y
+		JMP	restore_area
+
+;****************************************
+;****************************************
+
+.eolevel4	LDX	#LO(levmes4)
+		LDY	#HI(levmes4)
+		JSR	show_mes
+
+		LDA	#2
+		JSR	flat_run
+
+		LDA	#LO(thatsnot)
+		STA	restore+1
+		LDA	#HI(thatsnot)
+		STA	restore+2
+		LDA	#19
+		STA	ra_height+1
+		LDA	#5
+		LDX	#32
+		LDY	#124
+		JSR	restore_area
+
+		LDA	#15
+		JSR	large_delay
+
+		JMP	nls3
+
+;****************************************
+;****************************************
+
+.eolevel5ch	LDX	#LO(levmes5c)
+		LDY	#HI(levmes5c)
+		JSR	show_mes
+
+		JMP	not_last_scr
+
+;****************************************
+;****************************************
+
+.flat_run	JSR	doscreen
+
+		JSR	reset_cols
+
+		LDA	#32 		; X co-ord
+		STA	xy
+		STA	xy+2
+		LDX	#0
+		STX	xy+1
+		STX	xy+3
+
+		INX
+		STX	indicator
+
+		LDA	#20		; height
+		STA	xy+4
+
+		JSR	setup_ball
+
+		JSR	tel2
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.f_lpX		JSR	anim_doframe
+
+		JSR	fx19
+		JSR	osbyte
+
+		LDA	xy
+		CLC
+		ADC	#8
+		STA	xy
+		STA	xy+2
+		LDA	xy+1
+		ADC	#0
+		STA	xy+1
+		STA	xy+3
+
+		CMP	#2
+		BLT	f_lpX
+
+		LDA	xy
+		CMP	#&60
+		BLT	f_lpX
+
+		RTS
+
+;****************************************
+;****************************************
+
+.levmes1	EQUB	31,9,16
+		EQUS	"You're doing great !!!"
+		EQUB	31,11,17
+		EQUS	"Now try level 2 !!!"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes2	EQUB	31,12,16
+		EQUS	"20 screens down,"
+		EQUB	31,11,17
+		EQUS	"30 left to go !!!"
+		EQUB	0
+
+.levmes2b	EQUB	31,11,16
+		EQUS	"So go for it !!!"
+		EQUB	31,9,17
+		EQUS	"If you're really good,"
+		EQUB	0
+
+.levmes2c	EQUB	31,9,16
+		EQUS	"maybe some animation !"
+		EQUB	31,11,17
+		EQUS	"( Next time !!! )"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes3	EQUB	31,13,16
+		EQUS	"One small jump"
+		EQUB	31,14,17
+		EQUS	"for ball ..."
+		EQUB	0
+
+.levmes3b	EQUB	31,11,16
+		EQUS	"... one giant leap"
+		EQUB	31,11,17
+		EQUS	"for bouncykind !!!"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes4	EQUB	31,16,16
+		EQUS	"And now,"
+		EQUB	31,17,17
+		EQUS	"THIS :"
+		EQUB	0
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.levmes5	EQUB	31,10,16
+		EQUS	"Yahoo !!! It's bacon"
+		EQUB	31,11,17
+		EQUS	"sandwich time !!!"
+		EQUB	0
+
+.levmes5b	EQUB	31,9,16
+		EQUS	"( But maybe I'll wait"
+		EQUB	31,11,17
+		EQUS	"until breakfast )."
+		EQUB	0
+
+;   *   *   *   *   *   *   *   *   *   *
+
+.levmes5c	EQUB	31,10,16
+		EQUS	"Well done ! Now try"
+		EQUB	31,10,17
+		EQUS	"it without cheating."
+		EQUB	0
+
+;****************************************
+;****************************************
+
+;		INCLUDE	"mcmusic"
