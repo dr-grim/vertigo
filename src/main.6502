@@ -122,37 +122,6 @@
 ;****************************************
 ;****************************************
 
-		; Branch if Less Than; equivalent of BCC
-		MACRO LOAD_TWOS_COMPLEMENT  register, value
-{		
-		IF value < -128
-			ERROR "Value lower than -128 - out of range of 2's complement"
-		ELIF value > 127
-			ERROR "Value higher than 127 - out of range of 2's complement"
-		ENDIF
-
-		IF value >= 0
-			actual = value
-		ELSE
-			; -ve values not allowed... but we just want the least sig 8 bits
-			actual = value AND &FF
-		ENDIF
-
-		IF register = 'A'
-			LDA #actual
-		ELIF register = 'X'
-		  	LDX #actual
-		ELIF register = 'Y'
-			LDY #actual
-		ELSE
-			ERROR Unknown register
-		ENDIF
-}
-		ENDMACRO
-
-;****************************************
-;****************************************
-
 OFF		=	0
 ON		=	1+2
 OUT		=	0

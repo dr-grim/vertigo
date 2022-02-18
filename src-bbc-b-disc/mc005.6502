@@ -1,0 +1,251 @@
+;		TTL	mc005		; Takes care of music
+
+;****************************************
+;****************************************
+;*
+;*note		EQUB	&13,0,&FF,0,&FF,0,&FF,0
+;*
+;****************************************
+;****************************************
+
+.zzap		LDA	#6		; WAS 5
+		STA	workspace
+;*		LDA	#0
+		STA	workspace+1
+
+.z_loop1	LDA	&FE62
+		EOR	&FE65
+		EOR	&FE69
+		EOR	&FE6B
+		EOR	&FE6D
+		EOR	&FE19
+		EOR	&FE1A
+
+		JSR	noise
+
+		DEC	workspace+1
+		BNE	z_loop1
+
+		DEC	workspace
+		BNE	z_loop1
+
+;*		JMP	wipeout
+
+;****************************************
+;****************************************
+
+.wipeout	JSR	delete_enemy
+
+		JSR	paff
+
+.wipe2		LDA	old_X
+		CMP	#39
+		BGE	skip_splat
+
+		LDA	old_Y
+		CMP	#14
+		BLT	skip_splat
+
+		LDA	xy+3
+		CMP	#4
+		BLT	no_skip_splat
+
+.skip_splat	JMP	skip_splat2
+
+.no_skip_splat	LDA	old_height
+		BEQ	won_hole
+
+		JSR	d_shadow
+
+.won_hole	JSR	do_ra
+
+;*		JSR	setup_pop
+
+		JSR	doframe2
+
+		JSR	doframe1
+
+		JSR	doframe0
+
+		JSR	setup_ball
+
+.skip_splat2	LDA	#8
+		JSR	large_delay
+
+		RTS
+
+;****************************************
+;****************************************
+
+.noise		TAX
+		LDA	#-13 AND &FF
+		LDY	#0
+		BEQ	sound_effect
+
+;****************************************
+;****************************************
+
+.bounce		LDA	#3
+		LDX	#20
+		LDY	#4
+		BNE	sound_effect
+
+;****************************************
+;****************************************
+
+.ting		LDA	#4
+		LDX	#240
+		LDY	#4
+		BNE	sound_effect
+
+;****************************************
+;****************************************
+
+.ting_v2	LDA	#4
+		LDX	#190
+		LDY	#10
+		BNE	sound_effect
+
+;****************************************
+;****************************************
+
+.paff		LDA	#3
+		LDX	#200
+		LDY	#3
+		BNE	sound_effect
+
+;****************************************
+;****************************************
+
+.piff		LDA	#4
+		LDX	#200
+		LDY	#3
+
+;****************************************
+;****************************************
+
+.sound_effect	STA	note+2
+		STX	note+4
+		STY	note+6
+
+		LDA	#7
+		LDX	#LO(note)
+		LDY	#HI(note)
+		JMP	osword
+
+;****************************************
+;****************************************
+
+.teleport	LDA	#4
+		JSR	large_delay
+
+		JSR	piff
+
+.no_skip_tele
+;*		JSR	setup_pop
+
+		JSR	doframe0
+
+		JSR	doframe1
+
+		JSR	doframe2
+
+		JSR	setup_ball
+
+		RTS
+
+;****************************************
+;****************************************
+
+.doframe0	LDA	#LO(wipeout_s+(0*32))
+		PHA
+;*		STA	ms_sprite+1
+		LDA	#HI(wipeout_s+(0*32))
+		LDX	#LO(wipeout_m+(0*32))
+		LDY	#HI(wipeout_m+(0*32))
+
+		BNE	do_tframe
+
+;****************************************
+
+.doframe1	LDA	#LO(wipeout_s+(1*32))
+		PHA
+;*		STA	ms_sprite+1
+		LDA	#HI(wipeout_s+(1*32))
+		LDX	#LO(wipeout_m+(1*32))
+		LDY	#HI(wipeout_m+(1*32))
+
+		BNE	do_tframe
+
+;****************************************
+
+.doframe2	LDA	#LO(wipeout_s+(2*32))
+		PHA
+;*		STA	ms_sprite+1
+		LDA	#HI(wipeout_s+(2*32))
+		LDX	#LO(wipeout_m+(2*32))
+		LDY	#HI(wipeout_m+(2*32))
+
+;****************************************
+
+.do_tframe	STA	ms_sprite+2
+		STX	ms_mask+1
+		STY	ms_mask+2
+		PLA
+		STA	ms_sprite+1
+
+
+.setup_pop	LDA	#16
+		STA	ra_height+1
+		STA	ms_height+1
+
+		LDA	#LO(screen_store)
+		STA	restore+1
+		STA	save+1
+		LDA	#HI(screen_store)
+		STA	restore+2
+		STA	save+2
+
+		LDA	old_Y
+		SEC
+		SBC	#4
+		STA	drmem+1
+
+;*		RTS
+
+
+		LDA	#2
+		LDX	old_X
+		LDY	drmem+1
+		JSR	mask_sprite
+
+		LDA	#20
+		JSR	key_delay
+
+		JSR	fx193
+
+		LDA	#2
+		LDX	old_X
+		LDY	drmem+1
+		JMP	restore_area
+
+;****************************************
+;****************************************
+
+;****************************************
+;****************************************
+
+.large_delay	STA	workspace
+
+.ld_loop	LDA	#250
+		JSR	key_delay
+
+		DEC	workspace
+		BNE	ld_loop
+
+		RTS
+
+;****************************************
+;****************************************
+
+;		INCLUDE	"mc006"

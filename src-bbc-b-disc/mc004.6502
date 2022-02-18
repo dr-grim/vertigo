@@ -1,0 +1,665 @@
+;		TTL	mc004a		; Various subroutines & miscallaneous
+					; routines
+;****************************************
+;****************************************
+
+		MACRO DEFINE address
+		LDA	#8
+		LDX	#LO(address)
+		LDY	#HI(address)
+		JSR	osword
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+.envelope6	EQUB	6,1,0,0,0,0,0,0,100,-5,-3,-4,100,60
+	EQUB	100,60
+.envelope7	EQUB	7,1,0,0,0,0,0,0,100,-4,-1,-1,100,80
+	EQUB	100,80
+.envelope8	EQUB	8,1,0,0,0,0,0,0,126,-10,-5,-10,126,66
+	EQUB	126,66
+.envelope9	EQUB	9,1,0,0,0,0,0,0,110,-20,-10,-20,110,50
+	EQUB	110,50
+.envelope10	EQUB	10,1,0,0,0,0,0,0,60,-1,0,-1,60,30
+	EQUB	60,30
+
+;****************************************
+;****************************************
+
+.def_env
+	LDX	#0
+	STX	workspace
+
+.de_loop
+	LDX	workspace
+
+	LDA	current_slev
+	BNE	not_zilch
+
+	LDA	#0			; 0 volume
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	STA	envelope6+13,X
+	JMP	skip_de
+
+.not_zilch
+	CMP	#1
+	BNE	not_slev1
+
+	LDA	envelope6+14,X		; 25% volume
+	LSR	A
+	LSR	A
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	LDA	envelope6+15,X
+	LSR	A
+	LSR	A
+	STA	envelope6+13,X
+	JMP	skip_de
+
+.not_slev1
+	CMP	#2
+	BNE	not_slev2
+
+	LDA	envelope6+14,X		; 50% volume
+	LSR	A
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	LDA	envelope6+15,X
+	LSR	A
+	STA	envelope6+13,X
+	JMP	skip_de
+
+.not_slev2
+	CMP	#3
+	BNE	not_slev3
+
+	LDA	envelope6+14,X		; 75% volume
+	LSR	A
+	STA	workspace+1
+	LSR	A
+	CLC
+	ADC	workspace+1
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	LDA	envelope6+15,X
+	LSR	A
+	STA	workspace+1
+	LSR	A
+	CLC
+	ADC	workspace+1
+	STA	envelope6+13,X
+	JMP	skip_de
+
+.not_slev3
+	LDA	envelope6+14,X		; 100% volume
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	LDA	envelope6+15,X
+	STA	envelope6+13,X
+
+.skip_de
+	LDA	workspace
+	CLC
+	ADC	#16
+	STA	workspace
+	CMP	#80
+	BEQ	exit_de
+
+	JMP	de_loop
+
+.exit_de	DEFINE	envelope6
+		DEFINE	envelope7
+		DEFINE	envelope8
+		DEFINE	envelope9
+		DEFINE	envelope10
+
+	RTS
+
+;****************************************
+;****************************************
+
+.convert_coords	JSR	calculate_X
+
+		LDA	workspace+4
+
+		LSR	workspace+5		; divide X co-ord by 32
+		ROR	A
+		LSR	workspace+5
+		ROR	A
+		LSR	workspace+5
+		ROR	A
+		SEC
+		SBC	#2
+		LSR	A
+		LSR	A
+		STA	old_X
+
+		JSR	calculate_Y
+
+		LDA	workspace+4
+		LSR	workspace+&5
+		ROR	A
+		LSR	workspace+&5
+		ROR	A
+		EOR	#255
+		SEC
+		SBC	#8
+		STA	old_Y
+
+		RTS
+
+;****************************************
+;****************************************
+
+.music_onoff	LDA	menu_st		; Q key being pressed ??? ( No sound )
+		AND	#64
+		BEQ	musicoff
+
+		LDX	#0
+		BEQ	skipmo
+
+.musicoff	LDX	#1
+
+.skipmo		LDA	#210
+		LDY	#0
+		JSR	osbyte
+
+		LDX	#36
+		LDY	#2
+		JSR	move_cursor
+
+		LDA	menu_st
+		AND	#3
+		BNE	moo_joy
+
+		LDA	#'K'
+		BNE	skip_mooj
+
+.moo_joy	LDA	#'J'
+
+.skip_mooj	JMP	oswrch
+
+;****************************************
+;****************************************
+
+.conv_sprite	LDA	xy		; calculates pixel offset within
+		CLC			; bytes of ball ( 0 to 7 )
+		ADC	xy+2	
+		CLC
+		ADC	#16
+		LSR	A
+		LSR	A
+		AND	#7
+		STA	workspace+7
+		STA	pixel_offset
+
+		LDA	frame		; pointer to present ball frame
+		ASL	A
+		ASL	A
+		ASL	A
+		ADC	#LO(ball_data)
+		STA	workspace+1		
+		LDA	#HI(ball_data)
+		ADC	#0
+		LDX	#LO(actual_ball	); pointer to where new ball should
+		LDY	#HI(actual_ball	); be stored
+		JSR	slide_frame	; slide it ?workspace times to the right
+
+		LDA	#LO(c+1		); pointer to present mask
+		STA	workspace+1
+		LDA	#HI(c+1)
+		LDX	#LO(actual_mask	); pointer to where new mask should
+		LDY	#HI(actual_mask	); be stored
+		JSR	slide_frame	; slide it ?workspace times to the right
+
+		LDY	#15
+.cs_loop2	LDA	actual_ball,Y
+		AND	actual_mask,Y
+		STA	actual_ball,Y
+		DEY
+		BPL	cs_loop2
+
+		JSR	invert_amask
+
+		RTS
+
+;****************************************
+
+.slide_frame	STA	workspace+2
+		STX	workspace+3
+		STY	workspace+4
+
+		LDY	#7		; copies normal sprite to workspace
+.sf_loop1	LDA	(workspace+1),Y	; ( is designed for 1*8 sprites )
+		STA	(workspace+3),Y
+		DEY
+		BPL	sf_loop1
+
+		LDY	#8
+		LDA	#0		; blank out last row of bytes
+.sf_loop2	STA	(workspace+3),Y	; ( to contents of X on entry )
+		INY
+		CPY	#16
+		BNE	sf_loop2
+
+		LDX	workspace+7
+
+.sf_loop3	TXA
+		BEQ	exit_sf
+
+		DEX
+
+		LDY	#0
+.sf_loop4	LDA	(workspace+3),Y
+		AND	#%00000001
+		LSR	A
+		ROR	A
+		STA	workspace+5
+
+		LDA	(workspace+3),Y
+		LSR	A
+		STA	(workspace+3),Y
+
+		TYA
+		CLC
+		ADC	#8
+		TAY
+
+		LDA	(workspace+3),Y
+		LSR	A
+		ORA	workspace+5
+		STA	(workspace+3),Y
+
+		TYA
+		SEC
+		SBC	#7
+		TAY
+		CPY	#8
+		BNE	sf_loop4
+
+		BEQ	sf_loop3
+
+.exit_sf	RTS
+
+;****************************************
+
+.print_jewel	LDY	#4
+.pj_loop1	LDA	j,Y
+		STA	workspace+&B,Y
+		DEY
+		BPL	pj_loop1
+
+		JSR	convert_coords
+
+		LDA	j
+		CLC		
+		ADC	j+2
+		LSR	A
+		LSR	A
+		AND	#7
+		STA	workspace+7
+
+		LDX	screen_number
+		DEX
+		TXA
+		ASL	A
+		ASL	A
+		ASL	A
+		PHA
+		ADC	#LO(jewel_data)
+		STA	workspace+1
+		LDA	#HI(jewel_data)
+		ADC	#0
+		LDX	#LO(actual_ball)
+		LDY	#HI(actual_ball)
+		JSR	slide_frame
+
+		PLA
+		CLC
+		ADC	#LO(jewel_masks)
+		STA	workspace+1
+		LDA	#HI(jewel_masks)
+		ADC	#0
+		LDX	#LO(actual_mask)
+		LDY	#HI(actual_mask)
+		JSR	slide_frame
+
+		JSR	invert_amask
+
+;****************************************
+;****************************************
+
+.do_ms		LDA	#2
+		LDX	old_X
+		LDY	old_Y
+		JMP	mask_sprite
+
+;****************************************
+;****************************************
+
+.A_pressed	LDA	menu_st
+		AND	#3
+		BNE	A_not_keys
+
+		INKEY	-66
+
+		RTS
+
+.A_not_keys	LDA	js
+		AND	#1
+
+		RTS
+
+;****************************************
+
+.Z_pressed	LDA	menu_st
+		AND	#3
+		BNE	Z_not_keys
+
+		INKEY	-98
+
+		RTS
+
+.Z_not_keys	LDA	js
+		AND	#2
+
+		RTS
+
+;****************************************
+
+.sl_pressed	LDA	menu_st
+		AND	#3
+		BNE	sl_not_keys
+
+		INKEY	-105
+
+		RTS
+
+.sl_not_keys	LDA	js
+		AND	#8
+
+		RTS
+
+;****************************************
+
+.cl_pressed	LDA	menu_st
+		AND	#3
+		BNE	cl_not_keys
+
+		INKEY	-73
+
+		RTS
+
+.cl_not_keys	LDA	js
+		AND	#4
+
+		RTS
+
+;****************************************
+
+.calc_height	STX	workspace+5
+		STY	workspace+6
+
+		LDA	pixel_X
+		STA	workspace+4
+
+		LDA	workspace+6
+		SEC
+		SBC	workspace+5
+		STA	workspace
+		LDA	#0
+		STA	workspace+2
+		STA	workspace+3
+		SBC	#0
+		STA	workspace+1
+
+.ch_loop1	LSR	workspace+4
+		BCC	C_is_clear
+
+		LDA	workspace+2
+		CLC
+		ADC	workspace
+		STA	workspace+2
+
+		LDA	workspace+3
+		ADC	workspace+1
+		STA	workspace+3
+
+.C_is_clear	ASL	workspace
+		ROL	workspace+1
+
+		LDA	workspace+4
+		BNE	ch_loop1
+
+		LDA	workspace+3
+		LSR	A
+		ROR	workspace+2
+		LSR	A
+		ROR	workspace+2
+		LSR	A
+		ROR	workspace+2
+		STA	workspace+3
+
+		LDA	workspace+2
+
+		LSR	workspace+3
+		ROR	A
+
+		CLC
+		ADC	workspace+5
+		BCC	ch_skip
+
+		INC	workspace+3
+
+.ch_skip	STA	workspace
+		LDA	#72
+		SEC
+		SBC	workspace
+
+		RTS
+
+;****************************************
+;****************************************
+
+.mult		STX	workspace+&6
+		STY	workspace+&7
+		LDA	#0
+		LDX	#8
+.next		LSR	workspace+&7
+		BCC	rot
+		CLC
+		ADC	workspace+&6
+.rot		ROR	A
+		ROR	workspace+&8
+		DEX
+		BNE	next
+		STA	workspace+&9
+		LDA	workspace+&8
+		RTS
+
+;****************************************
+;****************************************
+
+.calculate_X	LDA	workspace+&B
+		CLC
+		ADC	workspace+&D
+		STA	workspace+&4
+		LDA	workspace+&C
+		ADC	workspace+&E
+		STA	workspace+&5
+
+		RTS
+
+;****************************************
+
+.calculate_Y	LDA	#-128 AND &FF
+		CLC
+		ADC	workspace+&D
+		STA	workspace+&4
+		LDA	#2
+		ADC	workspace+&E
+		STA	workspace+&5
+		LDA	workspace+&4
+		SEC
+		SBC	workspace+&B
+		STA	workspace+&4
+		LDA	workspace+&5
+		SBC	workspace+&C
+		LSR	A
+		ROR	workspace+&4
+		LSR	A
+		ROR	workspace+&4
+		LSR	A
+		ROR	workspace+&4
+		LDY	workspace+&4
+		STY	workspace+&8
+		TAY
+		STY	workspace+&9
+
+		LDX	#4
+.loop		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		TYA
+		ADC	workspace+&9
+		STA	workspace+&9
+		DEX
+		BNE	loop
+
+		LDA	workspace+&8
+		STA	workspace+&4
+		LDA	workspace+&9
+		STA	workspace+&5
+		LDA	workspace+&4
+		CLC
+		ADC	workspace+&F
+		STA	workspace+&4
+
+		BCC	exit_cY
+
+		INC	workspace+&5
+
+.exit_cY	RTS
+
+;*****************************************
+;*****************************************
+
+.check_optkeys	JSR	music_onoff
+
+		INKEY	-21
+		BEQ	not_keys
+
+		LDA	menu_st
+		AND	#%11111100
+		STA	menu_st
+
+.not_keys	INKEY	-117
+		BEQ	not_stick
+
+		LDA	menu_st
+		AND	#%11111100
+		ORA	#%00000001
+		STA	menu_st
+
+.not_stick
+	LDA	sound_count
+	BNE	not_sounddown
+
+	LDA	current_slev
+	BEQ	skip_musicd
+
+	INKEY	-115
+	BEQ	skip_musicd
+
+	DEC	current_slev
+	BPL	do_su
+
+.skip_musicd
+	LDA	current_slev
+	CMP	#4
+	BEQ	skip_musicu
+
+	INKEY	-116
+	BEQ	skip_musicu
+
+	INC	current_slev
+
+.do_su	JSR	def_env
+
+	JMP	do_sw
+
+
+.skip_musicu	INKEY	-114
+		BEQ	not_soundup
+
+	LDA	&8E7
+	CMP	#120
+	BEQ	not_soundup
+	CLC
+	ADC	#20
+	JMP	sd_cont
+
+.not_soundup	INKEY	-33
+		BEQ	not_sounddown2
+
+	LDA	&8E7
+	BEQ	not_sounddown
+	SEC
+	SBC	#20
+.sd_cont
+	STA	&8E7
+	STA	&8EB
+	STA	&8F7
+	STA	&8FB
+
+	STA	&8EC
+	STA	&8FC
+
+.do_sw	LDA	#10
+	STA	sound_count
+	RTS
+
+.not_sounddown
+	DEC	sound_count
+
+.not_sounddown2
+		RTS
+
+;*****************************************
+;*****************************************
+
+.current_slev	EQUB	4
+
+;*****************************************
+;*****************************************
+
+.setup_ball	LDA	#8
+		STA	ra_height+1
+		STA	ms_height+1
+
+.setupb3	LDA	#LO(actual_mask)
+		STA	ms_mask+1
+		LDA	#HI(actual_mask)
+		STA	ms_mask+2
+
+		LDA	#LO(actual_ball)
+		STA	ms_sprite+1
+		LDA	#HI(actual_ball)
+		STA	ms_sprite+2
+
+.setupb2	LDA	#LO(screen_store)
+		STA	restore+1
+		STA	save+1
+		LDA	#HI(screen_store)
+		STA	restore+2
+		STA	save+2
+
+		RTS
+
+;*****************************************
+;*****************************************
+
+;		INCLUDE	"mc005"

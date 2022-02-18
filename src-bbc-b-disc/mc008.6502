@@ -1,0 +1,598 @@
+;		TTL	mc008		; Data for nasty's screen route
+
+;****************************************
+;*	Bits 1-4 = Speed ( Delay )	*
+;*	=0-7	N.B. 0 = still		*
+;****************************************
+;*	Bits 8-32 = Number of blocks	*
+;*	=1-7				*
+;****************************************
+;*	Bits 64-128 = Direction,	*
+;*	=0-3	0 = NW, 1 = NE,		*
+;*		2 = SW, 3 = SE.		*
+;****************************************
+;*					*
+;* SYNTAX : 	MOVE	SPEED,MOVES,DIRECTION
+;*		START	X,Y	( 2 bytes each )
+;*					*
+;****************************************
+
+.nasty_lookup	EQUW	S0L0		; Level	1
+		EQUW	S2L1
+		EQUW	S3L1
+		EQUW	S4L1
+		EQUW	S5L1
+		EQUW	S6L1
+ 		EQUW	S7L1
+		EQUW	S8L1
+		EQUW	S0L0
+		EQUW	S10L1
+
+		EQUW	S1L2		; Level 2
+		EQUW	S2L2
+		EQUW	S3L2
+		EQUW	S4L2
+		EQUW	S5L2
+		EQUW	S0L0
+		EQUW	S7L2
+		EQUW	S0L0
+		EQUW	S3L2
+		EQUW	S0L0
+
+		EQUW	S1L3		; Level 3
+		EQUW	S0L0
+		EQUW	S0L0
+		EQUW	S0L0
+		EQUW	S5L3
+		EQUW	S0L0
+		EQUW	S7L3
+		EQUW	S8L3
+		EQUW	S0L0
+		EQUW	S10L3
+
+		EQUW	S0L0		; Level 4
+		EQUW	S2L4
+		EQUW	S3L4
+		EQUW	S4L4
+		EQUW	S5L4
+		EQUW	S6L4
+		EQUW	S9L5
+		EQUW	S0L0
+		EQUW	S0L0
+		EQUW	S0L0
+
+		EQUW	S0L0		; Level 5
+		EQUW	S2L5
+		EQUW	S3L5
+		EQUW	S9L5
+		EQUW	S5L5
+		EQUW	S0L0
+		EQUW	S0L0
+		EQUW	S8L5
+		EQUW	S9L5
+		EQUW	S0L0
+
+;****************************************	; Level 0 data
+;****************************************
+
+.S0L0		START	1,1		; No nasty !!!
+
+;****************************************	; Level 1 data
+;****************************************
+
+.S2L1		START	416,416
+
+		MOVE	7,3,NW
+		MOVE	7,5,SW
+		MOVE	7,3,SE
+		MOVE	7,5,NE
+
+		EQUB	0
+
+.S3L1		START	32,544
+
+		MOVE	7,7,SW
+		MOVE	7,1,SW
+		MOVE	7,7,SE
+		MOVE	6,1,SE
+		MOVE	7,2,NE
+		MOVE	7,1,SE
+		MOVE	7,7,NE
+		MOVE	7,7,NW
+		MOVE	7,2,NW
+		MOVE	7,1,SW
+
+		EQUB	0
+
+.S4L1		START	224,352
+
+		MOVE	7,2,SE
+		MOVE	7,1,NE
+		MOVE	7,1,NW
+		MOVE	7,3,SW
+		MOVE	7,1,SE
+		MOVE	6,1,SE
+		MOVE	7,2,NW
+		MOVE	6,1,NW
+		MOVE	7,2,SE
+		MOVE	7,3,NE
+		MOVE	7,1,NW
+		MOVE	7,1,SW
+		MOVE	7,1,SE
+		MOVE	6,1,SE
+		MOVE	7,2,NW
+		MOVE	6,1,NW
+
+		EQUB	0
+
+.S5L1		START	160,608
+
+		MOVE	2,1,SW
+		MOVE	7,1,NE
+		MOVE	7,6,SE
+		MOVE	7,1,SW
+		MOVE	7,1,SE
+		MOVE	7,4,SW
+
+		MOVE	7,7,NW
+		MOVE	7,5,NE
+		MOVE	7,2,NW
+		MOVE	7,6,SW
+		MOVE	7,2,SW
+		MOVE	7,1,SE
+		MOVE	7,1,SW
+		MOVE	7,6,SE
+		MOVE	7,2,SE
+
+		MOVE	7,4,NE
+		MOVE	7,7,NW
+		MOVE	7,5,NE
+
+		EQUB	0
+
+.S6L1		START	160,160
+
+		MOVE	6,4,NE
+		MOVE	5,1,SE
+		MOVE	5,1,NE
+		MOVE	6,4,SE
+		MOVE	6,4,SW
+		MOVE	5,1,NW
+		MOVE	5,1,SW
+		MOVE	6,4,NW
+
+		EQUB	0
+
+.S7L1		START	32,608
+
+		MOVE	6,6,SW
+		MOVE	7,4,SE
+		MOVE	5,2,NE
+		MOVE	5,5,SE
+		MOVE	6,4,NE
+		MOVE	6,7,NW
+		MOVE	6,2,NW
+
+		EQUB	0
+
+.S8L1		START	288,608
+
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	6,1,NW
+		MOVE	6,1,NE
+		MOVE	6,1,NW
+		MOVE	6,1,NE
+		MOVE	6,1,NW
+		MOVE	6,1,NE
+		MOVE	6,1,NW
+		MOVE	6,1,NE
+		MOVE	6,1,NW
+		MOVE	6,1,NE
+
+		EQUB	0
+
+.S10L1		START	32,32
+
+		MOVE	7,7,NE
+		MOVE	7,2,NE
+		MOVE	7,3,SE
+		MOVE	7,7,SW
+		MOVE	7,2,SW
+		MOVE	7,3,SE
+		MOVE	7,7,NE
+		MOVE	7,2,NE
+		MOVE	7,3,SE
+		MOVE	7,7,SW
+		MOVE	7,2,SW
+		MOVE	7,3,NW
+		MOVE	7,7,NE
+		MOVE	7,2,NE
+		MOVE	7,3,NW
+		MOVE	7,7,SW
+		MOVE	7,2,SW
+		MOVE	7,3,NW
+
+		EQUB	0
+
+;****************************************	; Level 2 data
+;****************************************
+
+.S1L2		START	160,288
+
+		MOVE	7,2,SW
+		MOVE	7,1,SE
+		MOVE	7,1,NW
+		MOVE	7,2,NE
+		MOVE	7,2,SE
+		MOVE	7,2,NW
+		MOVE	7,3,NE
+		MOVE	7,1,SE
+		MOVE	7,1,NW
+		MOVE	7,3,SW
+		MOVE	7,2,SE
+		MOVE	7,2,NW
+
+		EQUB	0
+
+.S2L2		START	608,608
+
+		MOVE	6,3,NW
+		MOVE	6,7,SW
+		MOVE	6,2,SW
+		MOVE	6,3,SE
+		MOVE	6,2,NE
+		MOVE	5,4,NE
+		MOVE	6,3,NE
+
+		EQUB	0
+
+.S3L2		START	32,352
+
+		MOVE	7,7,SE
+		MOVE	7,2,SE
+		MOVE	4,1,SW
+		MOVE	7,7,NW
+		MOVE	7,2,NW
+		MOVE	4,1,NE
+
+		EQUB	0
+
+.S4L2		START	352,32
+
+		MOVE	6,4,SE
+		MOVE	7,5,NE
+		MOVE	7,7,NW
+		MOVE	7,2,NW
+		MOVE	6,5,SW
+		MOVE	6,5,SE
+
+		EQUB	0
+
+.S5L2		START	608,96
+
+		MOVE	7,5,NW
+		MOVE	6,2,NE
+		MOVE	7,3,SE
+		MOVE	6,4,NE
+		MOVE	7,2,SE
+		MOVE	6,2,NE
+		MOVE	7,4,NW
+		MOVE	6,4,SW
+		MOVE	7,2,NW
+		MOVE	6,2,NE
+		MOVE	7,1,SE
+		MOVE	6,2,NE
+		MOVE	7,4,NW
+		MOVE	6,3,SW
+		MOVE	7,2,SE
+		MOVE	6,3,SW
+		MOVE	7,2,NW
+		MOVE	6,3,SW
+		MOVE	7,6,SE
+		MOVE	6,3,SE
+		MOVE	6,1,NE
+
+		EQUB	0
+
+.S7L2		START	544,96
+
+		MOVE	6,1,NW
+		MOVE	6,2,SE
+		MOVE	6,1,NW
+		MOVE	6,1,SW
+		MOVE	7,3,NE
+		MOVE	6,1,SE
+		MOVE	7,3,NE
+		MOVE	6,1,NW
+		MOVE	7,3,NE
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	6,2,NW
+		MOVE	6,1,SE
+		MOVE	6,1,NE
+		MOVE	7,3,SW
+		MOVE	6,1,SE
+		MOVE	7,3,SW
+		MOVE	6,1,NW
+		MOVE	7,3,SW
+		MOVE	6,1,NE
+
+		EQUB	0
+
+;****************************************	; Level 3 data
+;****************************************
+
+.S1L3		START	288,608
+
+		MOVE	6,1,SE
+		MOVE	7,4,SW
+		MOVE	7,4,SE
+		MOVE	6,5,SW
+		MOVE	6,2,NW
+		MOVE	6,2,SE
+		MOVE	6,5,NE
+		MOVE	7,4,NW
+		MOVE	7,4,NE
+		MOVE	6,1,NW
+
+		EQUB	0
+
+.S5L3		START	480,32
+
+		MOVE	6,7,NW
+		MOVE	7,2,NE
+		MOVE	6,7,NE
+		MOVE	7,2,SE
+		MOVE	6,7,SE
+		MOVE	7,2,SW
+		MOVE	6,7,SW
+		MOVE	7,2,NW
+
+		EQUB	0
+
+.S7L3		START	608,32
+
+		MOVE	5,2,NE
+		MOVE	6,2,NW
+		MOVE	7,2,SW
+		MOVE	7,3,NW
+		MOVE	7,2,NE
+		MOVE	7,2,NW
+		MOVE	7,2,SW
+		MOVE	7,2,NW
+		MOVE	7,4,NE
+		MOVE	7,2,SE
+		MOVE	6,2,NE
+		MOVE	5,2,NW
+
+		MOVE	5,2,SE
+		MOVE	6,2,SW
+		MOVE	7,2,NW
+		MOVE	7,4,SW
+		MOVE	7,2,SE
+		MOVE	7,2,NE
+		MOVE	7,2,SE
+		MOVE	7,2,SW
+		MOVE	7,3,SE
+		MOVE	7,2,NE
+		MOVE	6,2,SE
+		MOVE	5,2,SW
+
+		EQUB	0
+
+.S8L3		START	32,608
+
+		MOVE	6,2,SE
+		MOVE	6,2,SW
+		MOVE	7,2,NW
+		MOVE	6,2,SW
+		MOVE	7,2,SE
+		MOVE	6,1,SW
+		MOVE	7,2,SE
+		MOVE	6,1,NE
+		MOVE	6,1,SE
+		MOVE	6,1,SW
+		MOVE	6,1,NW
+		MOVE	6,1,NE
+		MOVE	7,3,SE
+		MOVE	6,1,SW
+		MOVE	7,2,SE
+		MOVE	7,2,SW
+		MOVE	6,2,NW
+		MOVE	7,2,SW
+		MOVE	7,2,SE
+
+		MOVE	6,2,NW
+		MOVE	6,2,NE
+		MOVE	7,2,SE
+		MOVE	6,2,NE
+		MOVE	6,2,NW
+		MOVE	6,1,NE
+		MOVE	6,3,NW
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	6,1,NE
+		MOVE	6,1,NW
+		MOVE	6,1,SW
+		MOVE	7,2,NW
+		MOVE	6,1,NE
+		MOVE	7,2,NW
+		MOVE	7,2,NE
+		MOVE	6,2,SE
+		MOVE	7,2,NE
+		MOVE	7,2,NW
+
+		EQUB	0
+
+.S10L3		START	608,608
+
+		MOVE	7,1,SW
+		MOVE	6,1,SW
+		MOVE	4,1,SW
+		MOVE	1,1,SW
+		MOVE	7,5,SW
+		MOVE	7,2,NW
+		MOVE	7,4,NE
+		MOVE	7,3,NW
+		MOVE	7,4,SW
+		MOVE	7,4,NW
+		MOVE	7,7,NE
+		MOVE	7,2,NE
+		MOVE	7,7,SE
+		MOVE	7,2,SE
+
+		EQUB	0
+
+;****************************************	; Level 4 data
+;****************************************
+
+.S2L4		START	32,224
+
+		MOVE	7,3,NE
+		MOVE	7,3,SW
+
+		EQUB	0
+
+.S3L4		START	416,32
+
+		MOVE	7,3,NE
+		MOVE	7,3,SE
+		MOVE	7,3,SW
+		MOVE	7,7,NW
+		MOVE	7,2,NW
+		MOVE	7,6,SE
+
+		EQUB	0
+
+.S4L4		START	288,288
+
+		MOVE	6,2,SE
+		MOVE	6,2,NE
+		MOVE	6,2,NW
+		MOVE	6,2,SW
+
+		EQUB	0
+
+.S5L4		START	32,96
+
+		MOVE	7,7,NE
+		MOVE	6,1,SE
+		MOVE	6,1,NE
+		MOVE	7,7,SE
+		MOVE	6,1,SW
+		MOVE	6,1,SE
+		MOVE	7,7,SW
+		MOVE	6,1,NW
+		MOVE	6,1,SW
+		MOVE	7,7,NW
+		MOVE	6,1,NE
+		MOVE	6,1,NW
+
+		EQUB	0
+
+.S6L4		START	608,608
+
+		MOVE	6,3,SW
+		MOVE	7,1,NW
+		MOVE	6,1,SW
+		MOVE	7,1,NW
+		MOVE	6,1,SW
+		MOVE	5,1,SE
+		MOVE	6,1,SW
+		MOVE	5,1,SE
+		MOVE	6,3,SW
+		MOVE	6,3,NW
+		MOVE	7,1,NE
+		MOVE	6,1,NW
+		MOVE	7,1,NE
+		MOVE	6,1,NW
+		MOVE	5,1,SW
+		MOVE	6,1,NW
+		MOVE	5,1,SW
+		MOVE	6,3,NW
+		MOVE	6,3,NE
+		MOVE	7,1,SE
+		MOVE	6,1,NE
+		MOVE	7,1,SE
+		MOVE	6,1,NE
+		MOVE	5,1,NW
+		MOVE	6,1,NE
+		MOVE	5,1,NW
+		MOVE	6,3,NE
+		MOVE	6,3,SE
+		MOVE	7,1,SW
+		MOVE	6,1,SE
+		MOVE	7,1,SW
+		MOVE	6,1,SE
+		MOVE	5,1,NE
+		MOVE	6,1,SE
+		MOVE	5,1,NE
+		MOVE	6,3,SE
+
+		EQUB	0
+
+;***************************************	; Level 5 data
+;***************************************
+
+.S2L5		START	609,609		; NO ENEMY!!!
+
+		MOVE	7,7,SW
+		MOVE	7,2,SW
+		MOVE	6,7,NW
+		MOVE	6,2,NW
+		MOVE	5,7,NE
+		MOVE	5,2,NE
+		MOVE	4,7,SE
+		MOVE	3,7,SW
+
+		EQUB	0
+
+.S3L5		START	224,32
+
+		MOVE	6,6,SE
+		MOVE	6,6,NE
+		MOVE	6,6,SW
+		MOVE	6,6,NW
+
+		EQUB	0
+
+.S5L5		START	288,352
+
+		MOVE	7,1,SE
+		MOVE	7,1,SW
+		MOVE	7,1,NW
+		MOVE	7,1,NE
+
+		EQUB	0
+
+.S8L5		START	160,160
+
+		MOVE	7,5,SE
+		MOVE	7,5,NE
+		MOVE	7,5,NW
+		MOVE	7,5,SW
+
+		EQUB	0
+
+.S9L5		START	288,288
+
+		MOVE	7,1,NE
+		MOVE	7,1,SE
+		MOVE	7,1,SW
+		MOVE	7,1,NW
+
+		EQUB	0
+
+;****************************************
+;****************************************
+
+;		INCLUDE	"mc009"

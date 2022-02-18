@@ -14,4 +14,11 @@ Mapped from ADE+ to beebasm, the 6502 sources are in the [`src`](src) folder, bu
 The `clean` make rule will remove the `beebasm` cloned repository and also remove the built disc image `vertigo.ssd`.
 
 ### BBC Master variant
-This is the only version at present - the code I'd retrieved has the graphics showing `(C) 1989`, so it's not the final disc version (released with `(C) 1991` as its final release date). However, it build a binary match of the executable found on the backup disc, and works 100%. There may have been later tweaks, I'll keep digging.
+Builds `vertigo.ssd`
+
+The code I'd retrieved has the graphics showing `(C) 1989`, so it's not the final disc version (released with `(C) 1991` as its final release date). However, it build a binary match of the executable found on the backup disc, and works 100%. There may have been later tweaks, I'll keep digging.
+
+### BBC 'B' disc variant
+Builds `vertigo-bbc-b-disc.ssd`
+
+The disc was corrupted, but I managed to retrieve the source code and binary data files. The cassette version sources look ok, so I may be able to rebuild the art from that.

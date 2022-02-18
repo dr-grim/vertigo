@@ -200,8 +200,7 @@
 
 .update_jingle	LDA	#128
 		LDY	#0
-		; LDX	#-6
-		LOAD_TWOS_COMPLEMENT 'X', -6
+		LDX #-6 AND &FF
 		JSR	osbyte
 
 		CPX	#2
@@ -216,8 +215,7 @@
 
 .skip_jbass	LDA	#128
 		LDY	#0
-		; LDX	#-7
-		LOAD_TWOS_COMPLEMENT 'X', -7
+		LDX #-7 AND &FF
 		JSR	osbyte
 
 		CPX	#2
@@ -232,8 +230,7 @@
 
 .skip_jarpeg	LDA	#128
 		LDY	#0
-		; LDX	#-8
-		LOAD_TWOS_COMPLEMENT 'X', -8
+		LDX	#-8 AND &FF
 		JSR	osbyte
 
 		CPX	#2
@@ -337,8 +334,7 @@
 
 .check_eojingle	LDA	#128
 		LDY	#0
-		; LDX	#-6
-		LOAD_TWOS_COMPLEMENT 'X', -6
+		LDX	#-6 AND &FF
 		JSR	osbyte
 
 		CPX	#15
@@ -349,8 +345,7 @@
 
 .checkc2	LDA	#128
 		LDY	#0
-		; LDX	#-7
-		LOAD_TWOS_COMPLEMENT 'X', -7
+		LDX	#-7 AND &FF
 		JSR	osbyte
 
 		CPX	#15
@@ -360,8 +355,7 @@
 
 .checkc3	LDA	#128
 		LDY	#0
-		; LDX	#-8
-		LOAD_TWOS_COMPLEMENT 'X', -8
+		LDX	#-8 AND &FF
 		JSR	osbyte
 
 		CPX	#15

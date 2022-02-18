@@ -102,8 +102,7 @@
 
 .code
 		LDA	#128		; check channel 1
-		; LDX	#-6		; buffer for free
-		LOAD_TWOS_COMPLEMENT 'X', -6
+		LDX #-6 AND &FF
 		LDY	#0		; spaces (]X)
 		JSR	osbyte
 
@@ -115,8 +114,7 @@
 		BRA	code
 
 .eobass		LDA	#128		; check channel 1
-		; LDX	#-7		; buffer for free
-		LOAD_TWOS_COMPLEMENT 'X', -7
+		LDX #-7 AND &FF
 		LDY	#0		; spaces (]X)
 		JSR	osbyte
 
@@ -163,8 +161,7 @@
 ;****************************************
 
 .noise		TAX
-		; LDA	#-13
-		LOAD_TWOS_COMPLEMENT 'A', -13
+		LDA #-13 AND &FF
 		LDY	#0
 		BRA	sound_effect
 

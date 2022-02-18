@@ -16,7 +16,7 @@
 ;****************************************
 
 .calculate_Y	; LDA	#-128
- 		LOAD_TWOS_COMPLEMENT 'A', -128
+ 		LDA #-128 AND &FF
 		CLC
 		ADC	workspace+&D
 		STA	workspace+&4
