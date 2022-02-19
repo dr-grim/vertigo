@@ -1,0 +1,268 @@
+;		TTL	e.mc		; Sets up all variables & macros,
+					; also includes all source files
+;****************************************
+;****************************************
+
+		MACRO	START x,y			; Defines X,Y for enemy's path
+		EQUW	x,y
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		MACRO	MOVE x,y,dir			; Defines 1 move for enemy's path
+		EQUB	x+(y*8)+dir
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		MACRO	INKEY	key		; MACRO to provide INKEY(-) function
+		LDA	#&81
+		LDX	#LO(key)
+		LDY	#&FF
+		JSR	osbyte
+		TYA
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+					; TABLE <start>,<step>,<number>
+		MACRO LOOKUP start, step, number
+{		
+		FOR n, 0, number-1
+		EQUW start + (n*step)
+		NEXT
+}
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		; Branch if Greater or Equal; equivalent of BCS
+		MACRO BGE  address		; ADE+ supported BGE
+		BCS	address
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		; Branch if Less Than; equivalent of BCC
+		MACRO BLT  address		; ADE+ supported BLT
+		BCC	address
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+OFF		=	0
+ON		=	1+2
+OUT		=	0
+IN		=	4
+
+;****************************************
+;****************************************
+
+;*nvwrch		=	&FFC8		; setup all os routines and registers
+;*nvrdch		=	&FFCB
+;*osfind		=	&FFCE
+;*osbgpb		=	&FFD1
+;*osbput		=	&FFD4		; WILL NOW ONLY WORK ON OS 1.2
+;*osbget		=	&FFD7
+;*osargs		=	&FFDA
+;*osfile		=	&FFDD
+;*osrdch		=	&FFE0
+;*osasci		=	&FFE3
+;*osnewl		=	&FFE7
+oswrch		=	&FFEE
+osword		=	&FFF1
+osbyte		=	&FFF4
+oscli		=	&FFF7
+
+; * * * * * * * * * * * * * * * * * * * *
+
+;		DSECT
+		ORG	&0000
+
+.timer1		SKIP	1
+.timer2		SKIP	1
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.drmem		SKIP	10
+.xy		SKIP	5
+.ab		SKIP	10
+.oxy		SKIP	6
+.hites		SKIP	7
+.j		SKIP	5
+.mem		SKIP	5
+.u		SKIP	1
+.VC		SKIP	1
+.h		SKIP	1
+.old_h		SKIP	1
+
+.c		SKIP	11
+
+.workspace	SKIP	&12		; WAS &14
+
+.indicator	SKIP	1
+
+.frame		SKIP	1
+
+.old_X		SKIP	1
+.old_X2		SKIP	1
+.old_Y		SKIP	1
+.old_Y2		SKIP	1
+
+.pixel_offset	SKIP	1
+
+.old_height	SKIP	1
+
+.pointer	SKIP	2
+
+.controller	SKIP	1
+
+.height_1	SKIP	1
+.height_2	SKIP	1
+.height_3	SKIP	1
+.height_4	SKIP	1
+
+.pixel_X	SKIP	1
+.pixel_mask	SKIP	1
+.pixel_actual	SKIP	1
+
+.pointer2	SKIP	2
+.pointer3	SKIP	2
+
+.menu_st	SKIP	1
+
+.enemy_x	SKIP	2
+.enemy_y	SKIP	2
+.enemy_z	SKIP	1
+.enemy_zm	SKIP	1
+.e_point	SKIP	1
+.e_count	SKIP	1
+.e_frame	SKIP	1
+
+.pointer4	SKIP	2
+
+.old_lives	SKIP	1
+
+.block_sh	SKIP	1
+
+.level_number	SKIP	1
+.screen_number	SKIP	1
+
+.old_level2	SKIP	1
+
+.lives		SKIP	1
+.score		SKIP	5
+.frame_delay	SKIP	1
+
+.old_level	SKIP	1
+.old_screen	SKIP	1
+.start_type	SKIP	1
+
+.old_v_sp	SKIP	1
+
+.e_speed	SKIP	1
+.e_blocks	SKIP	1
+.e_direction	SKIP	1
+.e_sp_c		SKIP	1
+.e_moves	SKIP	1
+.old_EX		SKIP	1
+.old_EY		SKIP	1
+.js		SKIP	1
+
+.shadow_store	SKIP	1
+
+.main_offset	SKIP	1
+.mb_num		SKIP	1
+.main_pointer	SKIP	2
+
+.bass_offset	SKIP	1
+.bb_num		SKIP	1
+.bass_pointer	SKIP	2
+
+.ny_oldX	SKIP	1
+.ny_oldY	SKIP	1
+.ny_shstore	SKIP	1
+.ny_pixoffset	SKIP	1
+.n_bhi		SKIP	1
+
+.x_bar		SKIP	1
+.y_bar		SKIP	1
+.h_bar		SKIP	1
+
+.sound_count	SKIP	1
+
+;	LST	ON
+.zpage
+;	LST	OFF
+
+;		DEND
+
+;****************************************
+;****************************************
+
+delay		=	4
+
+;****************************************
+
+frames		=	8
+
+;****************************************
+
+NW		=	0
+NE		=	64
+SW		=	128
+SE		=	192
+
+;****************************************
+;****************************************
+
+codedest	=	&1100		; = where code is to be downloaded
+
+;****************************************
+;****************************************
+
+		INCLUDE	"mc000a.6502"
+
+.code_end
+
+		SAVE "Mcode", codestart, code_end, execute
+;****************************************
+;****************************************
+
+		CLEAR &0000, &FFFF
+
+		INCLUDE "mclvl7a.6502"
+		INCLUDE "mclvl7b.6502"
+
+		SAVE "V.level7", start_of_level7, end_of_level7, &0000, &0000
+
+;****************************************
+;****************************************
+
+		CLEAR &0000, &FFFF
+
+		INCLUDE "mcload.6502"
+
+		SAVE "vertigo", loader_code_start, loader_code_end, loader_code_execute
+
+;****************************************
+;****************************************
+;   Rest of disc contents...
+	PUTFILE "panel", "panel", &00000000, &00000000
+	PUTFILE "title", "title", &00003B08, &00002820
+
+	PUTFILE "V.level1", "V.level1", &00000000, &00000000
+	PUTFILE "V.level2", "V.level2", &00000000, &00000000
+	PUTFILE "V.level3", "V.level3", &00000000, &00000000
+	PUTFILE "V.level4", "V.level4", &00000000, &00000000
+	PUTFILE "V.level5", "V.level5", &00000000, &00000000
+	PUTFILE "V.level6", "V.level6", &00000000, &00000000
+
+;****************************************
+;****************************************

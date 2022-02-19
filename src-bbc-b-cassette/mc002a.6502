@@ -1,0 +1,819 @@
+;		TTL	mc002a		; Draws screen
+
+;****************************************
+;****************************************
+
+.file_level	EQUS	"L.V.levelX 1100", &0D
+
+.window		EQUB	28,5,20,34,11,30,10,0
+
+.ff_tape	EQUS	"Fast Forward tape slightly,", &0D
+		EQUB	10
+		EQUS	"then p"
+		EQUB	0
+
+.r_tape		EQUS	"Rewind tape slightly, then", &0D
+		EQUB	10
+		EQUS	"p"
+		EQUB	0
+
+.press_play	EQUS	"Press play on tape ...", &0D
+		EQUB	10,6,6,6
+		EQUS	"Looking for V.level"
+		EQUB	0
+
+.loaded_text	EQUB	10,13
+		EQUS	"Load complete.", &0D
+		EQUB	26,0
+
+;****************************************
+;****************************************
+
+.screen		JSR	venetian
+
+	LDA	level_number
+	CMP	old_level2
+	BEQ	same_lev_ok
+
+	CLC
+	ADC	#48
+	STA	file_level+9
+
+	LDA	#4
+	STA	workspace
+	LDA	#10
+	LDX	#30
+	LDY	#10
+	JSR	box
+
+	LDX	#LO(window)
+	LDY	#HI(window)
+	JSR	print_text
+
+	LDA	level_number
+	CMP	old_level2
+	BCC	rewind_tape
+
+	SBC	#1
+	CMP	old_level2
+	BEQ	pp
+
+	LDX	#LO(ff_tape)
+	LDY	#HI(ff_tape)
+	JMP	tell_user
+
+.rewind_tape
+	LDX	#LO(r_tape)
+	LDY	#HI(r_tape)
+
+.tell_user
+	JSR	print_text
+	
+	LDX	#LO(press_play+1)
+	LDY	#HI(press_play+1)
+	BNE	ppskip
+
+.pp	LDX	#LO(press_play)
+	LDY	#HI(press_play)
+.ppskip	JSR	print_text
+
+	LDA	file_level+9
+	JSR	oswrch
+
+	LDA	#10
+	JSR	oswrch
+	JSR	oswrch
+	LDA	#13
+	JSR	oswrch
+
+	LDA	level_number
+	STA	old_level2
+
+	LDX	#LO(file_level)
+	LDY	#HI(file_level)
+	JSR	oscli
+
+	LDX	#LO(loaded_text)
+	LDY	#HI(loaded_text)
+	JSR	print_text
+
+	JSR	do_demots	
+
+;*	LDA	#26
+;*	JSR	oswrch
+
+	JSR	venetian
+
+.same_lev_ok
+		LDA	level_number
+		CMP	#6
+		BEQ	is_demo
+
+		LDA	controller
+		AND	#128
+		BEQ	ntxtdTA
+
+		LDX	#LO(demo_text)
+		LDY	#HI(demo_text)
+		JSR	print_pwtxt
+
+.ntxtdTA	JSR	print_score
+
+		LDX	#2
+		LDY	#26
+		JSR	move_cursor
+
+		LDA	level_number
+		LDX	#0
+.lingR		CMP	#10
+		BCC	njR
+		INX
+		SBC	#10
+		JMP	lingR
+.njR		TAY
+		TXA
+		BEQ	pcv
+		ADC	#48
+		JSR	oswrch
+.pcv		TYA
+		CLC
+		ADC	#48
+		JSR	oswrch
+
+		LDX	#2
+		LDY	#29
+		JSR	move_cursor
+
+		LDA	screen_number
+		CMP	#10
+		BEQ	dix
+		ADC	#48
+		JSR	oswrch
+		JMP	rest
+
+.dix		JSR	screen10
+
+.rest		LDA	controller
+		AND	#128
+		BNE	is_demo
+
+		JSR	print_password
+
+.is_demo	JSR	init_screen
+
+		LDX	#0
+.loop1		LDY	#9
+.loop2		STX	workspace+&10
+		STY	workspace+&11
+		LDX	#11
+		JSR	mult
+		CLC
+		ADC	workspace+&10
+		TAY
+		LDA	(pointer),Y
+		AND	#1
+		BEQ	miss
+		LDX	workspace+&10
+		LDY	workspace+&11
+
+		JSR	bloc
+
+.miss		JSR	test_start
+		BCC	not_demo
+
+		LDA	controller
+		AND	#128
+		BEQ	not_demo999
+
+		LDA	controller
+		AND	#127
+		STA	controller
+ 		RTS
+
+.not_demo999	JMP	screen
+
+.not_demo	LDX	workspace+&10
+		LDY	workspace+&11
+		DEY
+		BPL	loop2
+
+		INX
+
+		LDA	level_number
+		CMP	#6
+		BNE	nots3l6
+
+		LDA	screen_number
+		CMP	#3
+		BNE	nots3l6
+
+		CPX	#6
+		BNE	loop1
+
+		BEQ	exit_screen
+
+.nots3l6	CPX	#10
+		BNE	loop1
+
+.exit_screen	JMP	init_screen2
+
+;****************************************
+
+.bloc		STX	workspace+&12
+		STY	workspace+&13
+		LDX	#11
+		JSR	mult
+		CLC
+		ADC	workspace+&12
+		TAY
+
+		LDA	(pointer),Y
+		STA	workspace
+		AND	#2
+		BEQ	nflt
+
+		LDA	workspace
+		LSR	A
+		LSR	A
+		CLC
+		ADC	#10
+		STA	height_1
+		STA	height_4
+		ADC	#10
+		STA	height_3
+		SEC
+		SBC	#20
+		STA	height_2
+		JMP	flt
+
+.nflt		LDA	(pointer),Y
+		LSR	A
+		LSR	A
+		CLC
+		ADC	#10
+		STA	height_1
+
+		INY
+		LDA	(pointer),Y
+		LSR	A
+		LSR	A
+		STA	height_2
+
+		TYA
+		CLC
+		ADC	#11
+		TAY
+		LDA	(pointer),Y
+		LSR	A
+		LSR	A
+		CLC
+		ADC	#10
+		STA	height_4
+
+		DEY
+		LDA	(pointer),Y
+		LSR	A
+		LSR	A
+		CLC
+		ADC	#20
+		STA	height_3
+
+.flt		LDA	height_1
+		STA	block_sh
+
+		LDA	height_2
+		CMP	block_sh
+		BLT	bs_2
+
+		STA	block_sh
+
+.bs_2		LDA	height_3
+		CMP	block_sh
+		BLT	bs_3
+
+		STA	block_sh
+
+.bs_3		LDA	height_4
+		CMP	block_sh
+		BLT	bs_4
+
+		STA	block_sh
+
+.bs_4		LDA	#71
+		SEC
+		SBC	block_sh
+		STA	block_sh
+
+		LDY	#126
+		LDA	(pointer),Y
+		AND	#32+64+128
+		TAX
+
+		LDA	#8
+		STA	workspace+2
+
+		LDA	#1
+		STA	workspace
+		LDA	#0
+		STA	pixel_X
+
+		LDY	#144
+.cb_loop3	STA	block_mask2-1,Y
+		STA	block_mask2+144-1,Y
+		DEY
+		BNE	cb_loop3
+
+.cb_loop2	LDA	block1,X
+		STA	block_data2,Y
+		STA	block_data2+8,Y
+		STA	block_data2+16,Y
+		STA	block_data2+24,Y
+		STA	block_data2+32,Y
+		STA	block_data2+40,Y
+		STA	block_data2+48,Y
+		STA	block_data2+56,Y
+		STA	block_data2+64,Y
+		INY
+		INX
+		CPY	workspace+2
+		BCC	cb_loop2
+
+		LDY	#72
+
+		LDA	#80
+		STA	workspace+2
+
+		DEC	workspace
+		BPL	cb_loop2
+
+
+		LDA	#8
+		STA	workspace+2
+
+		LDY	#1
+		STY	workspace
+		DEY
+
+.cb_loop21	LDA	block1,X
+		STA	block_data2+144,Y
+		STA	block_data2+8+144,Y
+		STA	block_data2+16+144,Y
+		STA	block_data2+24+144,Y
+		STA	block_data2+32+144,Y
+		STA	block_data2+40+144,Y
+		STA	block_data2+48+144,Y
+		STA	block_data2+56+144,Y
+		STA	block_data2+64+144,Y
+		INY
+		INX
+		CPY	workspace+2
+		BCC	cb_loop21
+
+		LDY	#72
+
+		LDA	#80
+		STA	workspace+2
+
+		DEC	workspace
+		BPL	cb_loop21
+
+
+		LDX	#8
+.cb_loop4	LDA	block_mask,X
+		AND	block_data2+63,X
+		STA	block_data2+63,X
+
+		LDA	block_mask+9,X
+		AND	block_data2+63+72,X
+		STA	block_data2+63+72,X
+
+		LDA	block_mask+(2*9),X
+		AND	block_data2+63+(72*2),X
+		STA	block_data2+63+(72*2),X
+
+		LDA	block_mask+(3*9),X
+		AND	block_data2+63+(72*3),X
+		STA	block_data2+63+(72*3),X
+
+		DEX
+		BPL	cb_loop4
+
+
+.block_loop1	JSR	db_part2
+
+		INX
+		INX
+
+		JSR	db_part3
+
+		LDX	height_2
+		LDY	height_4
+		JSR	calc_height
+		PHA
+
+		LDX	height_3
+		LDY	height_4
+		JSR	calc_height
+		STA	workspace
+
+		PLA
+		TAY
+		LDA	(pointer2),Y
+		AND	pixel_mask
+		STA	(pointer2),Y
+		DEY
+
+		CPY	workspace
+		BCC	ndbl1
+
+		JSR	db_loop1
+
+.ndbl1		JSR	db_part
+		BNE	block_loop1
+
+		LDA	#0
+		STA	pixel_X
+
+.block_loop2	JSR	db_part2
+
+		JSR	db_part3
+
+		LDX	height_1
+		LDY	height_2
+		JSR	calc_height
+		PHA
+
+		LDX	height_1
+		LDY	height_3
+		JSR	calc_height
+		STA	workspace
+
+		PLA
+		TAY
+		LDA	(pointer2),Y
+		AND	pixel_mask
+		STA	(pointer2),Y
+		DEY
+
+		CPY	workspace
+		BCC	Ndblp12
+
+		LDA	pixel_X
+		BEQ	Ndblp12
+
+		JSR	db_loop1
+
+.Ndblp12	JSR	db_part
+		BNE	block_loop2
+
+		LDA	#LO(block_data2)
+		STA	b_sprite+1
+		LDA	#HI(block_data2)
+		STA	b_sprite+2
+
+		LDA	#LO(block_mask2)
+		STA	b_mask+1
+		LDA	#HI(block_mask2)
+		STA	b_mask+2
+
+		LDA	workspace+&12
+		CLC
+		ADC	workspace+&13
+		ASL	A
+		STA	drmem
+
+		LDA	workspace+&13
+		SEC
+		SBC	workspace+&12
+		STA	drmem+1
+		LDX	#9
+.add_loop	CLC
+		ADC	drmem+1
+		DEX
+		BNE	add_loop
+
+		EOR	#255
+		CLC
+		ADC	#94
+
+		TAY
+		LDX	drmem
+		JMP	blck_spr
+
+;****************************************
+;****************************************
+
+.init_screen	LDA	#LO(level_data)
+		STA	pointer
+		LDA	#HI(level_data)
+		STA	pointer+1
+
+;*		LDA	screen_number	; screen =
+;*		LDX	level_number	; (level-1)*10
+;*		CLC			; +screen-1
+
+;*llpXX		DEX
+;*		BEQ	e_clp
+;*		ADC	#10
+;*		JMP	llpXX
+
+;*e_clp		TAX
+;*		DEX
+
+
+	LDX	screen_number
+	DEX
+		LDY	#127
+		JSR	mult
+
+		LDA	workspace+&8
+		CLC
+		ADC	pointer
+		STA	pointer
+		LDA	workspace+&9
+		ADC	pointer+1
+		STA	pointer+1
+
+		LDY	#126			; THIS ENSURES THAT ALL
+		LDA	(pointer),Y		; SCREENS ARE WHITE
+		AND	#1+2+4
+		JSR	vdu19
+
+		RTS
+
+;*****************************************
+
+.init_screen2	LDY	#124
+		LDA	#0
+		STA	j+1
+		STA	j+3
+		STA	xy+1
+		STA	xy+3
+		STA	ab
+		STA	ab+1
+		STA	ab+2
+		STA	ab+3
+		STA	ab+4
+
+		LDA	(pointer),Y
+		ASL	A
+		ROL	j+1
+		ASL	A
+		ROL	j+1
+		STA	j
+
+		INY
+		LDA	(pointer),Y
+		ASL	A
+		ROL	j+3
+		ASL	A
+		ROL	j+3
+		STA	j+2
+
+		LDX	#3
+.dngdo		LDA	j,X
+		STA	workspace+&B,X
+		STA	mem,X
+		DEX
+		BPL	dngdo
+
+		JSR	hi
+		STA	j+4
+
+		LDY	#121
+		LDA	(pointer),Y
+		ASL	A
+		ROL	xy+1
+		ASL	A
+		ROL	xy+1
+		STA	xy
+
+		INY
+		LDA	(pointer),Y
+		ASL	A
+		ROL	xy+3
+		ASL	A
+		ROL	xy+3
+		STA	xy+2
+
+		INY
+		LDA	(pointer),Y
+		STA	xy+4
+
+		JSR	setup_ball
+
+		LDA	j
+		CLC
+		ADC	j+1
+		ADC	j+2
+		ADC	j+3
+		BEQ	no_jewel
+
+		JSR	print_jewel
+
+.no_jewel	RTS
+
+;*****************************************
+;*****************************************
+
+.move_cursor	LDA	#31
+		JSR	oswrch
+		TXA
+		JSR	oswrch
+		TYA
+		JMP	oswrch
+
+;*****************************************
+;*****************************************
+
+.print_number	STX	workspace
+		STY	workspace+1
+
+		LDY	#0
+
+.pn_loop	LDA	(workspace),Y
+		CLC
+		ADC	#48
+		JSR	oswrch
+
+		INY
+		CPY	#5
+		BNE	pn_loop
+
+		RTS
+
+;*****************************************
+;*****************************************
+
+.vdu19		TAY
+		LDA	#19
+		JSR	oswrch
+		LDA	#1
+		JSR	oswrch
+		TYA
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JMP	oswrch
+
+;*****************************************
+;*****************************************
+
+.print_score	LDX	#2
+		LDY	#4
+		JSR	move_cursor
+
+		LDX	#LO(score)
+		LDY	#HI(score)
+		JMP	print_number
+
+;*****************************************
+;*****************************************
+
+.db_loop1	LDA	(pointer2),Y	; poke block up
+		AND	pixel_mask
+		ORA	pixel_actual
+		STA	(pointer2),Y
+		DEY
+		CPY	workspace
+		BCS	db_loop1
+
+		RTS
+
+;*****************************************
+;*****************************************
+
+.db_part	LDA	pixel_mask
+		EOR	#255
+		STA	workspace
+
+		LDA	(pointer2),Y
+		AND	pixel_mask
+		STA	(pointer2),Y
+		DEY
+
+.db_loop2	LDA	(pointer2),Y
+		AND	pixel_mask
+		STA	(pointer2),Y
+
+		LDA	(pointer3),Y
+		ORA	workspace
+		STA	(pointer3),Y
+
+		DEY
+		CPY	block_sh
+		BGE	db_loop2
+
+
+		INC	pixel_X
+		LDA	pixel_X
+		CMP	#16
+
+		RTS
+
+;*****************************************
+;*****************************************
+
+.db_part2	LDA	pixel_X
+		AND	#7
+		BNE	pm_jmp1
+
+		LDA	#%10000000
+		BNE	pm_jmp2
+
+.pm_jmp1	TAX
+		LDA	#%10000000
+.pm_loop1	LSR	A
+		DEX
+		BNE	pm_loop1
+
+.pm_jmp2	STA	pixel_actual
+
+		EOR	#255
+		STA	pixel_mask
+
+		LDA	pixel_X
+		LSR	A
+		LSR	A
+		LSR	A
+		TAX
+
+		LDA	#LO(block_data2)
+		STA	pointer2
+		LDA	#HI(block_data2)
+		STA	pointer2+1
+
+		LDA	#LO(block_mask2)
+		STA	pointer3
+		LDA	#HI(block_mask2)
+		STA	pointer3+1
+
+		RTS
+
+;*****************************************
+;*****************************************
+
+	EQUS	"", &0D
+	EQUS	"Hi from Shades ... try entering", &0D
+	EQUS	"'Shades' as a password ...", &0D
+	EQUS	"", &0D
+	EQUS	"But only if you leave me a messy", &0D
+	EQUS	"on Bradford'S UNaXcess !!!", &0D
+	EQUS	"", &0D
+
+;*****************************************
+;*****************************************
+
+.db_part3	TXA
+		BEQ	bo_jmp1
+
+		CLC
+
+.bo_loop1	LDA	pointer2
+		ADC	#72
+		STA	pointer2
+		BCC	p2_cc
+
+		CLC
+		INC	pointer2+1
+
+.p2_cc		LDA	pointer3
+		ADC	#72
+		STA	pointer3
+		BCC	p3_cc
+
+		CLC
+		INC	pointer3+1
+
+.p3_cc		DEX
+		BNE	bo_loop1
+
+.bo_jmp1	RTS
+
+;****************************************
+;****************************************
+
+.screen10	LDY	#7
+.stl		LDA	no10,Y
+		STA	&7C50,Y
+		DEY
+		BPL	stl
+
+		RTS
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.no10		EQUB	%00100110
+		EQUB	%01101001
+		EQUB	%00101001
+		EQUB	%00101001
+		EQUB	%00101001
+		EQUB	%00101001
+		EQUB	%01110110
+		EQUB	%00000000
+
+;****************************************
+;****************************************
+
+		INCLUDE	"mc002b.6502"

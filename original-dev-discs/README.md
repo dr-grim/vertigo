@@ -18,6 +18,7 @@ Disc | Name | Contents
 -|-|-
 ![Vertigo master backup](Vertigo-master-backup/thumbnail.jpeg) | [Vertigo master backup](Vertigo-master-backup/) | Backup of BBC Master 128k variant of "Vertigo", bitmaps show "(C) 1989", so older than released copy ("(C) 1991")
 ![Vertigo BBC 'B' disc version](Vertigo-BBC-B-disc/thumbnail.jpeg) | [Vertigo BBC 'B' disc version](Vertigo-BBC-B-disc/) | The disc (rather than) cassette version for the BBC 'B'; more recent than the BBC Master 128k backup, as bitmaps show "(C) 1991".
+![Vertigo BBC 'B' cassette version](Vertigo-BBC-B-cassette/thumbnail.jpeg) | [Vertigo BBC 'B' cassette version](Vertigo-BBC-B-cassette/) | The cassette version for the BBC 'B'; again, bitmaps show "(C) 1991". This may not have been used for production, however.
 
 ## Conversion notes from `ADE+` to `beebasm`
 
