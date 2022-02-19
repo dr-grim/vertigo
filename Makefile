@@ -18,7 +18,7 @@ vertigo.ssd:	$(wildcard src/*.6502) src/panel1 src/panel2 src/title Makefile
 vertigo-bbc-b-disc.ssd:	$(wildcard src-bbc-b-disc/*) Makefile
 	cd src-bbc-b-disc && ../$(BEEBASM) -w -vc -boot vertigo -do ../vertigo-bbc-b-disc.ssd -i main.6502
 
-vertigo-bbc-b-cassette.ssd:	$(wildcard src-bbc-b-disc/*) Makefile
+vertigo-bbc-b-cassette.ssd:	$(wildcard src-bbc-b-cassette/*) Makefile
 	cd src-bbc-b-cassette && ../$(BEEBASM) -w -vc -boot vertigo -do ../vertigo-bbc-b-cassette.ssd -i main.6502
 
 clean:

@@ -67,6 +67,16 @@
 ;	LST	OFF
 
 ;****************************************
+
+	ORG zzzzdatast
+	CLEAR zzzzdatast, zzzzeodata
+	GUARD zzzzeodata
+
+	INCBIN "sprDATA"
+
+	CLEAR zzzzeodata, &8000
+
+;****************************************
 ;****************************************
 
 .timer_digits	SKIP	3

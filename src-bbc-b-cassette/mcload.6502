@@ -135,7 +135,7 @@
 
 		LDA	#22
 		JSR	oswrch
-		LDA	#1
+		LDA	#5
 		JSR	oswrch
 
 		LDA	#23
@@ -270,7 +270,7 @@
 ;****************************************
 ;****************************************
 
-.title_page	EQUS	"LOAD title 3000", &0D
+.title_page	EQUS	"LOAD title 5800", &0D
 
 .panel		EQUS	"LOAD panel 6A20", &0D
 
