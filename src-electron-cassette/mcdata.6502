@@ -154,7 +154,7 @@ _wipeout_m = _wipeout_s + &60
 	;		RESUME
 	;	CLEAR &400, &800
 
-block1_actual_start = data_block1 - codestart + codeloadaddress
+data_block1_actual_start = data_block1 - codestart + codeloadaddress
 
 block_mask2 = _block_mask2 - data_block1 + data_block1_target
 block_data2 = _block_data2 - data_block1 + data_block1_target
@@ -177,7 +177,7 @@ data_block2_target = &380
 	;		RESUME
 		;CLEAR &300, &3E0
 
-block2_actual_start = data_block2 - codestart + codeloadaddress
+data_block2_actual_start = data_block2 - codestart + codeloadaddress
 
 bsp1 = _bsp1 - data_block2 + data_block2_target
 
@@ -198,7 +198,7 @@ data_block3_target = &880
 	;		RESUME
 ;	CLEAR &880, &8C0
 
-block3_actual_start = data_block3 - codestart + codeloadaddress
+data_block3_actual_start = data_block3 - codestart + codeloadaddress
 
 ball_data = _ball_data - data_block3 + data_block3_target
 
@@ -217,7 +217,7 @@ data_block4_target = &100
 	;		RESUME
 ;	CLEAR &100, &170
 
-block4_actual_start = data_block4 - codestart + codeloadaddress
+data_block4_actual_start = data_block4 - codestart + codeloadaddress
 
 screen_store2 = _screen_store2 - data_block3 + data_block3_target
 bsp2 = _bsp2 - data_block3 + data_block3_target
@@ -227,23 +227,10 @@ bsp2 = _bsp2 - data_block3 + data_block3_target
 
 .end_of_data
 
-;	PRINT "Allocated data=", ~(end_of_data-zzzzdatast)
-;	PRINT "bank4=", ~&22B6
-;	; n.levels = &1A4B
-;	; => remainder = &86B
-;
-;	ORG zzzzdatast
-;	CLEAR &0000, &FFFF
-;	INCBIN "data/bank4"
-;
-;	PRINT "End of loaded data=", ~P%
-;	PRINT "End of allocated data=", ~end_of_data
 ;****************************************
 ;****************************************
-;	ORG codeend
 
-
-; ensure this code is after &5800 + (10*&140)
+; ensure this code is after &5800 + (10*&140) i.e. 10 rows
 end_of_panel_target = &5800 + (10*&140)
 end_of_data_after_load = end_of_data - codestart + codeloadaddress
 bytes_to_pad = end_of_panel_target - end_of_data_after_load
@@ -272,7 +259,7 @@ execute = _execute   -codestart+codeloadaddress
 
 	SEI
 
-		LDX	#253
+		LDX	#253	; reset stack to mostly unused
 		TXS
 
 		LDX	#0		; downloads main code & data block
@@ -290,38 +277,38 @@ execute = _execute   -codestart+codeloadaddress
 
 ; * * * * * * * * * * * * * * * * * * * *
 
-.down_lda2	LDA	data_block1 -codestart+codeloadaddress,X
-.down_sta2	STA	&400,X
+.down_lda2	LDA	data_block1_actual_start,X
+.down_sta2	STA	data_block1_target,X
 		INX
 		BNE	down_lda2
 
-		INC	down_lda2+2
-		INC	down_sta2+2
-		LDA	down_sta2+2
+		INC	down_lda2+2 -codestart+codeloadaddress
+		INC	down_sta2+2 -codestart+codeloadaddress
+		LDA	down_sta2+2 -codestart+codeloadaddress
 		CMP	#&8
 		BNE	down_lda2
 
 ; * * * * * * * * * * * * * * * * * * * *
 
 		LDX	#&60
-.down_loop1	LDA	data_block2-1  -codestart+codeloadaddress,X
-		STA	&380-1,X
+.down_loop1	LDA	data_block2_actual_start-1,X
+		STA	data_block2_target-1,X
 		DEX
 		BNE	down_loop1
 
 ; * * * * * * * * * * * * * * * * * * * *
 
 		LDX	#&40
-.down_loop2	LDA	data_block3-1  -codestart+codeloadaddress,X
-		STA	&880-1,X
+.down_loop2	LDA	data_block3_actual_start-1,X
+		STA	data_block3_target-1,X
 		DEX
 		BNE	down_loop2
 
 ; * * * * * * * * * * * * * * * * * * * *
 
 		LDX	#0
-.down_loop3	LDA	data_block4 -codestart+codeloadaddress,X
-		STA	&100,X
+.down_loop3	LDA	data_block4_actual_start,X
+		STA	data_block4_target,X
 		INX
 		CPX	#&70
 		BNE	down_loop3
