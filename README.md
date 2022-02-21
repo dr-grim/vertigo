@@ -22,3 +22,10 @@ The code I'd retrieved has the graphics showing `(C) 1989`, so it's not the fina
 Builds `vertigo-bbc-b-disc.ssd`
 
 The disc was corrupted, but I managed to retrieve the source code and binary data files. The cassette version sources look ok, so I may be able to rebuild the art from that.
+
+### BBC 'B' cassette variant
+Builds `vertigo-bbc-b-cassette.ssd`
+
+Disc read ok, but source code looks incomplete - such as the loader incorrectly using MODE 1 to load a MODE 5 title screen. Otherwise, works fine - albeit is a multi-load implementation (levels are loaded on demand
+from cassette). All artwork present with conversion code to downsample from
+four color MODE 1 to two colour MODE 4.
