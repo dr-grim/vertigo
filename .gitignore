@@ -1,5 +1,2 @@
-# Ignore the generated disc images
-/*.ssd
-
 # Ignore local copy of beebasm
 /beebasm

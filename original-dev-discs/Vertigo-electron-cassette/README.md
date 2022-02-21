@@ -30,3 +30,6 @@ MODE 4 converted data from Volume 2A.
 using the `joiner` script; this generates `bank4`. The name looks a bit odd - probably a handover from an earlier script for the BBC Master 129k version when sprite data was (probably) stashed in bank 4 of 16kB sideways RAM.
 
 This is a rather convoluted toolchain! Run `joiner`, select option 1; run `convLVL`; run `joiner` again, select option 2. Ouch! Oh for a Makefile! :)
+
+## `beebasm` changes
+The data is now loaded in directly at assembly time, using `INCBIN`. The `mus.sp` sprites have been split using a shell script (see [split-mums.sp.sh](../../src-electron-cassette/data/split-mums.sp.sh)), so they can be littered around spare areas in the memory map.
