@@ -44,8 +44,10 @@ lb_mask = lb_sprt + &200
 ;.bsp1		SKIP	&60		; background
 ;.bsp2		SKIP	&60		; MUM!
 ;.bsp3		SKIP	&60		; er ... well,
-.bsp4		SKIP	&60		; !
-.bsp5		SKIP	&60		; Home Sweet Home
+.bsp4		;SKIP	&60		; !
+			INCBIN "data/mums.sp4"
+.bsp5		;SKIP	&60		; Home Sweet Home
+			INCBIN "data/mums.sp5"
 
 .lbsp1
 ; 350  PROCjoin("ball.sp")
@@ -149,7 +151,8 @@ _jewel_masks = _jewel_data + &50
 ;._wipeout_m	SKIP	&60
 _wipeout_m = _wipeout_s + &60
 
-._bsp3		SKIP	&60		; er ... well,
+._bsp3		;SKIP	&60		; er ... well,
+			INCBIN "data/mums.sp3"
 
 	;		RESUME
 	;	CLEAR &400, &800
@@ -172,7 +175,8 @@ data_block2_target = &380
 .data_block2	;	EMBED	&380		; = Cassette workspace; =&380-&3DF
 		;ORG &380
 		;GUARD &3E0
-._bsp1		SKIP	&60		; background
+._bsp1		;SKIP	&60		; background
+			INCBIN "data/mums.sp1"
 
 	;		RESUME
 		;CLEAR &300, &3E0
@@ -212,7 +216,8 @@ data_block4_target = &100
 ;	GUARD &170
 ._screen_store2	SKIP	&10		; = 2 * columns of 8  = blank
 
-._bsp2		SKIP	&60		; MUM!
+._bsp2		;SKIP	&60		; MUM!
+			INCBIN "data/mums.sp2"
 
 	;		RESUME
 ;	CLEAR &100, &170

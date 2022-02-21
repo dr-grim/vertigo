@@ -104,6 +104,11 @@
 		LDY	#0
 		JSR	osbyte
 
+		LDA #139	; *FX 139,1,0 => *OPT 1,0
+		LDX #1
+		LDY #0
+		JSR	osbyte
+
 		LDA	#22
 		JSR	oswrch
 		LDA	#5
