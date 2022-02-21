@@ -1,0 +1,703 @@
+; 		TTL	e.mc003c	; 3rd half of game handler
+
+;****************************************
+;*CHECK GAME IS RUNNING AT CORRECT SPEED*
+;****************************************
+
+.longwy		LDX	drmem+7
+		INX
+		STX	drmem+7
+		CPX	#8
+		BEQ	RDCLK
+
+		JMP	d22
+
+.RDCLK		LDA	#0
+		LDX	#4
+.cklp		STA	mem,X
+		DEX
+		BPL	cklp
+
+		LDX	#LO(mem		); read clock into HI(memLO())
+		LDY	#HI(mem)
+		LDA	#1
+		JSR	osword
+
+		LDA	mem
+		CMP	#delay
+		BCS	Ncklp
+
+		BCC	RDCLK
+
+.Ncklp		LDX	#4
+		LDA	#0
+.CKLP2		STA	mem,X
+		DEX
+		BPL	CKLP2
+
+		LDA	#2
+		LDX	#LO(mem		); set clock to 0 from HI(memLO())
+		LDY	#HI(mem)
+		JSR	osword
+
+;****************************************
+;****************************************
+
+.no_yo		JSR	conv_sprite
+
+		JSR	fx19
+
+		LDA	indicator
+		BEQ	no_skip
+
+		LDA	#0
+		STA	indicator
+
+		JSR	convc
+
+		JSR	teleport
+
+		JSR	conv_sprite
+
+		JMP	skip_1st_half
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.no_skip	JSR	delete_enemy
+
+		LDA	old_X
+		CMP	#39
+		BCS	skip_1st_half
+
+		LDA	oxy+3
+		CMP	#4
+		BCS	skip_1st_half
+
+		LDA	old_Y
+		CMP	#247
+		BCS	skip_1st_half
+
+		LDA	old_height
+		BEQ	on_hole1
+
+		JSR	d_shadow	; delete shadow
+
+.on_hole1	JSR	do_ra
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.skip_1st_half	JSR	convc
+
+		LDA	old_X
+		CMP	#39
+		BCS	on_hole2
+
+		LDA	xy+3
+		CMP	#4
+		BCS	on_hole2
+
+		LDA	old_Y
+		CMP	#247
+		BCS	on_hole2
+
+		JSR	do_ms
+
+		JSR	convcm
+		BEQ	on_hole2
+
+		LDA	old_Y
+		PHA
+
+		JSR	convert_coords
+
+		LDA	old_Y
+		CLC
+		ADC	#8
+		STA	old_Y2
+
+		PLA
+		STA	old_Y
+
+		JSR	sp_shadow
+
+;****************************************
+;****************************************
+
+.on_hole2	JSR	print_enemy
+
+		LDA	enemy_x
+		AND	#1
+		BNE	DROP
+
+		LDA	xy
+		SEC
+		SBC	enemy_x
+		STA	mem
+
+		LDA	xy+1
+		SBC	enemy_x+1
+		STA	mem+1
+
+		LDA	xy+2
+		SBC	enemy_y
+		STA	mem+2
+
+		LDA	xy+3
+		SBC	enemy_y+1
+		STA	mem+3
+
+		LDA	xy+4
+		SBC	enemy_z
+		ADC	#19
+		CMP	#40
+		BCS	DROP
+
+		LDA	mem
+		ADC	#20
+		STA	mem
+
+		LDA	mem+1
+		ADC	#0
+		BNE	DROP
+
+		LDA	mem
+		CMP	#40
+		BCS	DROP
+
+		LDA	mem+2
+		ADC	#20
+		STA	mem
+
+		LDA	mem+3
+		ADC	#0
+		BNE	DROP
+
+		LDA	mem
+		CMP	#40
+		BCS	DROP
+
+		LDA	screen_number
+		CMP	#5
+		BNE	not_sc5
+
+		CLC
+		JMP	nd2_4
+
+.not_sc5	LDA	controller	; Cheat mode operative ???
+		AND	#1
+		BNE	DROP
+
+		JMP	zzap
+
+;****************************************
+
+.DROP		LDA	screen_number
+		CMP	#5
+		BNE	not_sc52
+
+		JMP	DROP2
+
+.not_sc52	LDA	xy
+		SEC
+		SBC	j
+		STA	mem
+
+		LDA	xy+1
+		SBC	j+1
+		STA	mem+1
+
+		LDA	xy+2
+		SBC	j+2
+		STA	mem+2
+
+		LDA	xy+3
+		SBC	j+3
+		STA	mem+3
+
+		LDA	mem
+		ADC	#31
+		STA	mem
+
+		LDA	mem+1
+		ADC	#0
+		BEQ	not_DROP2
+
+		JMP	DROP2
+
+.not_DROP2	LDA	mem
+		CMP	#64
+		BCC	nd2_1
+
+		JMP	DROP2
+
+.nd2_1		LDA	mem+2
+		ADC	#32
+		STA	mem
+
+		LDA	mem+3
+		ADC	#0
+		BEQ	nd2_2
+
+		JMP	DROP2
+
+.nd2_2		LDA	mem
+		CMP	#64
+		BCC	nd2_3
+
+		JMP	DROP2
+
+.nd2_3		LDA	xy+4
+		SEC
+		SBC	j+4
+		ADC	#31
+		CMP	#64
+		BCC	nd2_4
+
+		JMP	DROP2
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.nd2_4		LDA	score+2
+		ADC	level_number
+		STA	score+2
+
+		JSR	add_time_bonus
+
+		JSR	ting
+
+		INC	lives
+
+		LDA	screen_number
+		CMP	#5
+		BNE	no_extra_life
+
+		LDA	lives
+		CMP	#6
+		BCS	no_extra_life
+
+		INC	lives
+
+		LDA	#200
+		JSR	key_delay
+
+		JSR	ting
+
+		LDA	#200
+		JSR	key_delay
+
+		JSR	ting
+
+		LDA	#200
+		JSR	key_delay
+
+.no_extra_life	JSR	venetian
+
+		LDA	screen_number
+		CMP	#10
+		BNE	not_last_scr
+
+		LDA	controller
+		AND	#3
+		BNE	not_last_scr2
+
+		LDA	level_number
+		PHA
+		CMP	#1
+		BNE	not_lev1
+
+		JMP	eolevel1
+
+.not_lev1	CMP	#2
+		BNE	not_lev2
+
+		JMP	eolevel2
+
+.not_lev2	CMP	#3
+		BNE	not_lev3
+
+		JMP	eolevel3
+
+.not_lev3	CMP	#4
+		BNE	not_lev4
+
+		JMP	eolevel4
+
+.not_lev4	JMP	eolevel5
+
+.not_last_scr2	LDA	level_number
+		CMP	#5
+		BNE	not_last_scr
+
+		JMP	eolevel5ch
+
+.nls3		PLA
+		STA	level_number
+		LDA	#10
+		STA	screen_number
+
+.not_last_scr	INC	screen_number
+
+		LDA	screen_number
+		CMP	#11
+		BNE	not_eolev
+
+		LDA	#1
+		STA	screen_number
+
+		INC	level_number
+
+		LDA	level_number
+		CMP	#6
+		BLT	not_eolev
+
+		LDA	#1
+		STA	level_number
+
+.not_eolev	RTS
+
+;****************************************
+
+.DROP2		INKEY	-113
+		BEQ	not_E
+
+		JSR	animate_lives
+
+		INKEY	-2
+		BEQ	not_t1
+
+		LDA	lives
+		BEQ	not_totaled
+
+.kill_loop	DEC	lives
+		JSR	paff
+		JSR	animate_lives
+
+		LDA	#200
+		JSR	key_delay
+
+		LDA	lives
+		BNE	kill_loop
+
+		JMP	wipeout
+
+.not_t1		LDA	lives
+		BEQ	not_totaled
+
+		DEC	lives
+		JSR	animate_lives
+		INC	lives
+
+.not_totaled	JMP	wipeout
+
+.not_E		JMP	game
+
+;****************************************
+;****************************************
+
+.timer_speeds	EQUB	2,0
+		EQUB	1,5
+		EQUB	1,0
+		EQUB	0,8
+		EQUB	0,6
+
+;****************************************
+;****************************************
+
+.exithi		LDA	#0
+		STA	workspace+&F
+		RTS
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.hi		LDA	mem
+		STA	workspace+&8
+		LDA	mem+1
+		BMI	exithi
+
+.skf		ASL	workspace+&8
+		ROL	A
+		ASL	workspace+&8
+		ROL	A
+		TAX
+
+		LDA	mem+2
+		STA	workspace+&8
+		LDA	mem+3
+
+		BMI	exithi
+
+.skf2		ASL	workspace+&8
+		ROL	A
+		ASL	workspace+&8
+		ROL	A
+		TAY
+		CPX	#10
+
+		BPL	exithi
+
+.no1		CPY	#10
+
+		BPL	exithi
+
+.no2		STX	workspace+&10
+		STY	workspace+&11
+		LDX	#11
+		JSR	mult
+		CLC
+		ADC	workspace+&10
+		TAY
+		LDA	(pointer),Y
+		STA	workspace
+		TAX
+
+		AND	#1
+
+		BEQ	exithi
+
+.no3		TXA
+		AND	#2
+		BEQ	nflt2
+		TXA
+		AND	#252
+		STA	workspace+&F
+		RTS
+
+.nflt2		TXA
+		AND	#252
+		STA	workspace
+		INY
+		LDA	(pointer),Y
+		AND	#252
+		STA	workspace+&1
+		TYA
+		CLC
+		ADC	#11
+		TAY
+		LDA	(pointer),Y
+		AND	#252
+		STA	workspace+&3
+		DEY
+		LDA	(pointer),Y
+		AND	#252
+		STA	workspace+&2
+
+		LDA	workspace+&2
+		SEC
+		SBC	workspace
+		STA	workspace+&4
+		LDA	#0
+		STA	workspace+8
+		STA	workspace+9
+		SBC	#0
+		STA	workspace+&5
+
+		LDA	mem+2
+		AND	#63
+		BEQ	no99
+
+		LDX	#6
+.lop99		LSR	A
+		BCC	NCYET
+		STA	workspace+&F
+		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		LDA	workspace+&9
+		ADC	workspace+&5
+		STA	workspace+&9
+		LDA	workspace+&F
+.NCYET		ASL	workspace+&4
+		ROL	workspace+&5
+		DEX
+		BNE	lop99
+
+		ASL	workspace+&8
+		ROL	workspace+&9
+		ASL	workspace+&8
+		ROL	workspace+&9
+.no99		LDA	workspace
+		CLC
+		ADC	workspace+&9
+		STA	u
+		LDA	workspace+&3
+		SEC
+		SBC	workspace+&1
+		STA	workspace+&4
+		LDA	#0
+		STA	workspace+8
+		STA	workspace+9
+		SBC	#0
+		STA	workspace+&5
+
+		LDA	mem+2
+		AND	#63
+		BEQ	Bno99
+
+		LDX	#6
+.Blp99		LSR	A
+		BCC	NCYET2
+		STA	workspace+&F
+		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		LDA	workspace+&9
+		ADC	workspace+&5
+		STA	workspace+&9
+		LDA	workspace+&F
+.NCYET2		ASL	workspace+&4
+		ROL	workspace+&5
+		DEX
+		BNE	Blp99
+
+		ASL	workspace+&8
+		ROL	workspace+&9
+		ASL	workspace+&8
+		ROL	workspace+&9
+.Bno99		LDA	workspace+&1
+		CLC
+		ADC	workspace+&9
+		SEC
+		SBC	u
+		STA	workspace+&4
+		LDA	#0
+		STA	workspace+8
+		STA	workspace+9
+		SBC	#0
+		STA	workspace+&5
+		LDA	mem
+		AND	#63
+		BEQ	Cno99
+
+		LDX	#6
+.Clp99		LSR	A
+		BCC	NCYET3
+		STA	workspace+&F
+		LDA	workspace+&8
+		CLC
+		ADC	workspace+&4
+		STA	workspace+&8
+		LDA	workspace+&9
+		ADC	workspace+&5
+		STA	workspace+&9
+		LDA	workspace+&F
+.NCYET3		ASL	workspace+&4
+		ROL	workspace+&5
+		DEX
+		BNE	Clp99
+
+		LDA	workspace+&9
+		ASL	workspace+&8
+		ROL	A
+		ASL	workspace+&8
+		ROL	A
+.Cno99		CLC
+		ADC	u
+		STA	workspace+&F
+		RTS
+
+;****************************************
+;****************************************
+
+.add_time_bonus	LDA	level_number
+		TAX
+		LDA	time_bonus-1,X
+		TAY
+
+.atb_loop	LDA	score+4
+		CLC
+		ADC	timer_digits+1
+		CMP	#10
+		BCC	atb_nc1
+
+		SBC	#10
+		INC	score+3
+
+.atb_nc1	STA	score+4
+
+		LDA	score+3
+		CLC
+		ADC	timer_digits
+		CMP	#10
+		BCC	atb_nc2
+
+		SBC	#10
+		INC	score+2
+
+.atb_nc2	STA	score+3
+
+		LDA	score+2
+		CMP	#10
+		BCC	atb_nc3
+
+		SBC	#10
+		STA	score+2
+		INC	score+1
+
+.atb_nc3	LDA	score+1
+		CMP	#10
+		BCC	atb_nc4
+
+		SBC	#10
+		STA	score+1
+		INC	score
+
+.atb_nc4	LDA	score
+		CMP	#10
+		BCC	atb_nc5
+
+		SBC	#10
+		STA	score
+
+.atb_nc5	DEY
+		BNE	atb_loop
+
+		RTS
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.time_bonus	EQUB	2,5,7,10,12
+
+;****************************************
+;****************************************
+
+.convc2		LDY	#4
+.loop1111	LDA	xy,Y
+		STA	workspace+&B,Y
+		DEY
+		BPL	loop1111
+
+		RTS
+
+;****************************************
+;****************************************
+
+.convc		JSR	convc2
+		JMP	convert_coords
+
+;****************************************
+;****************************************
+
+.fx19		LDA	#19
+		JMP	osbyte
+
+;****************************************
+;****************************************
+
+.convcm		LDY	#3
+.loop33		LDA	xy,Y
+		STA	workspace+&B,Y
+		STA	mem,Y
+		DEY
+		BPL	loop33
+
+		JSR	hi
+		STA	old_height
+
+		RTS
+
+;****************************************
+;****************************************
+
+		INCLUDE	"mc004.6502"

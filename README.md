@@ -29,3 +29,8 @@ Builds `vertigo-bbc-b-cassette.ssd`
 Disc read ok, but source code looks incomplete - such as the loader incorrectly using MODE 1 to load a MODE 5 title screen. Otherwise, works fine - albeit is a multi-load implementation (levels are loaded on demand
 from cassette). All artwork present with conversion code to downsample from
 four color MODE 1 to two colour MODE 4.
+
+### Electron cassette variant
+Builds `vertigo-elecxtron-cassette.ssd`
+
+Discs read ok, everything present. Slight technicality in that the original sources uswed the ADE+ `EMBED` directive to enable me to store code at an address different to what it was compiled for - and for said code to be downloaded to the correct place after loading. The `sprDATA` file to be used for merging into the assembled `Mcode` file looks out of sync with the source code too - so work was needed to get it to build correctly under beebasm.

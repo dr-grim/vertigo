@@ -1,6 +1,6 @@
 BEEBASM		:=		beebasm/beebasm
 
-all:	beebasm $(BEEBASM) vertigo.ssd vertigo-bbc-b-disc.ssd vertigo-bbc-b-cassette.ssd
+all:	beebasm $(BEEBASM) vertigo.ssd vertigo-bbc-b-disc.ssd vertigo-bbc-b-cassette.ssd vertigo-electron-cassette.ssd
 
 beebasm: 
 	git clone https://github.com/stardot/beebasm
@@ -20,6 +20,9 @@ vertigo-bbc-b-disc.ssd:	$(wildcard src-bbc-b-disc/*) Makefile
 
 vertigo-bbc-b-cassette.ssd:	$(wildcard src-bbc-b-cassette/*) Makefile
 	cd src-bbc-b-cassette && ../$(BEEBASM) -w -vc -boot vertigo -do ../vertigo-bbc-b-cassette.ssd -i main.6502
+
+vertigo-electron-cassette.ssd:	$(wildcard src-electron-cassette/*) Makefile
+	cd src-electron-cassette && ../$(BEEBASM) -w -vc -boot vertigo -do ../vertigo-electron-cassette.ssd -i main.6502
 
 clean:
 	rm -rf beebasm
