@@ -1,0 +1,411 @@
+;		TTL	e.mcdata
+
+;****************************************
+;****************************************
+;	LST	ON
+.zzzzdatast
+;	LST	OFF
+
+.screen_store	SKIP	&10		; = 2 * columns of 8 = blank
+.actual_ball	SKIP	&10		; = 2 * columns of 8 = blank
+.actual_mask	SKIP	&10		; = 2 * columns of 8 = blank
+;actual_mask = actual_ball + &10
+
+.nty_dta
+ ; 300  PROCjoin("nasty")
+ ;nasty      00000000 00000000 00000038 WR 
+			INCBIN "data/nasty"
+;			SKIP	&38
+
+.final
+; 320  PROCjoin("final")
+; final      00000000 00000000 00000054 WR 
+			INCBIN "data/final"
+;			SKIP	&54
+
+.thatsnot
+; 330  PROCjoin("eolevel")
+; eolevel    00000000 00000000 0000005F WR 
+			INCBIN "data/eolevel"
+;	SKIP	&5F
+
+.lb_sprt
+; 340  PROCjoin("largeBa")
+; largeba    00000000 00000000 00000220 WR 
+;			SKIP	&200
+;.lb_mask	SKIP	&20
+			INCBIN "data/largeba"
+lb_mask = lb_sprt + &200			
+
+
+; 360  PROCjoin("mums.sp")
+; mums_sp    00000000 00000000 000001E0 WR 
+; &1E0 = 5 * &60
+;.bsp1		SKIP	&60		; background
+;.bsp2		SKIP	&60		; MUM!
+;.bsp3		SKIP	&60		; er ... well,
+.bsp4		SKIP	&60		; !
+.bsp5		SKIP	&60		; Home Sweet Home
+
+.lbsp1
+; 350  PROCjoin("ball.sp")
+; ball_sp    00000000 00000000 000001E0 WR 
+; &A0 + &A0 + &A0 = &1E0
+			INCBIN "data/ball.sp"
+
+;			SKIP	&A0		; background
+;.lbsp2		SKIP	&A0		; where have you been ?
+;.lbsp3		SKIP	&A0		; straight to bed - and no supper !
+lbsp2 = lbsp1 + &A0
+lbsp3 = lbsp2 + &A0
+
+.level_data	
+;			SKIP	&1A4B
+; 370  PROCjoin("n.levels")
+; n.levels     00000000 00000000 00001A4B WR 
+			INCBIN "data/n.levels"
+
+
+; ":2B.$.levels" is &1B54 (that's &577 if 5 leves; each is &528!)
+; level 6 is shorter... maybe cropped? But still doesn't match
+;ERROR "Needs level data!"
+
+; ":2B.n.levels" is &1A4B
+
+; sprDATA was &2536 - sprites and level data?
+; what about all the weird extra "workspace" blocks set aside
+; in enveloperworkspace, printer workspace, etc.
+
+; sprDATA - n.levels = &2536 - &1A4B = &AEB 
+; = size of sprDATA from BBC'B' cassette version
+
+;****************************************
+;*	THERE ARE &17 BYTES FREE !!!	*
+;****************************************
+;	LST	ON
+.zzzzeodata
+;	LST	OFF
+
+;****************************************
+
+;	ORG zzzzdatast
+;	CLEAR zzzzdatast, zzzzeodata
+;	GUARD zzzzeodata
+;
+;	PRINT "space for sprites: ", ~(level_data-zzzzdatast)
+;	PRINT "space for levels: ", ~(zzzzeodata-level_data)
+;	PRINT "expected size of 'bank4': ", ~(zzzzeodata - zzzzdatast)
+;	PRINT
+;	;INCBIN "bank4"
+;
+;	CLEAR zzzzeodata, &8000
+
+;****************************************
+
+
+
+.codeend	;	RESUME
+
+;	Everything before this point (address < codeend)
+;	is downloaded to codedest (such as &A00);
+;	everthing above is potentially in MODE 4 screen
+; 	buffer, and probably damaged by moving panel1 to
+;	its correct position.
+
+;relocated_codeend = codeend - codestart + reload_address
+start_of_mode4 = &5800
+IF codeend >= start_of_mode4
+	ERROR "End of code will appear in MODE 4 screen!"
+ELSE
+	PRINT "Space free: ", ~(start_of_mode4 - codeend)
+ENDIF
+;****************************************
+;****************************************
+
+data_block1_target = &400
+.data_block1	;	EMBED	&400		; Language workspace; =&400-&7FF
+;	ORG &400
+;	GUARD &800
+
+._block_mask2	SKIP	&120		; = blank
+._block_data2	SKIP	&120		; = blank
+
+._jewel_data
+; 290  PROCjoin("jewel")
+; jewel      00000000 00000000 000000A0 WR
+; &50 + &50 = &A0
+			INCBIN "data/jewel"
+
+;				SKIP	&50
+;._jewel_masks	SKIP	&50
+_jewel_masks = _jewel_data + &50
+
+._wipeout_s
+; 310  PROCjoin("wipeout")
+; wipeout    00000000 00000000 000000C0 WR
+; &60 + &60 = &C0
+			INCBIN "data/wipeout"
+;			SKIP	&60
+;._wipeout_m	SKIP	&60
+_wipeout_m = _wipeout_s + &60
+
+._bsp3		SKIP	&60		; er ... well,
+
+	;		RESUME
+	;	CLEAR &400, &800
+
+block1_actual_start = data_block1 - codestart + codeloadaddress
+
+block_mask2 = _block_mask2 - data_block1 + data_block1_target
+block_data2 = _block_data2 - data_block1 + data_block1_target
+jewel_data = _jewel_data - data_block1 + data_block1_target
+jewel_masks = _jewel_masks - data_block1 + data_block1_target
+wipeout_s = _wipeout_s - data_block1 + data_block1_target
+wipeout_m = _wipeout_m - data_block1 + data_block1_target
+bsp3 = _bsp3 - data_block1 + data_block1_target
+
+;****************************************
+;****************************************
+
+data_block2_target = &380
+
+.data_block2	;	EMBED	&380		; = Cassette workspace; =&380-&3DF
+		;ORG &380
+		;GUARD &3E0
+._bsp1		SKIP	&60		; background
+
+	;		RESUME
+		;CLEAR &300, &3E0
+
+block2_actual_start = data_block2 - codestart + codeloadaddress
+
+bsp1 = _bsp1 - data_block2 + data_block2_target
+
+;****************************************
+;****************************************
+
+data_block3_target = &880
+
+.data_block3	;	EMBED	&880		; = Printer buffer; =&880-&8BF
+;	ORG &880
+;	GUARD &8C0
+._ball_data
+;   280  PROCjoin("ball")
+; ball       00005800 00005800 00000040 WR 
+			INCBIN "data/ball"
+;			SKIP	&40
+
+	;		RESUME
+;	CLEAR &880, &8C0
+
+block3_actual_start = data_block3 - codestart + codeloadaddress
+
+ball_data = _ball_data - data_block3 + data_block3_target
+
+;****************************************
+;****************************************
+
+data_block4_target = &100
+
+.data_block4	;	EMBED	&100		; = unused area of stack; =&100-&170
+;	ORG &100
+;	GUARD &170
+._screen_store2	SKIP	&10		; = 2 * columns of 8  = blank
+
+._bsp2		SKIP	&60		; MUM!
+
+	;		RESUME
+;	CLEAR &100, &170
+
+block4_actual_start = data_block4 - codestart + codeloadaddress
+
+screen_store2 = _screen_store2 - data_block3 + data_block3_target
+bsp2 = _bsp2 - data_block3 + data_block3_target
+
+;****************************************
+;****************************************
+
+.end_of_data
+
+;	PRINT "Allocated data=", ~(end_of_data-zzzzdatast)
+;	PRINT "bank4=", ~&22B6
+;	; n.levels = &1A4B
+;	; => remainder = &86B
+;
+;	ORG zzzzdatast
+;	CLEAR &0000, &FFFF
+;	INCBIN "data/bank4"
+;
+;	PRINT "End of loaded data=", ~P%
+;	PRINT "End of allocated data=", ~end_of_data
+;****************************************
+;****************************************
+;	ORG codeend
+
+
+; ensure this code is after &5800 + (10*&140)
+end_of_panel_target = &5800 + (10*&140)
+end_of_data_after_load = end_of_data - codestart + codeloadaddress
+bytes_to_pad = end_of_panel_target - end_of_data_after_load
+IF bytes_to_pad > 0
+	PRINT "Padding by", ~bytes_to_pad, "bytes to avoid panel upload"
+	SKIP bytes_to_pad
+ENDIF
+
+._execute
+execute = _execute   -codestart+codeloadaddress
+		LDA	#200
+		LDX	#3
+		JSR	osbyte
+
+		LDA	#&4C
+		STA	&287
+		LDA	#&87
+		STA	&288
+		LDA	#&02
+		STA	&289
+
+;	Officially, we're already in tape...!
+;		LDX	#LO(tape)
+;		LDY	#HI(tape)
+;		JSR	oscli
+
+	SEI
+
+		LDX	#253
+		TXS
+
+		LDX	#0		; downloads main code & data block
+.down_lda1	LDA	codeloadaddress,X
+.down_sta1	STA	codestart,X
+		INX
+		BNE	down_lda1
+
+		INC	down_lda1+2  -codestart+codeloadaddress
+		INC	down_sta1+2  -codestart+codeloadaddress
+		LDA	down_sta1+2  -codestart+codeloadaddress
+;		CMP	#HI((codeend+&200))
+		CMP	#HI((codeend-codestart+codeloadaddress) + &100)
+		BLT	down_lda1
+
+; * * * * * * * * * * * * * * * * * * * *
+
+.down_lda2	LDA	data_block1 -codestart+codeloadaddress,X
+.down_sta2	STA	&400,X
+		INX
+		BNE	down_lda2
+
+		INC	down_lda2+2
+		INC	down_sta2+2
+		LDA	down_sta2+2
+		CMP	#&8
+		BNE	down_lda2
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		LDX	#&60
+.down_loop1	LDA	data_block2-1  -codestart+codeloadaddress,X
+		STA	&380-1,X
+		DEX
+		BNE	down_loop1
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		LDX	#&40
+.down_loop2	LDA	data_block3-1  -codestart+codeloadaddress,X
+		STA	&880-1,X
+		DEX
+		BNE	down_loop2
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		LDX	#0
+.down_loop3	LDA	data_block4 -codestart+codeloadaddress,X
+		STA	&100,X
+		INX
+		CPX	#&70
+		BNE	down_loop3
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		LDA	#LO(&6A20-1)
+		STA	workspace
+		LDA	#HI(&6A20-1)
+		LDX	#LO(&5800-1)
+		LDY	#HI(&5800-1)
+		JSR	move_panel  -codestart+codeloadaddress
+
+		LDA	#LO(&6A20+&4B0-1)
+		STA	workspace
+		LDA	#HI(&6A20+&4B0-1)
+		LDX	#LO(&58C8-1)
+		LDY	#HI(&58C8-1)
+		JSR	move_panel  -codestart+codeloadaddress
+
+		LDA	#1
+		STA	old_screen
+		STA	old_level
+
+ 		LDA	#LO(brk)
+		STA	&202
+		LDA	#HI(brk)
+		STA	&203
+
+		LDA	#26
+		JSR	oswrch
+
+		LDA	#%11000000	; menu status
+		STA	menu_st
+
+	LDA	#0
+	STA	sound_count
+
+	CLI
+
+		JMP	exec2
+
+;****************************************
+;****************************************
+
+.move_panel	STA	workspace+1
+		STX	workspace+2
+		STY	workspace+3
+
+		LDX	#10
+
+.mp_loop1	LDY	#15*8
+
+.mp_loop2	LDA	(workspace),Y
+		STA	(workspace+2),Y
+		DEY
+		BNE	mp_loop2
+
+		LDA	workspace
+		CLC
+		ADC	#15*8
+		STA	workspace
+		LDA	workspace+1
+		ADC	#0
+		STA	workspace+1
+
+		LDA	workspace+2
+		ADC	#&40
+		STA	workspace+2
+		LDA	workspace+3
+		ADC	#1
+		STA	workspace+3
+
+		DEX
+		BNE	mp_loop1
+
+		RTS
+
+;****************************************
+;****************************************
+
+;.tape		EQUS	"T.", &0D
+
+;****************************************
+;****************************************
+
+;		LST	OFF

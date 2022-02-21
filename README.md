@@ -22,3 +22,8 @@ The code I'd retrieved has the graphics showing `(C) 1989`, so it's not the fina
 Builds `vertigo-bbc-b-disc.ssd`
 
 The disc was corrupted, but I managed to retrieve the source code and binary data files. The cassette version sources look ok, so I may be able to rebuild the art from that.
+
+### Electron cassette variant
+Builds `vertigo-elecxtron-cassette.ssd`
+
+Discs read ok, everything present. Slight technicality in that the original sources uswed the ADE+ `EMBED` directive to enable me to store code at an address different to what it was compiled for - and for said code to be downloaded to the correct place after loading. The `sprDATA` file to be used for merging into the assembled `Mcode` file looks out of sync with the source code too - so work was needed to get it to build correctly under beebasm.

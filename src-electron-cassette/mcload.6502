@@ -1,0 +1,665 @@
+;		TTL	mcload		; Loading machine code
+
+;****************************************
+
+;		EXEC	execute
+
+;****************************************
+;****************************************
+
+		MACRO DEFINE enveloperAddress
+		LDA	#8
+		LDX	#LO(enveloperAddress)
+		LDY	#HI(enveloperAddress)
+		JSR	osword
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		MACRO	LOAD oscliStrAddress			; LOAD <string_location>
+					; ( Does OSCLI <string> )
+		LDX	#LO(oscliStrAddress)
+		LDY	#HI(oscliStrAddress)
+		JSR	oscli
+
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+		MACRO	RUN oscliStrAddress			; RUN <string_location>
+					; ( Does OSCLI <string> )
+		LDX	#LO(oscliStrAddress)
+		LDY	#HI(oscliStrAddress)
+		JMP	oscli
+
+		ENDMACRO
+
+;****************************************
+;****************************************
+
+;.CHANGE		MACRO
+;
+;		LDA	#19
+;		JSR	oswrch
+;		LDA	#@1
+;		JSR	oswrch
+;		LDA	#@2
+;		JSR	oswrch
+;		LDA	#0
+;		JSR	oswrch
+;		JSR	oswrch
+;		JSR	oswrch
+;
+;		ENDMACRO
+
+;****************************************
+;****************************************
+
+;OFF		=	0
+;ON		=	1+2
+;OUT		=	0
+;IN		=	4
+
+;****************************************
+
+;oswrch		=	&FFEE
+;osbyte		=	&FFF4
+;oscli		=	&FFF7
+;osword		=	&FFF1
+
+;romsel		=	&FE30
+;romevn		=	&F4
+;accreg		=	&FE34
+
+;****************************************
+;****************************************
+
+		ORG	&1900
+.loader_code_start
+.loader_code_execute
+
+{;		DSECT
+		ORG	&00
+
+;*bass_offset	SKIP	1
+;*bb_num		SKIP	1
+;*bass_pointer	SKIP	2
+
+.main_offset	SKIP	1
+.mb_num		SKIP	1
+.main_pointer	SKIP	2
+
+;		DEND
+
+;****************************************
+;****************************************
+
+;		ORG	&1900
+		ORG loader_code_start
+
+.execute	LDA	#229
+		LDX	#1
+		LDY	#0
+		JSR	osbyte
+
+		LDA	#22
+		JSR	oswrch
+		LDA	#5
+		JSR	oswrch
+
+		LDA	#23
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		LDA	#10
+		JSR	oswrch
+		LDA	#32
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		DEFINE	envelope3
+		DEFINE	envelope4
+;*		DEFINE	envelope5
+		DEFINE	envelope6
+		DEFINE	envelope7
+		DEFINE	envelope8
+		DEFINE	envelope9
+		DEFINE	envelope10
+
+;*		JSR	setup_bass
+		JSR	setup_main
+
+		LDA	#15
+		LDX	#0
+		JSR	osbyte
+
+		LOAD	title_page
+
+		LDA	#12
+		JSR	oswrch
+
+
+.uloop		LDA	#LO(&3000)
+		STA	upload_loop+1
+		LDA	#HI(&3000)
+		STA	upload_loop+2
+
+		LDA	#LO(&5800)
+		STA	upload+1
+		STA	upload2+1
+		LDA	#HI(&5800)
+		STA	upload+2
+		STA	upload2+2
+
+
+		LDA	#19
+		JSR	osbyte
+		JSR	osbyte
+		JSR	osbyte
+		JSR	osbyte
+
+
+		LDX	#0
+.upload_loop	LDA	&3000,X
+.mask		AND	#1
+.upload		ORA	&5800,X
+.upload2	STA	&5800,X
+		INX
+		BNE	upload_loop
+
+		INC	upload_loop+2
+		INC	upload+2
+		INC	upload2+2
+		BPL	upload_loop
+
+		ASL	mask+1
+		BCC	uloop
+
+
+.music_loop	JSR	code
+
+		LDA	#&81
+		LDX	#&7F
+		LDY	#&FF
+		JSR	osbyte
+		TYA
+		BNE	music_loop
+
+
+
+		LDA	#22
+		JSR	oswrch
+		LDA	#4
+		JSR	oswrch
+
+		LDA	#23
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		LDA	#10
+		JSR	oswrch
+		LDA	#32
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		LDA	#28
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		LDA	#13
+		JSR	oswrch
+		LDA	#39
+		JSR	oswrch
+		LDA	#11
+		JSR	oswrch
+
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		LDX	#0
+		TXA
+.w_lp		STA	&00,X
+		INX
+		CPX	#&90
+		BNE	w_lp
+
+		LDA	#229
+		LDX	#1
+		LDY	#0
+		JSR	osbyte
+
+		LDA	#15
+		LDX	#0
+		JSR	osbyte
+
+		LDA	#4
+		LDX	#1
+		JSR	osbyte
+
+
+		LDA	#235
+		JSR	osbyte
+
+; * * * * * * * * * * * * * * * * * * * *
+
+		LOAD	panel
+
+		RUN	main_game
+
+;****************************************
+;****************************************
+
+.title_page	EQUS	"LOAD title 3000", &0D
+
+.panel		EQUS	"LOAD panel 6A20", &0D
+
+.main_game	EQUS	"RUN mcode", &0D
+
+;****************************************
+;****************************************	; Envelope data
+
+.note		EQUB	&13,0,&FF,0,&FF,0,&FF,0
+
+;*note0		EQUB	0,&01,6,0,3,0,&FF,0
+;*note1		EQUB	1,&01,0,0,&FF,0,&FF,0
+.note2		EQUB	1,&00,7,0,&FF,0,&FF,0	; NB now channel 1
+
+;****************************************
+;****************************************
+
+.setup_main	LDA	#0
+		STA	main_offset
+		STA	mb_num
+
+		LDA	#LO(mbar0)
+		STA	main_pointer
+		LDA	#HI(mbar0)
+		STA	main_pointer+1
+
+		RTS
+
+;****************************************
+;****************************************
+
+.eomainbar	INC	mb_num
+		LDA	#0
+		STA	main_offset
+
+		LDX	mb_num
+		LDA	main_bars,X
+		CMP	#255
+		BNE	m_notend
+
+		JSR	setup_main
+		JMP	do_main
+
+.m_notend	ASL	A
+		TAX
+
+		LDA	mbars_table,X
+		STA	main_pointer
+		LDA	mbars_table+1,X
+		STA	main_pointer+1
+
+;****************************************
+;****************************************
+
+.do_main	LDY	main_offset
+		LDA	(main_pointer),Y
+		BNE	not_eomain
+
+		INY
+		LDA	(main_pointer),Y
+		BEQ	eomainbar
+		DEY
+
+.not_eomain	LDA	(main_pointer),Y
+		CMP	#10		
+		BLT	special_main
+
+		STA	note2+4
+
+		INY
+		LDA	(main_pointer),Y
+		STA	note2+6
+
+		LDA	#7
+		LDX	#LO(note2)
+		LDY	#HI(note2)
+		JSR	osword
+
+		INC	main_offset
+		INC	main_offset
+		RTS
+
+;****************************************
+;****************************************
+
+.special_main	LDA	#0
+		STA	note2+2
+		INY
+		LDA	(main_pointer),Y
+		STA	note2+6
+
+		LDA	#7
+		LDX	#LO(note2)
+		LDY	#HI(note2)
+		JSR	osword
+
+		LDA	#7
+		STA	note2+2
+
+		INC	main_offset
+		INC	main_offset
+		RTS
+
+;****************************************
+;****************************************
+
+.code
+;*		LDA	#128		; check channel 1
+;*		LDX	#-6		; buffer for free
+;*		LDY	#0		; spaces (]X)
+;*		JSR	osbyte
+;*
+;*		CPX	#4
+;*		BLT	eobass
+;*
+;*		JSR	do_bass
+;*
+;*		JMP	code
+;*
+.eobass		LDA	#128		; check channel 1
+		LDX	#-6 AND &FF		; buffer for free
+		LDY	#0		; spaces (]X)
+		JSR	osbyte
+
+		CPX	#4
+		BLT	eomain
+
+		JSR	do_main
+
+		JMP	eobass
+
+.eomain		RTS
+
+;****************************************
+;****************************************
+;*
+;*setup_bass	LDA	#0
+;*		STA	bass_offset
+;*		STA	bb_num
+;*
+;*		LDA	#LO(bbar8)
+;*		STA	bass_pointer
+;*		LDA	#HI(bbar8)
+;*		STA	bass_pointer+1
+;*
+;*		RTS
+;*
+;****************************************
+;****************************************
+;*
+;*eobassbar	INC	bb_num
+;*		LDA	#0
+;*		STA	bass_offset
+;*
+;*		LDX	bb_num
+;*		LDA	bass_bars,X
+;*		CMP	#255
+;*		BNE	b_notend
+;*
+;*		JSR	setup_bass
+;*		JMP	do_bass
+;*
+;*b_notend	ASL	A
+;*		TAX
+;*
+;*		LDA	bbars_table,X
+;*		STA	bass_pointer
+;*		LDA	bbars_table+1,X
+;*		STA	bass_pointer+1
+;*
+;****************************************
+;****************************************
+;*
+;*do_bass	LDY	bass_offset
+;*		LDA	(bass_pointer),Y
+;*		BNE	not_eobass
+;*
+;*		INY
+;*		LDA	(bass_pointer),Y
+;*		BEQ	eobassbar
+;*		DEY
+;*
+;*not_eobass	LDA	(bass_pointer),Y
+;*		CMP	#10		
+;*		BLT	special_bass
+;*
+;*		SEC
+;*		SBC	#6
+;*		STA	note1+4
+;*
+;*cont_bass	INY
+;*		LDA	(bass_pointer),Y
+;*		STA	note0+6
+;*		STA	note1+6
+;*
+;*sound_bass	LDA	#7
+;*		LDX	#LO(note1)
+;*		LDY	#HI(note1)
+;*		JSR	osword
+;*
+;*		LDA	#7
+;*		LDX	#LO(note0)
+;*		LDY	#HI(note0)
+;*		JSR	osword
+;*
+;*exit_bass	INC	bass_offset
+;*		INC	bass_offset
+;*		RTS
+;*
+;****************************************
+;****************************************
+;*
+;*special_bass	CMP	#4
+;*		BNE	sb_not4
+;*
+;*		LDX	#6
+;*		LDY	#7
+;*		JMP	fix_bass
+;*
+;*sb_not4	CMP	#5
+;*		BNE	sb_not5
+;*
+;*		LDX	#6
+;*		LDY	#3
+;*		JMP	fix_bass
+;*
+;*sb_not5	CMP	#6
+;*		BNE	sb_not6
+;*
+;*		LDX	#10
+;*		LDY	#3
+;*fix_bass	STX	note0+2
+;*		STY	note0+4
+;*		JMP	exit_bass
+;*
+;*sb_not6	CMP	#1
+;*		BNE	sb_not1
+;*
+;*		LDA	note1+4
+;*		PHA
+;*		LDA	note0+2
+;*		PHA
+;*
+;*		LDA	#198
+;*		LDX	#8
+;*		JMP	cont_bass2
+;*
+;*sb_not1	CMP	#3
+;*		BNE	sb_not3
+;*
+;*		LDA	note1+4
+;*		PHA
+;*		LDA	note0+2
+;*		PHA
+;*		LDA	#220
+;*		LDX	#8
+;*		JMP	cont_bass2
+;*
+;*sb_not3	CMP	#0
+;*		BNE	sb_not0
+;*
+;*		LDA	note1+4
+;*		PHA
+;*		LDA	note0+2
+;*		PHA
+;*		LDA	#190
+;*		LDX	#9
+;*		JMP	cont_bass2
+;*
+;*sb_not0	CMP	#2
+;*		BNE	sb_not2
+;*
+;*		LDA	note1+4
+;*		PHA
+;*		LDA	note0+2
+;*		PHA
+;*		LDA	#0
+;*		LDX	#0
+;*
+;*cont_bass2	STA	note1+4
+;*		STX	note0+2
+;*		LDA	#7
+;*		STA	note0+4
+;*
+;*		JSR	cont_bass
+;*
+;*		LDA	#3
+;*		STA	note0+4
+;*		PLA
+;*		STA	note0+2
+;*		PLA
+;*		STA	note1+4
+;*
+;*sb_not2	RTS
+;*
+;****************************************
+;****************************************
+
+.envelope3	EQUB	3,129,-1,2,0,2,30,0,120,-10,-5,-3,120,120
+;* WAS envelope3	EQUB	3,129,-1,2,0,2,30,0,116,-10,-5,-3,116,106
+.envelope4	EQUB	4,1,0,0,0,0,0,0,120,-3,-2,-1,120,120
+;*envelope5	EQUB	5,0,0,0,0,0,0,0,100,-10,-3,-1,100,30
+
+.envelope6	EQUB	6,1,0,0,0,0,0,0,100,-5,-3,-4,100,60
+.envelope7	EQUB	7,1,0,0,0,0,0,0,100,-4,-1,-1,100,80
+.envelope8	EQUB	8,1,0,0,0,0,0,0,126,-10,-5,-10,126,66
+.envelope9	EQUB	9,1,0,0,0,0,0,0,110,-20,-10,-20,110,50
+.envelope10	EQUB	10,1,0,0,0,0,0,0,60,-1,0,-1,60,30
+
+;****************************************
+;****************************************
+;*
+;*bass_bars	EQUB	8,1,1,1,1,5,2,2,2,3,3,6,6,1,1,8,4,4,7,7,9,1,1,1
+;*		EQUB	0,0,10,10,10,10,255
+;*
+; * * * * * * * * * * * * * * * * * * * *
+
+.main_bars	EQUB	0,1,7,1,7,1,7,1,7,5,2,2,2,3,3,1,7,1,7,1,7,1,7,0
+		EQUB	4,4,6,6,9,1,7,1,7,1,8,0,0,0,0,0,0,255
+
+;****************************************
+;****************************************
+;*
+;*bbars_table	EQUW	bbar0,bbar1,bbar2,bbar3,bbar4,bbar5,bbar6
+;*		EQUW	bbar7,bbar8,bbar9,bbar10
+;*
+; * * * * * * * * * * * * * * * * * * * *
+
+.mbars_table	EQUW	mbar0,mbar1,mbar2,mbar3,mbar4,mbar5,mbar6
+		EQUW	mbar7,mbar8,mbar9
+
+;****************************************
+;****************************************
+;*
+;*bbar0		EQUB	5,0,0,3,0,3,1,3,0,3,0,3,1,5,1,3,0,3,0,3,1,5,3,3
+;*		EQUB	3,3,4,0,0,0
+;*
+;*bbar1		EQUB	1,5,137,5,137,5,137,5,137,5,137,5,137,5,137,5
+;*		EQUB	1,5,121,5,121,5,121,5,121,5,121,5,121,5,121,5
+;*		EQUB	1,5,149,5,149,5,149,5,149,5,149,5,149,5,149,5
+;*		EQUB	1,5,1,5,129,5,1,5,129,5,129,5,129,5,129,5
+;*		EQUB	0,0
+;*
+;*bbar2		EQUB	0,10,1,10,0,10,1,10,0,10,1,8,0,2,0,5,0,5,1,5,1,5,0,0
+;*
+;*bbar3		EQUB	109,10,109,10,109,10,109,5,89,5,0,0
+;*
+;*bbar4		EQUB	6,0,137,40,157,40,141,40,129,20,121,20,5,0,0,0
+;*
+;*bbar5		EQUB	129,5,137,5,157,5,149,5,137,5,129,5,137,5,129,5,0,0
+;*
+;*bbar6		EQUB	137,5,137,5,137,10,137,10,137,10,121,5,121,5,121,10
+;*		EQUB	121,10,1,10,149,5,149,5,149,10,149,10,149,10,129,5
+;*		EQUB	129,5,129,10,129,10,1,10,0,0
+;*
+;*bbar7		EQUB	1,10,117,10,117,10,117,10,1,10,125,10,125,10,125,10
+;*		EQUB	1,10,129,10,129,10,129,10,1,10,137,10,137,10,137,10,0,0
+;*
+;*bbar8		EQUB	4,0,255,5,240,5,225,5,210,5,195,5,180,5,155,5,140,5
+;*		EQUB	5,0,0,0
+;*
+;*bbar9		EQUB	1,10,137,10,137,10,137,10,0,0
+;*
+;*bbar10		EQUB	2,40,0,0
+;*
+; * * * * * * * * * * * * * * * * * * * *
+
+.mbar0		EQUB	0,40,0,0
+
+.mbar1		EQUB	137,5,129,5,121,5,117,5,109,5,101,5,109,5,117,5
+		EQUB	121,10,117,5,109,5,117,10,101,20,137,5,145,5,149,10
+		EQUB	145,5,137,5,129,10,0,0
+
+.mbar2		EQUB	121,5,129,5,149,5,145,10,137,5,129,5,137,10,129,10
+		EQUB	117,10,129,15,0,0
+
+.mbar3		EQUB	109,25,129,5,137,5,145,5,0,0
+
+.mbar4		EQUB	117,20,149,15,137,5,129,10,121,20,129,5,137,5,141,10
+		EQUB	141,20,137,5,141,5,129,20,121,20,0,0
+
+.mbar5		EQUB	165,5,185,5,169,5,165,5,157,5,165,5,149,5,0,5,0,0
+
+.mbar6		EQUB	177,5,165,5,145,5,177,5,165,5,145,5,177,5,165,5
+		EQUB	185,5,165,5,153,5,185,5,165,5,153,5,185,5,165,5
+		EQUB	193,5,177,5,157,5,193,5,177,5,157,5,193,5,177,5
+		EQUB	165,5,153,5,137,5,157,5,153,5,137,5,157,5,153,5,0,0
+
+.mbar7		EQUB	165,10,157,10,149,10,0,0
+
+.mbar8		EQUB	137,5,145,5,149,10,145,10,0,0
+
+.mbar9		EQUB	157,5,153,5,137,5,157,5,153,5,137,5,157,5,153,5,0,0
+
+;****************************************
+;****************************************
+}
+
+.loader_code_end
