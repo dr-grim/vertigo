@@ -21,7 +21,7 @@ The code I'd retrieved has the graphics showing `(C) 1989`, so it's not the fina
 ### BBC 'B' disc variant
 Builds [`vertigo-bbc-b-disc.ssd`](vertigo-bbc-b-disc.ssd)
 
-The disc was corrupted, but I managed to retrieve the source code and binary data files. The cassette version sources look ok, so I may be able to rebuild the art from that.
+The disc was corrupted, but I managed to retrieve the source code and binary data files. The cassette version sources look ok, so I may be able to rebuild the art from that. Script added to dump files from disc to cassette.
 
 ### BBC 'B' cassette variant
 Builds [`vertigo-bbc-b-cassette.ssd`](vertigo-bbc-b-cassette.ssd)
