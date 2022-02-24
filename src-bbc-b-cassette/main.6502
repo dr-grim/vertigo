@@ -264,5 +264,7 @@ codedest	=	&1100		; = where code is to be downloaded
 	PUTFILE "V.level5", "V.level5", &00000000, &00000000
 	PUTFILE "V.level6", "V.level6", &00000000, &00000000
 
+	PUTBASIC "d]tape.bas", "d]tape"
+
 ;****************************************
 ;****************************************

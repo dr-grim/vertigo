@@ -23,7 +23,7 @@ MODE 4 converted data from Volume 2A.
 ## Level data
 `LEVEL1` ... `LEVEL6` are concatenated using `joiner` (tokenised file - extracted to text as `joiner.bas` for reference) to form `levels`. `LEVEL6` is cut short, as only 3 screens are actually needed - only levels 3, 4 and 5 have an animated ball path.
 
-`levels` is the downsampled to form `n.levels` by using `convLVL` (tokenised BASIC - extracted to text as `convLVL.bas` for reference). Note that `n.levels` was renamed from `n/levels` after ADFS export as `n.levels` made a subdirectory in the ADFS disc image.
+`levels` is the updated form of `n.levels` by using `convLVL` (tokenised BASIC - extracted to text as `convLVL.bas` for reference). The ball's start location and jewel location are downsampled to 1 byte x, 1 byte y. Note that `n.levels` was renamed from `n/levels` after ADFS export as `n.levels` made a subdirectory in the ADFS disc image.
 
 ## Sprite and level data merging
 `n.levels` is then concatenated with `ball`, `jewel`, `nasty`, `wipeout`, `final`, `eolevel`, `largeBa`, `ball.sp` and `mums.sp`,
