@@ -245,7 +245,6 @@
 
 		JSR	read_js
 
-	IF BUILD_MASTER
 .stick_noton	INKEY	-120
 		BEQ	not_menu2
 
@@ -256,9 +255,6 @@
 		JMP	ds
 
 .np999		JMP	no_pause
-	ELSE
-.stick_noton
-	ENDIF
 
 .not_menu2	INKEY	-106
 		BEQ	no_pause

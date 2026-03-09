@@ -38,7 +38,6 @@
 ;****************************************
 ;****************************************
 
-	IF BUILD_MASTER
 .music_onoff	LDA	music_volume
 		BNE	not_m0
 
@@ -148,39 +147,6 @@
 		LDX	#LO(envelope34)
 		LDY	#HI(envelope34)
 		JMP	do_envelopes
-	ENDIF
-
-	IF BUILD_MASTER=0
-
-.music_onoff	LDA	menu_st		; Q key being pressed ??? ( No sound )
-		AND	#64
-		BEQ	musicoff
-
-		LDX	#0
-		BEQ	skipmo
-
-.musicoff	LDX	#1
-
-.skipmo		LDA	#210
-		LDY	#0
-		JSR	osbyte
-
-		LDX	#36
-		LDY	#2
-		JSR	move_cursor
-
-		LDA	menu_st
-		AND	#3
-		BNE	moo_joy
-
-		LDA	#'K'
-		BNE	skip_mooj
-
-.moo_joy	LDA	#'J'
-
-.skip_mooj	JMP	oswrch
-
-	ENDIF
 
 ;****************************************
 ;****************************************
@@ -284,7 +250,6 @@ env_pointer	=	workspace
 ;****************************************
 ;****************************************
 
-	IF BUILD_MASTER
 .conv_sprite	LDA	xy		; calculates pixel offset within
 		CLC			; bytes of ball ( 0,1,2 or 3 )
 		ADC	xy+2
@@ -368,57 +333,6 @@ env_pointer	=	workspace
 		RTS
 
 ;****************************************
-
-	ELSE
-.conv_sprite	LDA	xy		; calculates pixel offset within
-		CLC			; bytes of ball ( 0 to 7 )
-		ADC	xy+2
-		CLC
-		ADC	#16
-		LSR	A
-		LSR	A
-		AND	#7
-		STA	workspace+7
-		STA	pixel_offset
-
-		LDA	frame		; pointer to present ball frame
-		ASL	A
-		ASL	A
-		ASL	A
-		ADC	#LO(ball_data)
-		STA	workspace+1
-		LDA	#HI(ball_data)
-		ADC	#0
-		LDX	#LO(actual_ball	); pointer to where new ball should
-		LDY	#HI(actual_ball	); be stored
-		JSR	slide_frame	; slide it ?workspace times to the right
-
-		LDA	#LO(c+1		); pointer to present mask
-		STA	workspace+1
-		LDA	#HI(c+1)
-		LDX	#LO(actual_mask	); pointer to where new mask should
-		LDY	#HI(actual_mask	); be stored
-		JSR	slide_frame	; slide it ?workspace times to the right
-
-		LDY	#15
-.cs_loop2	LDA	actual_ball,Y
-		AND	actual_mask,Y
-		STA	actual_ball,Y
-		DEY
-		BPL	cs_loop2
-
-		LDY	#15
-.cs_loop3	LDA	actual_mask,Y
-		EOR	#255
-		STA	actual_mask,Y
-		DEY
-		BPL	cs_loop3
-
-		RTS
-
-;****************************************
-
-	ENDIF
 
 .slide_frame
 	IF BUILD_MASTER
@@ -730,10 +644,6 @@ env_pointer	=	workspace
 
 	IF BUILD_MASTER=0
 
-.envelope6	EQUB	6,1,0,0,0,0,0,0,100,-5,-3,-4,100,60
-	EQUB	100,60
-.envelope7	EQUB	7,1,0,0,0,0,0,0,100,-10,-5,-5,100,40
-	EQUB	100,40
 .envelope8	EQUB	8,1,0,0,0,0,0,0,126,-10,-5,-10,126,66
 	EQUB	126,66
 .envelope9	EQUB	9,1,0,0,0,0,0,0,110,-20,-10,-20,110,50

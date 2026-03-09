@@ -6,49 +6,11 @@
 	IF BUILD_MASTER=0
 .screen_store	SKIP	&10
 .screen_store2	SKIP	&10
-
-.lb_sprt	SKIP	&200
-.lb_mask	SKIP	&20
-
-.bsp4		SKIP	&60		; !
-.bsp5		SKIP	&60		; Home Sweet Home
-
-.lbsp1		SKIP	&A0		; background
-.lbsp2		SKIP	&A0		; where have you been ?
-.lbsp3		SKIP	&A0		; straight to bed - and no supper !
-
-.block_mask2	SKIP	&120		; = blank
-.block_data2	SKIP	&120		; = blank
-
-.jewel_data	SKIP	&50
-.jewel_masks	SKIP	&50
-
-.wipeout_s	SKIP	&60
-.wipeout_m	SKIP	&60
-
-.bsp3		SKIP	&60		; er ... well,
-
-;****************************************
-
-.bsp1		SKIP	&60		; background
-
 .ball_data	SKIP	&40
-
-.actual_mask	SKIP	&10		; = 2 * columns of 8 = blank
-.actual_ball	SKIP	&10		; = 2 * columns of 8 = blank
-
-.bsp2		SKIP	&60		; MUM!
-
-.nty_dta	SKIP	&38
-.nty_msk	SKIP	&8
-
-.final		SKIP	&54
-.thatsnot	SKIP	&5F
-
 .level_data	SKIP	&4F6
-
 	ELSE
-
+.screen_store	SKIP	24
+.screen_store2	SKIP	24
 	ENDIF
 
 .blck_spr	TYA
