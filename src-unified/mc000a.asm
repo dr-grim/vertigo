@@ -1,35 +1,11 @@
 ;		TTL	mc000		; All sprite/screen routines that poke
-					; directly to the shadow screen memory
+						; directly to the shadow screen memory
 ;****************************************
 ;****************************************
 
-		ORG	&1100
-
-;****************************************
-;****************************************
-
-.codestart	;	EMBED	codedest
-
-;****************************************
-;****************************************
-
-.level_data	SKIP	&4F6
-
-;****************************************
-;****************************************
-;	LST	ON
-.zzzzdatast
-;	LST	OFF
-
-.screen_store	SKIP	&10		; = 2 * columns of 8 = blank
-.actual_ball	SKIP	&10		; = 2 * columns of 8 = blank
-.actual_mask	SKIP	&10		; = 2 * columns of 8 = blank
-
-.nty_dta	SKIP	&38
-
-.final		SKIP	&54
-
-.thatsnot	SKIP	&5F
+	IF BUILD_MASTER=0
+.screen_store	SKIP	&10
+.screen_store2	SKIP	&10
 
 .lb_sprt	SKIP	&200
 .lb_mask	SKIP	&20
@@ -58,32 +34,22 @@
 
 .ball_data	SKIP	&40
 
-.screen_store2	SKIP	&10		; = 2 * columns of 8  = blank
+.actual_mask	SKIP	&10		; = 2 * columns of 8 = blank
+.actual_ball	SKIP	&10		; = 2 * columns of 8 = blank
 
 .bsp2		SKIP	&60		; MUM!
 
-;	LST	ON
-.zzzzeodata
-;	LST	OFF
+.nty_dta	SKIP	&38
+.nty_msk	SKIP	&8
 
-;****************************************
+.final		SKIP	&54
+.thatsnot	SKIP	&5F
 
-	ORG zzzzdatast
-	CLEAR zzzzdatast, zzzzeodata
-	GUARD zzzzeodata
+.level_data	SKIP	&4F6
 
-	INCBIN "data/sprDATA"
+	ELSE
 
-	CLEAR zzzzeodata, &8000
-
-;****************************************
-;****************************************
-
-.timer_digits	SKIP	3
-.timer_frames	SKIP	3
-.timer_status	SKIP	1
-
-; * * * * * * * * * * * * * * * * * * * *
+	ENDIF
 
 .blck_spr	TYA
 		CLC
@@ -91,7 +57,12 @@
 		TAY
 		JSR	calculate_byte
 
+		SHADOW	ON,IN
+
 		LDA	#4		; width of sprite in bytes
+		IF BUILD_MASTER
+			LDA	#8
+		ENDIF
 		STA	workspace+4
 
 .bml		LDX	block_sh
@@ -125,17 +96,30 @@
 
 		LDA	workspace+5
 		ADC	#&3F
+		IF BUILD_MASTER
+			ADC	#&40 ; &3F + &40 = &7F
+		ENDIF
 		STA	workspace+5
 		LDA	workspace+6
 		ADC	#1
+		IF BUILD_MASTER
+			ADC	#1 ; 1 + 1 = 2
+		ENDIF
 		STA	workspace+6
 
 		LDY	#0
-		BEQ	bdc
+		IF BUILD_MASTER
+			BRA	bdc
+		ELSE
+			BEQ	bdc
+		ENDIF
 
 .beoc		LDA	workspace
 ;*		CLC
 		ADC	#7		; WAS 8
+		IF BUILD_MASTER
+			ADC	#1 ; 7+1=8
+		ENDIF
 		STA	workspace
 		BCC	bcc
 
@@ -160,21 +144,107 @@
 .bs_cc		DEC	workspace+4
 		BNE	bml
 
+		SHADOW	ON,OUT
 		RTS
 
 ;****************************************
 ;****************************************
 
-.mask_sprite	STA	workspace+4
+	IF BUILD_MASTER
+.eor_sprite	JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+.es_height	LDA	#&FF		; height of sprite in bytes
+		STA	es_adc+1
+		STA	workspace+3
+
+.es_width	LDA	#&FF		; width of sprite in bytes
+		STA	workspace+4
+
+		LDX	#0
+.ml		LDA	workspace
+		PHA
+		AND	#&F8
+		STA	workspace+5	; copy of screen address MOD,
+		LDA	workspace+1
+		STA	workspace+6	; and DIV.
+		PLA
+		AND	#7
+		TAY
+
+.dc		LDA	(workspace+5),Y	; LDA screen
+
+.sprite		EOR	&FFFF,X		; EOR sprite
+
+		STA	(workspace+5),Y	; STA screen
+
+		INX
+		BEQ	dh
+
+.ck		INY
+		CPX	workspace+3	; end_of_col
+		BEQ	eoc
+
+		CPY	#8
+		BNE	dc
+
+		LDA	workspace+5
+		ADC	#&7F
+		STA	workspace+5
+		LDA	workspace+6
+		ADC	#2
+		STA	workspace+6
+
+		LDY	#0
+		BRA	dc
+
+.dh		INC	sprite+2
+		BRA	ck
+
+.eoc		LDA	workspace
+		CLC
+		ADC	#8
+		STA	workspace
+		BCC	cc
+
+		CLC
+		INC	workspace+1
+
+.cc		LDA	workspace+3
+.es_adc		ADC	#&FF
+		STA	workspace+3
+
+		DEC	workspace+4
+		BNE	ml
+
+		SHADOW	ON,OUT
+
+		RTS
+	ENDIF
+
+;****************************************
+;****************************************
+
+.mask_sprite
+	IF BUILD_MASTER=0
+		STA	workspace+4
+	ENDIF
 
 		JSR	calculate_byte
 
+		SHADOW	ON,IN
+
 .ms_height	LDA	#&FF		; height of sprite in bytes
-		STA	workspace+2
+		IF BUILD_MASTER
+			STA	workspace+2
+		ENDIF
 		STA	workspace+3
 
-;*ms_width	LDA	#&FF		; width of sprite in bytes
-;*		STA	workspace+4
+	IF BUILD_MASTER
+.ms_width	LDA	#&FF		; width of sprite in bytes
+		STA	workspace+4
+	ENDIF
 
 		LDX	#0
 .ml1		LDA	workspace
@@ -189,7 +259,10 @@
 
 .dc1		LDA	(workspace+5),Y	; LDA screen
 
+	IF BUILD_MASTER=0
 .save		STA	screen_store,X	; STA area
+    ELSE
+	ENDIF
 
 .ms_mask	AND	&FFFF,X		; AND mask
 
@@ -209,21 +282,38 @@
 
 		LDA	workspace+5
 		ADC	#&3F
+		IF BUILD_MASTER
+			ADC	#&40
+		ENDIF
 		STA	workspace+5
 		LDA	workspace+6
 		ADC	#1
+		IF BUILD_MASTER
+			ADC	#1
+		ENDIF
 		STA	workspace+6
 
 		LDY	#0
-		BEQ	dc1
+		IF BUILD_MASTER
+			BRA	dc1
+		ELSE
+			BEQ	dc1
+		ENDIF
 
 .dh1		INC	ms_mask+2
 		INC	ms_sprite+2
-		BNE	ck1
+		IF BUILD_MASTER
+			BRA	ck1
+		ELSE
+			BNE	ck1
+		ENDIF
 
 .eoc1		LDA	workspace
 ;*		CLC
 		ADC	#7		; WAS 8
+		IF BUILD_MASTER
+			ADC	#1
+		ENDIF
 		STA	workspace
 		BCC	cc1
 
@@ -237,12 +327,92 @@
 		DEC	workspace+4
 		BNE	ml1
 
+		SHADOW	ON,OUT
 		RTS
 
 ;****************************************
 ;****************************************
 
-.restore_area	STA	workspace+4
+	IF BUILD_MASTER
+.save_area	SHADOW	ON,IN
+
+		JSR	calculate_byte
+
+.sa_height	LDA	#8		; height of sprite in bytes
+		STA	sa_adc+1
+		STA	workspace+3
+
+.sa_width	LDA	#3		; width of sprite in bytes
+		STA	workspace+4
+
+		LDX	#0
+
+.ml2		LDA	workspace
+		PHA
+		AND	#&F8
+		STA	workspace+5	; copy of screen address MOD,
+		LDA	workspace+1
+		STA	workspace+6	; and DIV.
+		PLA
+		AND	#7
+		TAY
+
+.dc2		LDA	(workspace+5),Y	; LDA screen
+
+.save		STA	screen_store,X	; STA area
+
+		INX
+		BEQ	dh2
+
+.chk2		INY
+		CPX	workspace+3
+		BEQ	eoc2
+
+		CPY	#8
+		BNE	dc2
+
+		LDA	workspace+5
+		ADC	#&7F
+		STA	workspace+5
+		LDA	workspace+6
+		ADC	#2
+		STA	workspace+6
+
+		LDY	#0
+		BRA	dc2
+
+.dh2		INC	save+2
+		BRA	chk2
+
+.eoc2		LDA	workspace
+		CLC
+		ADC	#8
+		STA	workspace
+		BCC	cc2
+
+		CLC
+		INC	workspace+1
+
+.cc2		LDA	workspace+3
+.sa_adc		ADC	#8
+		STA	workspace+3
+
+		DEC	workspace+4
+		BNE	ml2
+
+		SHADOW	ON,OUT
+		RTS
+	ENDIF
+
+;****************************************
+;****************************************
+
+.restore_area
+	IF BUILD_MASTER=0
+		STA	workspace+4
+	ENDIF
+
+		SHADOW	ON,IN
 
 		JSR	calculate_byte
 
@@ -250,8 +420,10 @@
 		STA	ra_adc+1
 		STA	workspace+3
 
-;*ra_width	LDA	#&FF		; width of sprite in bytes
-;*		STA	workspace+4
+	IF BUILD_MASTER
+.ra_width	LDA	#&FF		; width of sprite in bytes
+		STA	workspace+4
+	ENDIF
 
 		LDX	#0
 
@@ -280,20 +452,37 @@
 
 		LDA	workspace+5
 		ADC	#&3F
+		IF BUILD_MASTER
+			ADC	#&40
+		ENDIF
 		STA	workspace+5
 		LDA	workspace+6
 		ADC	#1
+		IF BUILD_MASTER
+			ADC	#1
+		ENDIF
 		STA	workspace+6
 
 		LDY	#0
-		BEQ	restore
+		IF BUILD_MASTER
+			BRA	restore
+		ELSE
+			BEQ	restore
+		ENDIF
 
 .dh3		INC	restore+2
-		BNE	chk3
+		IF BUILD_MASTER
+			BRA	chk3
+		ELSE
+			BNE	chk3
+		ENDIF
 
 .eoc3		LDA	workspace
 ;*		CLC
 		ADC	#7		; WAS 8
+		IF BUILD_MASTER
+			ADC	#1
+		ENDIF
 		STA	workspace
 		BCC	cc3
 
@@ -307,13 +496,19 @@
 		DEC	workspace+4
 		BNE	ml3
 
+		SHADOW	ON,OUT
 		RTS
 
 ;****************************************
 ;****************************************
 
-.calculate_byte	LDA	#0
+.calculate_byte
+	IF BUILD_MASTER
+		STZ	workspace+1
+	ELSE
+		LDA	#0
 		STA	workspace+1
+	ENDIF
 		TYA
 		AND	#7
 		STA	workspace
@@ -341,25 +536,70 @@
 ;****************************************
 ;*	Table for sprite routine	*
 ;*					*
-.calc_table	LOOKUP	&5800,&140,32	; Forms a table of &280 multiplication
+	IF BUILD_MASTER
+.calc_table	LOOKUP	&3000,&280,32
+	ELSE
+.calc_table	LOOKUP	&5800,&140,32
+	ENDIF
+					; Forms a table of &280 multiplication
 					; starting at <screen>, with 18 entries.
 ;*					*
 ;****************************************
 ;****************************************
 
-.d_shadow	LDX	old_X2
+.d_shadow
+	IF BUILD_MASTER
+		LDX	old_X		; will be same X,
+		INX
+		LDY	old_Y2		; but different Y
+		JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+		LDA	shadow_store	; deletes old shadow dot
+		STA	(workspace)
+
+		SHADOW	ON,OUT
+	ELSE
+		LDX	old_X2
 		LDY	old_Y2
 		JSR	calculate_byte
 
 		LDY	#0
 		LDA	shadow_store	; deletes old shadow dot
 		STA	(workspace),Y
+	ENDIF
 
 		RTS
 
 ;****************************************
 
-.sp_shadow	LDX	old_X
+.sp_shadow
+	IF BUILD_MASTER
+		LDX	old_X
+		INX
+		LDY	old_Y2
+		JSR	calculate_byte
+
+		SHADOW	ON,IN
+
+		LDA	(workspace)
+		STA	shadow_store
+
+		LDA	#%10001000
+		LDY	pixel_offset
+		BEQ	sp_no_lsr
+
+.sp_loop1	LSR	A
+		DEY
+		BNE	sp_loop1
+
+.sp_no_lsr	ORA	(workspace)
+		STA	(workspace)
+
+		SHADOW	ON,OUT
+	ELSE
+		LDX	old_X
 		LDA	pixel_offset
 		AND	#4
 		BEQ	under4
@@ -398,12 +638,99 @@
 		LDA	(workspace),Y
 .sp_and		AND	#&FF
 		STA	(workspace),Y
+	ENDIF
 
 		RTS
 
 ;****************************************
 
-.animate_lives	LDA	#LO(&5AA8)
+.animate_lives
+	IF BUILD_MASTER
+		SHADOW	ON,IN
+
+		BANK	4
+
+		LDA	#LO(&3550)
+		STA	workspace+2
+		LDA	#HI(&3550)
+		STA	workspace+3
+
+		LDA	lives
+		BEQ	exit_al
+		CMP	#5
+		BCC	not_b_5
+		LDA	#5
+
+.not_b_5	STA	workspace
+
+		LDA	yts
+		STA	workspace+1
+
+.al_loop1	LDA	workspace+1
+		EOR	#frames-1
+		STA	workspace+1
+		ASL	A
+		ASL	A
+		ASL	A
+		ASL	A
+		TAX
+
+		LDY	#0
+.al_loop2	LDA	ball_data,X
+		STA	(workspace+2),Y
+		INY
+		INX
+		CPY	#16
+		BNE	al_loop2
+
+		CLC
+		LDA	workspace+2
+		ADC	#16
+		STA	workspace+2
+
+		BCC	al_nc1
+
+		INC	workspace+3
+
+.al_nc1		DEC	workspace
+		BNE	al_loop1
+
+
+.exit_al
+
+		LDA	lives
+		CMP	#5
+		BEQ	exit_al2
+
+		LDA	#5
+		SEC
+		SBC	lives
+		STA	workspace
+
+.al_loop3	LDY	#15
+		LDA	#0
+
+.al_loop4	STA	(workspace+2),Y
+		DEY
+		BPL	al_loop4
+
+		CLC
+		LDA	workspace+2
+		ADC	#16
+		STA	workspace+2
+
+		BCC	al_nc2
+
+		INC	workspace+3
+
+.al_nc2		DEC	workspace
+		BNE	al_loop3
+
+.exit_al2	SHADOW	ON,OUT
+
+		BANK	5
+	ELSE
+		LDA	#LO(&5AA8)
 		STA	workspace+2
 		LDA	#HI(&5AA8)
 		STA	workspace+3
@@ -465,12 +792,16 @@
 		DEC	workspace
 		BNE	al_loop3
 
-.exit_al2	RTS
+.exit_al2
+	ENDIF
+		RTS
 
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER=0
 .ball_mask	EQUB	60,126,255,255,255,255,126,60
+	ENDIF
 
 ;*screen_store2	SKIP	16		; = 2 * columns of 8
 ;*screen_store	SKIP	16		; = 2 * columns of 8
@@ -481,7 +812,10 @@
 ;****************************************
 ;****************************************
 
-.display_timer	LDA	timer_digits
+	IF BUILD_MASTER=0
+.display_timer
+	ENDIF
+.display_timer_old	LDA	timer_digits
 		ASL	A
 		ASL	A
 		ASL	A
@@ -489,12 +823,16 @@
 		TAY
 
 		LDX	#0
-.dt_loop1	LDA	timer_chars,Y
-		STA	&5E10,X
+.dt_loop1_old	LDA	timer_chars_old,Y
+		IF BUILD_MASTER
+			STA	&5E10,X
+		ELSE
+			STA	&5A10,X
+		ENDIF
 		INX
 		INY
 		CPX	#8
-		BNE	dt_loop1
+		BNE dt_loop1_old
 
 ;* * * * * * * * * * * * * * * * * * * *
 
@@ -506,12 +844,12 @@
 		TAY
 
 		LDX	#0
-.dt_loop2	LDA	timer_chars,Y
+.dt_loop2_old	LDA	timer_chars_old,Y
 		STA	&5E10+8,X
 		INX
 		INY
 		CPX	#8
-		BNE	dt_loop2
+		BNE dt_loop2_old
 
 ;* * * * * * * * * * * * * * * * * * * *
 
@@ -523,36 +861,36 @@
 		TAY
 
 		LDX	#0
-.dt_loop3	LDA	timer_chars,Y
+.dt_loop3_old	LDA	timer_chars_old,Y
 		EOR	#255
 		STA	&5E10+16,X
 		INX
 		INY
 		CPX	#8
-		BNE	dt_loop3
+		BNE dt_loop3_old
 
 ;****************************************
 
 		LDX	timer_frames+2
 		DEX
-		BPL	not_eoc4
+		BPL	not_eoc4_old
 
 		DEC	timer_digits+2
 
 		LDA	timer_digits+2
-		BPL	not_eoc41
+		BPL	not_eoc4_old1_old
 
 		LDA	#9
 		STA	timer_digits+2
 
-.not_eoc41	LDX	#7
-.not_eoc4	STX	timer_frames+2
+.not_eoc4_old1_old	LDX	#7
+.not_eoc4_old	STX	timer_frames+2
 
 ;* * * * * * * * * * * * * * * * * * * *
 
 		LDA	timer_digits+2
 		CMP	#9
-		BNE	not_eoc3
+		BNE	not_eoc3_old
 
 		LDA	timer_status
 		ORA	#%00000100
@@ -560,32 +898,32 @@
 
 		LDX	timer_frames+1
 		DEX
-		BPL	not_eoc31
+		BPL	not_eoc3_old1
 
 		DEC	timer_digits+1
 		LDA	timer_digits+1
-		BPL	not_eoc32
+		BPL	not_eoc3_old2
 
 		LDA	#9
 		STA	timer_digits+1
 
-.not_eoc32	LDX	#7
-.not_eoc31	STX	timer_frames+1
-		BNE	not_eoc34
+.not_eoc3_old2	LDX	#7
+.not_eoc3_old1	STX	timer_frames+1
+		BNE	not_eoc3_old4
 
 ;* * * * * * * * * * * * * * * * * * * *
 
-.not_eoc3	LDA	timer_status
+.not_eoc3_old	LDA	timer_status
 		AND	#%11111011
 		STA	timer_status
 
-.not_eoc34	LDA	timer_digits+1
+.not_eoc3_old4	LDA	timer_digits+1
 		CMP	#9
-		BNE	not_eoc2
+		BNE	not_eoc2_old
 
 		LDA	timer_status
 		AND	#%00000100
-		BEQ	not_eoc2
+		BEQ	not_eoc2_old
 
 		LDA	timer_status
 		ORA	#%000000010
@@ -593,29 +931,29 @@
 
 		LDX	timer_frames
 		DEX
-		BPL	not_eoc21
+		BPL	not_eoc2_old1
 
 		DEC	timer_digits
 
 		LDX	#6
-.not_eoc21	STX	timer_frames
+.not_eoc2_old1	STX	timer_frames
 
-		BNE	not_eoc24
+		BNE	not_eoc2_old4
 
 ;* * * * * * * * * * * * * * * * * * * *
 
-.not_eoc2	LDA	timer_status
+.not_eoc2_old	LDA	timer_status
 		AND	#%11111101
 		STA	timer_status
 
-.not_eoc24	JSR	draw_sbars
+.not_eoc2_old4	JSR	draw_sbars
 
 		RTS
 
 ;****************************************
 ;****************************************
 
-.timer_chars	EQUB	%01111110	; 0
+.timer_chars_old	EQUB	%01111110	; 0
 		EQUB	%00000000
 		EQUB	%00011000
 		EQUB	%00100100
@@ -717,5 +1055,3 @@
 
 ;****************************************
 ;****************************************
-
-;		INCLUDE	"mc000c.6502"

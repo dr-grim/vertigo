@@ -1,23 +1,11 @@
-;		TTL	mc008		; Data for nasty's screen route
+;		TTL	mc008		; Enemy lookup data
 
 ;****************************************
-;*	Bits 1-4 = Speed ( Delay )	*
-;*	=0-7	N.B. 0 = still		*
-;****************************************
-;*	Bits 8-32 = Number of blocks	*
-;*	=1-7				*
-;****************************************
-;*	Bits 64-128 = Direction,	*
-;*	=0-3	0 = NW, 1 = NE,		*
-;*		2 = SW, 3 = SE.		*
-;****************************************
-;*					*
-;* SYNTAX : 	ENEMYMOVE	SPEED,MOVES,DIRECTION
-;*		ENEMYSTART	X,Y	( 2 bytes each )
-;*					*
 ;****************************************
 
-.nasty_lookup	EQUW	S0L0		; Level	1
+.nasty_lookup
+	IF BUILD_MASTER
+		EQUW	S0L0		; Level 1
 		EQUW	S2L1
 		EQUW	S3L1
 		EQUW	S4L1
@@ -25,7 +13,7 @@
 		EQUW	S6L1
 		EQUW	S7L1
 		EQUW	S8L1
-		EQUW	S0L0
+		EQUW	S9L5
 		EQUW	S10L1
 
 		EQUW	S1L2		; Level 2
@@ -33,21 +21,21 @@
 		EQUW	S3L2
 		EQUW	S4L2
 		EQUW	S5L2
-		EQUW	S0L0
+		EQUW	S9L5
 		EQUW	S7L2
-		EQUW	S0L0
-		EQUW	S3L2
+		EQUW	S9L5
+		EQUW	S9L5
 		EQUW	S0L0
 
 		EQUW	S1L3		; Level 3
+		EQUW	S9L5
 		EQUW	S0L0
-		EQUW	S0L0
-		EQUW	S0L0
+		EQUW	S9L5
 		EQUW	S5L3
 		EQUW	S0L0
 		EQUW	S7L3
 		EQUW	S8L3
-		EQUW	S0L0
+		EQUW	S9L5
 		EQUW	S10L3
 
 		EQUW	S0L0		; Level 4
@@ -71,6 +59,62 @@
 		EQUW	S8L5
 		EQUW	S9L5
 		EQUW	S0L0
+	ELSE
+		EQUW	S0L0		; Level 1
+		EQUW	S2L1
+		EQUW	S3L1
+		EQUW	S4L1
+		EQUW	S5L1
+		EQUW	S6L1
+		EQUW	S7L1
+		EQUW	S8L1
+		EQUW	S9L5
+		EQUW	S10L1
+
+		EQUW	S1L2		; Level 2
+		EQUW	S2L2
+		EQUW	S3L2
+		EQUW	S4L2
+		EQUW	S5L2
+		EQUW	S9L5
+		EQUW	S7L2
+		EQUW	S9L5
+		EQUW	S9L5
+		EQUW	S0L0
+
+		EQUW	S1L3		; Level 3
+		EQUW	S9L5
+		EQUW	S0L0
+		EQUW	S9L5
+		EQUW	S5L3
+		EQUW	S0L0
+		EQUW	S7L3
+		EQUW	S8L3
+		EQUW	S9L5
+		EQUW	S10L3
+
+		EQUW	S0L0		; Level 4
+		EQUW	S2L4
+		EQUW	S3L4
+		EQUW	S4L4
+		EQUW	S5L4
+		EQUW	S6L4
+		EQUW	S9L5
+		EQUW	S0L0
+		EQUW	S0L0
+		EQUW	S0L0
+
+		EQUW	S0L0		; Level 5
+		EQUW	S2L5
+		EQUW	S3L5
+		EQUW	S9L5
+		EQUW	S5L5
+		EQUW	S0L0
+		EQUW	S0L0
+		EQUW	S8L5
+		EQUW	S9L5
+		EQUW	S0L0
+	ENDIF
 
 ;****************************************	; Level 0 data
 ;****************************************
@@ -600,4 +644,8 @@
 ;****************************************
 ;****************************************
 
-;		CHN	mc009a
+;	IF BUILD_MASTER
+;		; INCLUDE "mc009a.asm"
+;	ELSE
+;		INCLUDE "mc009.asm"
+;	ENDIF

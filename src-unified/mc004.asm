@@ -38,6 +38,7 @@
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER
 .music_onoff	LDA	music_volume
 		BNE	not_m0
 
@@ -48,7 +49,11 @@
 		LDA	#6
 		LDX	#10
 		JSR	envelopes_to_0
+	IF BUILD_MASTER
 		BRA	sound_onoff
+	ELSE
+		JMP	sound_onoff
+	ENDIF
 
 .not_m0	LDA	menu_st
 	ORA	#%10000000
@@ -62,7 +67,11 @@
 		LDX	#LO(envelope61)
 		LDY	#HI(envelope61)
 		JSR	do_envelopes
+	IF BUILD_MASTER
 		BRA	sound_onoff
+	ELSE
+		JMP	sound_onoff
+	ENDIF
 
 .not_m1		CMP	#2
 		BNE	not_m2
@@ -71,7 +80,11 @@
 		LDX	#LO(envelope62)
 		LDY	#HI(envelope62)
 		JSR	do_envelopes
+	IF BUILD_MASTER
 		BRA	sound_onoff
+	ELSE
+		JMP	sound_onoff
+	ENDIF
 
 .not_m2		CMP	#3
 		BNE	not_m3
@@ -80,7 +93,11 @@
 		LDX	#LO(envelope63)
 		LDY	#HI(envelope63)
 		JSR	do_envelopes
+	IF BUILD_MASTER
 		BRA	sound_onoff
+	ELSE
+		JMP	sound_onoff
+	ENDIF
 
 .not_m3		LDA	#5
 		LDX	#LO(envelope64)
@@ -131,10 +148,44 @@
 		LDX	#LO(envelope34)
 		LDY	#HI(envelope34)
 		JMP	do_envelopes
+	ENDIF
+
+	IF BUILD_MASTER=0
+
+.music_onoff	LDA	menu_st		; Q key being pressed ??? ( No sound )
+		AND	#64
+		BEQ	musicoff
+
+		LDX	#0
+		BEQ	skipmo
+
+.musicoff	LDX	#1
+
+.skipmo		LDA	#210
+		LDY	#0
+		JSR	osbyte
+
+		LDX	#36
+		LDY	#2
+		JSR	move_cursor
+
+		LDA	menu_st
+		AND	#3
+		BNE	moo_joy
+
+		LDA	#'K'
+		BNE	skip_mooj
+
+.moo_joy	LDA	#'J'
+
+.skip_mooj	JMP	oswrch
+
+	ENDIF
 
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER
 .envs_to_do	SKIP	1
 env_pointer	=	workspace
 
@@ -177,6 +228,7 @@ env_pointer	=	workspace
 		RTS
 
 .last_env	SKIP	1
+	ENDIF
 
 ;****************************************
 ;****************************************
@@ -232,6 +284,7 @@ env_pointer	=	workspace
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER
 .conv_sprite	LDA	xy		; calculates pixel offset within
 		CLC			; bytes of ball ( 0,1,2 or 3 )
 		ADC	xy+2
@@ -316,7 +369,61 @@ env_pointer	=	workspace
 
 ;****************************************
 
-.slide_frame	BANK	4
+	ELSE
+.conv_sprite	LDA	xy		; calculates pixel offset within
+		CLC			; bytes of ball ( 0 to 7 )
+		ADC	xy+2
+		CLC
+		ADC	#16
+		LSR	A
+		LSR	A
+		AND	#7
+		STA	workspace+7
+		STA	pixel_offset
+
+		LDA	frame		; pointer to present ball frame
+		ASL	A
+		ASL	A
+		ASL	A
+		ADC	#LO(ball_data)
+		STA	workspace+1
+		LDA	#HI(ball_data)
+		ADC	#0
+		LDX	#LO(actual_ball	); pointer to where new ball should
+		LDY	#HI(actual_ball	); be stored
+		JSR	slide_frame	; slide it ?workspace times to the right
+
+		LDA	#LO(c+1		); pointer to present mask
+		STA	workspace+1
+		LDA	#HI(c+1)
+		LDX	#LO(actual_mask	); pointer to where new mask should
+		LDY	#HI(actual_mask	); be stored
+		JSR	slide_frame	; slide it ?workspace times to the right
+
+		LDY	#15
+.cs_loop2	LDA	actual_ball,Y
+		AND	actual_mask,Y
+		STA	actual_ball,Y
+		DEY
+		BPL	cs_loop2
+
+		LDY	#15
+.cs_loop3	LDA	actual_mask,Y
+		EOR	#255
+		STA	actual_mask,Y
+		DEY
+		BPL	cs_loop3
+
+		RTS
+
+;****************************************
+
+	ENDIF
+
+.slide_frame
+	IF BUILD_MASTER
+		BANK	4
+	ENDIF
 
 		LDY	#0		; copies normal sprite to workspace
 .sf_loop1	LDA	(workspace+1),Y	; ( is designed for 2*8 sprites )
@@ -391,11 +498,26 @@ env_pointer	=	workspace
 		CPY	#8
 		BNE	sf_loop4
 
+	IF BUILD_MASTER
 		BRA	sf_loop3
+	ELSE
+		JMP	sf_loop3
+	ENDIF
 
-.exit_sf	BANK	5
+.exit_sf
+	IF BUILD_MASTER
+		BANK	5
+	ENDIF
 		RTS
 
+;****************************************
+
+.do_ms		LDA	#2
+		LDX	old_X
+		LDY	old_Y
+		JMP	mask_sprite
+
+;****************************************
 ;****************************************
 
 .print_jewel	LDY	#4
@@ -600,4 +722,144 @@ env_pointer	=	workspace
 ;****************************************
 ;****************************************
 
-;		CHN	mc004b
+;	IF BUILD_MASTER
+;		; INCLUDE "mc004b.asm"
+;	ELSE
+;		INCLUDE "mc005.asm"
+;	ENDIF
+
+	IF BUILD_MASTER=0
+
+.envelope6	EQUB	6,1,0,0,0,0,0,0,100,-5,-3,-4,100,60
+	EQUB	100,60
+.envelope7	EQUB	7,1,0,0,0,0,0,0,100,-10,-5,-5,100,40
+	EQUB	100,40
+.envelope8	EQUB	8,1,0,0,0,0,0,0,126,-10,-5,-10,126,66
+	EQUB	126,66
+.envelope9	EQUB	9,1,0,0,0,0,0,0,110,-20,-10,-20,110,50
+	EQUB	110,50
+.envelope10	EQUB	10,1,0,0,0,0,0,0,60,-1,0,-1,60,30
+	EQUB	60,30
+
+;****************************************
+;****************************************
+
+.def_env
+	LDX	#0
+	STX	workspace
+
+.de_loop_env
+	LDX	workspace
+
+	LDA	current_slev
+	BNE	not_zilch
+
+	LDA	#0			; 0 volume
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	STA	envelope6+13,X
+	JMP	skip_de
+
+.not_zilch
+	CMP	#1
+	BNE	not_slev1
+
+	LDA	envelope6+14,X		; 25% volume
+	LSR	A
+	LSR	A
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	LDA	envelope6+15,X
+	LSR	A
+	LSR	A
+	STA	envelope6+13,X
+	JMP	skip_de
+
+.not_slev1
+	CMP	#2
+	BNE	not_slev2
+
+	LDA	envelope6+14,X		; 50% volume
+	LSR	A
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	LDA	envelope6+15,X
+	LSR	A
+	STA	envelope6+13,X
+	JMP	skip_de
+
+.not_slev2
+	CMP	#3
+	BNE	not_slev3
+
+	LDA	envelope6+14,X		; 75% volume
+	LSR	A
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+	LDA	envelope6+15,X
+	LSR	A
+	STA	envelope6+13,X
+
+	LDA	envelope6+14,X
+	LSR	A
+	LSR	A
+	CLC
+	ADC	envelope6+8,X
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+
+	LDA	envelope6+15,X
+	LSR	A
+	LSR	A
+	CLC
+	ADC	envelope6+13,X
+	STA	envelope6+13,X
+
+	JMP	skip_de
+
+.not_slev3
+	LDA	envelope6+14,X		; 100% volume
+	STA	envelope6+8,X
+	STA	envelope6+12,X
+
+	LDA	envelope6+15,X
+	STA	envelope6+13,X
+
+.skip_de	LDA	workspace
+	CLC
+	ADC	#16
+	STA	workspace
+
+	CMP	#80
+	BEQ	done_de
+
+	JMP	de_loop_env
+
+.done_de
+	LDA	#152			; Define envelopes
+	LDX	#LO(envelope6)
+	LDY	#HI(envelope6)
+	JSR	osword
+	LDA	#152
+	LDX	#LO(envelope7)
+	LDY	#HI(envelope7)
+	JSR	osword
+	LDA	#152
+	LDX	#LO(envelope8)
+	LDY	#HI(envelope8)
+	JSR	osword
+	LDA	#152
+	LDX	#LO(envelope9)
+	LDY	#HI(envelope9)
+	JSR	osword
+	LDA	#152
+	LDX	#LO(envelope10)
+	LDY	#HI(envelope10)
+	JSR	osword
+
+	RTS
+
+;****************************************
+;****************************************
+
+	ENDIF

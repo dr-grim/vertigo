@@ -16,10 +16,11 @@
 
 	ENDMACRO
 
+
 ;****************************************
 ;****************************************
 
-		MACRO VDU19  a, b
+		MACRO VDU19 a, b
 		LDA	#19
 		JSR	oswrch
 		LDA	#a
@@ -45,16 +46,20 @@
 ;****************************************
 ;****************************************
 
-; LOAD <string_location> ( Does OSCLI(string) )
-		MACRO OSCLI oscliString
-		LDX	#LO(oscliString)
-		LDY	#HI(oscliString)
+	IF TARGET_DISC=0
+		MACRO	LOAD oscliStrAddress			; LOAD <string_location>
+					; ( Does OSCLI <string> )
+		LDX	#LO(oscliStrAddress)
+		LDY	#HI(oscliStrAddress)
 		JSR	oscli
+
 		ENDMACRO
+	ENDIF
 
 ;****************************************
 ;****************************************
 
+	IF TARGET_DISC
 		MACRO	RUN			; RUN <string_location>
 					; ( Does OSCLI <string> )
 		LDX	#LO(@1)
@@ -62,6 +67,15 @@
 		JMP	oscli
 
 		ENDMACRO
+	ELSE
+		MACRO	RUN	oscliStrAddress		; RUN <string_location>
+					; ( Does OSCLI <string> )
+		LDX	#LO(oscliStrAddress)
+		LDY	#HI(oscliStrAddress)
+		JMP	oscli
+
+		ENDMACRO
+	ENDIF
 
 ;****************************************
 ;****************************************
@@ -103,12 +117,18 @@
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER
+load_workspace	=	&70
+		ORG	&400
+	ELSE
 		ORG	&1900
+	ENDIF
+
 .loader_code_start
 .loader_code_execute
 
 {
-
+	IF BUILD_MASTER=0
 ;		DSECT
 		ORG	&00
 
@@ -121,11 +141,13 @@
 .main_pointer	SKIP	2
 
 ;		DEND
+	ENDIF
 
 ;****************************************
 ;****************************************
 
-	ORG loader_code_start
+
+		ORG loader_code_start
 
 .execute	LDA	#229
 		LDX	#1
@@ -134,7 +156,13 @@
 
 		LDA	#22
 		JSR	oswrch
+	IF BUILD_MASTER
+		LDA	#129
+	ELIF TARGET_DISC
 		LDA	#1
+	ELSE
+		LDA	#5
+	ENDIF
 		JSR	oswrch
 
 		LDA	#23
@@ -153,6 +181,122 @@
 		JSR	oswrch
 		JSR	oswrch
 
+	IF BUILD_MASTER
+		; Set all colours to black
+		; CHANGE	1,0
+		; CHANGE	2,0
+		; CHANGE	3,0
+		LDA	#19
+		JSR	oswrch
+		LDA	#1
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		LDA	#19
+		JSR	oswrch
+		LDA	#2
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		LDA	#19
+		JSR	oswrch
+		LDA	#3
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		SHADOW	ON,IN
+		OSCLI	load_title_page
+		SHADOW	ON,OUT
+
+		; Colours set to red, yellow and white
+		; CHANGE	1,1
+		; CHANGE	2,3
+		; CHANGE	3,7
+		LDA	#19
+		JSR	oswrch
+		LDA	#1
+		JSR	oswrch
+		LDA	#1
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		LDA	#19
+		JSR	oswrch
+		LDA	#2
+		JSR	oswrch
+		LDA	#3
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		LDA	#19
+		JSR	oswrch
+		LDA	#3
+		JSR	oswrch
+		LDA	#7
+		JSR	oswrch
+		LDA	#0
+		JSR	oswrch
+		JSR	oswrch
+		JSR	oswrch
+
+		OSCLI	load_bank4
+
+		OSCLI	load_bank5
+
+		OSCLI	load_title_page
+		SHADOW	OFF,OUT
+
+		SHADOW	OFF,IN
+		OSCLI	load_panel1
+
+		LDA	#LO(&4B80)
+		STA	load_workspace
+		LDA	#HI(&4B80)
+		STA	load_workspace+1
+
+		LDY	#0
+
+.cls_loop1	LDA	#0
+.cls_loop2	STA	(load_workspace),Y
+		INY
+		BNE	cls_loop2
+
+		INC	load_workspace+1
+		LDA	load_workspace+1
+		CMP	#&65
+		BLT	cls_loop1
+
+		OSCLI	load_panel2
+		SHADOW	ON,OUT
+
+		; Swap so we can use JMP not JSR
+		; OSCLI	run_main_game
+
+		LDX	#LO(run_main_game)
+		LDY	#HI(run_main_game)
+		JMP	oscli
+	ELSE
 		DEFINE	envelope3
 		DEFINE	envelope4
 ;*		DEFINE	envelope5
@@ -172,7 +316,11 @@
 	VDU19	2,0
 	VDU19	3,0
 
+	IF TARGET_DISC
 		OSCLI	title_page
+	ELSE
+		LOAD	title_page
+	ENDIF
 
 	EFFECT	1,7
 		EFFECT	1,1
@@ -251,16 +399,24 @@
 
 ; * * * * * * * * * * * * * * * * * * * *
 
+	IF TARGET_DISC
 		OSCLI	panel
 
 		;RUN	main_game
 		LDX	#LO(main_game)
 		LDY	#HI(main_game)
 		JMP	oscli
+	ELSE
+		LOAD	panel
+
+		RUN	main_game
+	ENDIF
+	ENDIF
 
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER=0
 .waitq		LDA	#19
 		JSR	osbyte
 		JSR	osbyte
@@ -268,19 +424,37 @@
 		JSR	osbyte
 		JSR	osbyte
 		JMP	osbyte
+	ENDIF
 
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER
+.load_title_page	EQUS	"LOAD title 3000", &0D
+
+.load_bank4		EQUS	"SRLOAD bank4 8000 4 Q", &0D
+.load_bank5		EQUS	"SRLOAD bank5 8000 5 Q", &0D
+
+.load_panel1		EQUS	"LOAD panel1 3000", &0D
+.load_panel2		EQUS	"LOAD panel2 6480", &0D
+
+.run_main_game	EQUS	"RUN mcode", &0D
+	ELSE
+	IF TARGET_DISC
 .title_page	EQUS	"LOAD title 3000", &0D
+	ELSE
+.title_page	EQUS	"LOAD title 5800", &0D
+	ENDIF
 
 .panel		EQUS	"LOAD panel 6A20", &0D
 
 .main_game	EQUS	"RUN mcode", &0D
+	ENDIF
 
 ;****************************************
 ;****************************************
 
+	IF BUILD_MASTER=0
 .envelope3	EQUB	3,129,-1,2,0,2,30,0,120,-10,-5,-3,120,120
 .envelope4	EQUB	4,1,0,0,0,0,0,0,120,-3,-2,-1,120,120
 ;*envelope5	EQUB	5,0,0,0,0,0,0,0,100,-10,-3,-1,100,30
@@ -290,8 +464,10 @@
 ;*envelope8	EQUB	8,1,0,0,0,0,0,0,126,-10,-5,-10,126,66
 ;*envelope9	EQUB	9,1,0,0,0,0,0,0,110,-20,-10,-20,110,50
 ;*envelope10	EQUB	10,1,0,0,0,0,0,0,60,-1,0,-1,60,30
+	ENDIF
 
 ;****************************************
 ;****************************************
 }
+
 .loader_code_end

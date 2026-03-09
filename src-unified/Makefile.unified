@@ -1,0 +1,22 @@
+# Unified Makefile for Vertigo
+
+.PHONY: all clean unified
+
+all: unified
+
+unified: vertigo-master.ssd vertigo-bbcb-disc.ssd vertigo-bbcb-tape.ssd vertigo-electron-tape.ssd
+
+vertigo-master.ssd: main.asm
+	../beebasm/beebasm -w -vc -boot vertigo -do ../vertigo-master-unified.ssd -i main.asm -D BUILD_MASTER=1 -D BUILD_BBCB=0 -D BUILD_ELECTRON=0 -D TARGET_DISC=0
+
+vertigo-bbcb-disc.ssd: main.asm
+	../beebasm/beebasm -w -vc -boot vertigo -do ../vertigo-bbc-b-disc.ssd -i main.asm -D BUILD_MASTER=0 -D BUILD_BBCB=1 -D BUILD_ELECTRON=0 -D TARGET_DISC=1
+
+vertigo-bbcb-tape.ssd: main.asm
+	../beebasm/beebasm -w -vc -boot vertigo -do ../vertigo-bbc-b-cassette.ssd -i main.asm -D BUILD_MASTER=0 -D BUILD_BBCB=1 -D BUILD_ELECTRON=0 -D TARGET_DISC=0
+
+vertigo-electron-tape.ssd: main.asm
+	../beebasm/beebasm -w -vc -boot vertigo -do ../vertigo-electron-cassette.ssd -i main.asm -D BUILD_MASTER=0 -D BUILD_BBCB=0 -D BUILD_ELECTRON=1 -D TARGET_DISC=0
+
+clean:
+	rm -f ../vertigo-master-unified.ssd ../vertigo-bbc-b-disc.ssd ../vertigo-bbc-b-cassette.ssd ../vertigo-electron-cassette.ssd

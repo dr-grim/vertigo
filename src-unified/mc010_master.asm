@@ -387,7 +387,6 @@
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
-		EQUS	&0D
 		EQUS	"BOO !", &0D
 		EQUS	&0D
 		EQUS	&0D
@@ -400,7 +399,6 @@
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	"WELL,ACTUALLY ITS :", &0D
-		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
@@ -527,6 +525,8 @@
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
+		EQUS	&0D
+		EQUS	&0D
 		EQUS	"NEXT TIME,GADGET;", &0D
 		EQUS	"NEXT TIME !!!", &0D
 		EQUS	&0D
@@ -547,6 +547,7 @@
 		EQUS	"It's :", &0D
 		EQUS	&0D
 		EQUS	"'WOWZER'", &0D
+		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D
 		EQUS	&0D

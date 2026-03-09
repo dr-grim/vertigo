@@ -5,11 +5,21 @@
 .go		JSR	init_screen
 		JSR	init_screen2
 
+	IF BUILD_MASTER
+		STZ	old_v_sp
+	ELSE
 		LDX	#0
 		STX	old_v_sp
+	ENDIF
+		LDA	#1		; inform game that it's on it's
+		STA	indicator	; first frame run
+
+	IF BUILD_MASTER
+		STZ	h
+	ELSE
+		LDX	#0
 		STX	h
-		INX			; inform game that it's on it's
-		STX	indicator	; first frame run
+	ENDIF
 
 		LDX	level_number	; Calc pos of nasty table for this scr
 		DEX
@@ -18,7 +28,11 @@
 
 		CLC
 		ADC	screen_number
+	IF BUILD_MASTER
+		DEA
+	ELSE
 		SBC	#0
+	ENDIF
 
 		ASL	A
 		TAY
@@ -30,6 +44,26 @@
 		STA	pointer4+1
 
 
+	IF BUILD_MASTER
+		LDA	(pointer4)		; Y=0
+		STA	enemy_x
+		STA	mem
+
+		LDY	#1 			; Y=1
+		LDA	(pointer4),Y
+		STA	enemy_x+1
+		STA	mem+1
+
+		INY				; Y=2
+		LDA	(pointer4),Y
+		STA	enemy_y
+		STA	mem+2
+
+		INY				; Y=3
+		LDA	(pointer4),Y
+		STA	enemy_y+1
+		STA	mem+3
+	ELSE
 		LDY	#0
 		LDA	(pointer4),Y		; Y=0
 		STA	enemy_x
@@ -49,22 +83,39 @@
 		LDA	(pointer4),Y
 		STA	enemy_y+1
 		STA	mem+3
+	ENDIF
 
 		JSR	hi
 		STA	enemy_z
 
-		LDA	#4
-		STA	e_point
-
+	IF BUILD_MASTER
+		STZ	e_frame
+		STZ	enemy_zm
+	ELSE
 		LDA	#0
 		STA	e_frame
 		STA	enemy_zm
+	ENDIF
+
+		LDA	#4
+		STA	e_point
+
+	IF BUILD_MASTER
+		STZ	e_blocks
+
+		LDX	#8		; pokes 0 to c - c+9
+.nup		STZ	c,X
+		DEX
+		BPL	nup
+	ELSE
+		LDA	#0
 		STA	e_blocks
 
 		LDX	#8		; pokes 0 to c - c+9
 .nup		STA	c,X
 		DEX
 		BPL	nup
+	ENDIF
 
 		LDX	#3
 .fha		LDA	xy,X		; Copy xy-xy+4 to workspace+&8-workspace+&C & mem-mem+4
@@ -73,11 +124,24 @@
 		DEX
 		BPL	fha
 
-.game		LDA	timer_digits
+.game
+	IF BUILD_MASTER
+		JSR	code		; keep music going
+
+		LDA	timer_digits
+		ORA	timer_digits+1
+		ORA	timer_digits+2
+		ORA	timer_frames
+		ORA	timer_frames+1
+		ORA	timer_frames+2
+		BNE	KOG
+	ELSE
+		LDA	timer_digits
 		ORA	timer_digits+1
 		ORA	timer_digits+2
 		ORA	timer_frames+2
 		BNE	KOG
+	ENDIF
 
 .ex_go		JMP	wipeout
 
@@ -86,7 +150,41 @@
 .KOG
 
 .nbn
+	IF BUILD_MASTER
+		LDA	yts2
+		INA
+		CMP	#3
+		BNE	nny2
 
+		LDA	yts
+		INA
+		CMP	#frames
+		BNE	nny
+
+		LDA	#0
+.nny		STA	yts
+
+		JSR	animate_lives
+
+		LDA	#0
+.nny2		STA	yts2
+
+		LDA	frame_delay
+		INC	A
+		CMP	#2
+		BNE	not_ifr
+
+		INC	frame
+		LDA	frame
+		CMP	#frames
+		BNE	dts
+
+		STZ	frame
+
+.dts		LDA	#0
+
+.not_ifr	STA	frame_delay
+	ELSE
 ;*		LDX	yts2
 ;*		INX
 ;*		CPX	#3
@@ -120,12 +218,9 @@
 
 		LDX	#0
 .not_ifr	STX	frame_delay
+	ENDIF
 
 		JSR	display_timer
-
-
-
-
 
 		LDX	#4
 .Lc		LDA	xy,X
@@ -133,8 +228,13 @@
 		DEX
 		BPL	Lc
 
+	IF BUILD_MASTER
 		LDA	h
 		STA	old_h
+	ELSE
+		LDA	h
+		STA	old_h
+	ENDIF
 
 		JSR	check_optkeys
 
@@ -145,14 +245,55 @@
 
 		JSR	read_js
 
-.stick_noton	INKEY	-106
+	IF BUILD_MASTER
+.stick_noton	INKEY	-120
+		BEQ	not_menu2
+
+		JSR	draw_menu
+		CMP	#255
+		BNE	np999
+
+		JMP	ds
+
+.np999		JMP	no_pause
+	ELSE
+.stick_noton
+	ENDIF
+
+.not_menu2	INKEY	-106
 		BEQ	no_pause
 
 		LDX	#LO(pause_text)
 		LDY	#HI(pause_text)
 		JSR	print_pwtxt
 
-.pause		JSR	testP
+.pause
+	IF BUILD_MASTER
+		JSR	code
+
+		INKEY	-56
+		BEQ	pnot_pass
+
+.pass_held	JSR	code
+
+		INKEY	-129
+		BEQ	pass_held
+
+		JSR	password
+		CMP	#0
+		BEQ	pnot_pass
+
+.pnot_pass2	JSR	code
+
+		INKEY	-90
+		BEQ	pnot_pass2
+
+		JMP	ds
+
+.pnot_pass	INKEY	-90
+		BEQ	pause
+	ELSE
+		JSR	testP
 		BEQ	pnot_pass
 
 		JSR	ts7
@@ -165,6 +306,7 @@
 
 .pnot_pass	INKEY	-90
 		BEQ	pause
+	ENDIF
 
 		LDA	pointer4
 		PHA
@@ -176,13 +318,40 @@
 		PLA
 		STA	pointer4
 
-.no_pause	JSR	testP
+.no_pause
+	IF BUILD_MASTER
+		INKEY	-56
+		BEQ	npass1
+
+.pass_held2	JSR	code
+
+		INKEY	-129
+		BEQ	pass_held2
+
+		JSR	password
+		CMP	#0
+		BEQ	npass2
+
+		JMP	ds
+
+.npass2		LDA	pointer4
+		PHA
+		LDA	pointer4+1
+		PHA
+		JSR	print_password
+		PLA
+		STA	pointer4+1
+		PLA
+		STA	pointer4
+	ELSE
+		JSR	testP
 		BEQ	npass1
 
 		JSR	ts7
 		BEQ	npass1
 
 		JMP	ds
+	ENDIF
 
 .npass1		JSR	A_pressed	; <A> key pressed ???
 		BEQ	nota
@@ -373,8 +542,13 @@
 		LDX	#20
 		STX	ab+4
 
-.JD		LDA	#0
+.JD
+	IF BUILD_MASTER
+		STZ	workspace+&A
+	ELSE
+		LDA	#0
 		STA	workspace+&A
+	ENDIF
 		LDA	ab+4
 		BPL	JF52
 
@@ -401,12 +575,23 @@
 .hjIk		LDA	workspace+&B
 		BPL	J5K
 
+	IF BUILD_MASTER
+		STZ	xy+4
+	ELSE
 		LDA	#0
 		STA	xy+4
+	ENDIF
 
-.J5K		LDX	ab+4
+.J5K
+	IF BUILD_MASTER
+		LDA	ab+4
+		SEC
+		SBC	gravity
+		TAX
+	ELSE
+		LDX	ab+4
 		DEX
-
+	ENDIF
 		CPX	#236
 		BCS	jmw
 
@@ -482,9 +667,14 @@
 		AND	#252
 		STA	workspace+&2
 
+	IF BUILD_MASTER
+		STZ	workspace+&8
+		STZ	workspace+&9
+	ELSE
 		LDA	#0
 		STA	workspace+&8
 		STA	workspace+&9
+	ENDIF
 
 		LDA	workspace+&2	; Find Gradient
 		SEC
@@ -511,7 +701,11 @@
 		BEQ	outy1
 .DNCYET1	ASL	workspace+&4
 		ROL	workspace+&5
+	IF BUILD_MASTER
+		BRA	Dlop991
+	ELSE
 		JMP	Dlop991
+	ENDIF
 
 .outy1		ASL	workspace+&8
 		ROL	workspace+&9
@@ -525,9 +719,14 @@
 
 ;**************************************
 
+	IF BUILD_MASTER
+		STZ	workspace+&8
+		STZ	workspace+&9
+	ELSE
 		LDA	#0
 		STA	workspace+&8
 		STA	workspace+&9
+	ENDIF
 
 		LDA	workspace+&3	; Find Gradient
 		SEC
@@ -554,7 +753,11 @@
 		BEQ	outy2
 .DNCYET2	ASL	workspace+&4
 		ROL	workspace+&5
+	IF BUILD_MASTER
+		BRA	Dlop992
+	ELSE
 		JMP	Dlop992
+	ENDIF
 
 .outy2		ASL	workspace+&8
 		ROL	workspace+&9
@@ -577,7 +780,14 @@
 		ADC	#1
 .NNG		LSR	A
 		LSR	A
-
+	IF BUILD_MASTER
+		CLC
+		ADC	gravity
+		STA	drmem
+		STZ	hites+2
+		STZ	hites+3
+		STZ	hites+6
+	ELSE
 		TAX
 		INX
 		STX	drmem
@@ -586,7 +796,7 @@
 		STA	hites+2
 		STA	hites+3
 		STA	hites+6
-
+	ENDIF
 		LDA	hites
 		SEC
 		SBC	hites+1
@@ -599,6 +809,7 @@
 		LDA	hites+5
 		BPL	tonit
 
+	IF BUILD_MASTER
 		LDA	hites+4
 		EOR	#255
 		CLC
@@ -609,6 +820,22 @@
 		EOR	#255
 		ADC	#0
 		STA	hites+5
+	ELSE
+		LDA	hites+4
+		EOR	#255
+		STA	hites+4
+
+		LDA	hites+5
+		EOR	#255
+		STA	hites+5
+
+		INC	hites+4
+		BNE	ncj_local2
+
+		INC	hites+5
+
+.ncj_local2
+	ENDIF
 
 		LDA	#1
 		STA	hites+6
@@ -630,8 +857,13 @@
 .ncyttvm	ASL	hites+4
 		ROL	hites+5
 
+	IF BUILD_MASTER
 		LDA	drmem
 		BNE	Tloop
+	ELSE
+		LDA	drmem
+		BNE	Tloop
+	ENDIF
 
 		LSR	hites+3
 		ROR	hites+2
@@ -639,6 +871,7 @@
 		LDA	hites+6
 		BEQ	qwe
 
+	IF BUILD_MASTER
 		LDA	hites+2
 		EOR	#255
 		CLC
@@ -649,6 +882,21 @@
 		EOR	#255
 		ADC	#0
 		STA	hites+3
+	ELSE
+		LDA	hites+2
+		EOR	#255
+		STA	hites+2
+
+		LDA	hites+3
+		EOR	#255
+		STA	hites+3
+
+		INC	hites+2
+		BNE	Pqwe
+
+		INC	hites+3
+.Pqwe
+	ENDIF
 
 .qwe		LDA	ab
 		CLC
@@ -661,9 +909,14 @@
 .L820
 ;****************************************
 
+	IF BUILD_MASTER
+		STZ	workspace+&8
+		STZ	workspace+&9
+	ELSE
 		LDA	#0
 		STA	workspace+&8
 		STA	workspace+&9
+	ENDIF
 
 		LDA	workspace+&1	; Find Gradient
 		SEC
@@ -690,7 +943,11 @@
 		BEQ	outy3
 .DNCYET3	ASL	workspace+&4
 		ROL	workspace+&5
+	IF BUILD_MASTER
+		BRA	Dlop993
+	ELSE
 		JMP	Dlop993
+	ENDIF
 
 .outy3		ASL	workspace+&8
 		ROL	workspace+&9
@@ -704,9 +961,14 @@
 
 ;**************************************
 
+	IF BUILD_MASTER
+		STZ	workspace+&8
+		STZ	workspace+&9
+	ELSE
 		LDA	#0
 		STA	workspace+&8
 		STA	workspace+&9
+	ENDIF
 
 		LDA	workspace+&3	; Find Gradient
 		SEC
@@ -733,7 +995,11 @@
 		BEQ	outy4
 .DNCYET4	ASL	workspace+&4
 		ROL	workspace+&5
+	IF BUILD_MASTER
+		BRA	Dlop994
+	ELSE
 		JMP	Dlop994
+	ENDIF
 
 .outy4		ASL	workspace+&8
 		ROL	workspace+&9
@@ -756,7 +1022,15 @@
 
 .PNNG		LSR	A
 		LSR	A
+	IF BUILD_MASTER
+		CLC
+		ADC	gravity
+		STA	drmem
 
+		STZ	hites+2
+		STZ	hites+3
+		STZ	hites+6
+	ELSE
 		TAX
 		INX
 		STX	drmem
@@ -765,6 +1039,7 @@
 		STA	hites+2
 		STA	hites+3
 		STA	hites+6
+	ENDIF
 
 		LDA	hites
 		SEC
@@ -786,12 +1061,18 @@
 		EOR	#255
 		STA	hites+5
 
+;*		LDA	hites+4
+;*		CLC
+;*		ADC	#1
+;*		STA	hites+4
+;*		BCC	ncj
+
 		INC	hites+4
-		BNE	ncj
+		BNE	ncj_local
 
 		INC	hites+5
 
-.ncj		LDA	#1
+.ncj_local	LDA	#1
 		STA	hites+6
 
 
@@ -819,7 +1100,11 @@
 		BNE	Tlop
 
 		LDA	hites+6
+	IF BUILD_MASTER
 		BEQ	Pqwe
+	ELSE
+		BEQ	Pqwe2
+	ENDIF
 
 		LDA	hites+2
 		EOR	#255
@@ -829,7 +1114,14 @@
 		EOR	#255
 		STA	hites+3
 
+;*		LDA	hites+2
+;*		CLC
+;*		ADC	#1
+;*		STA	hites+2
+;*		BCC	Pqwe
+
 		INC	hites+2
+	IF BUILD_MASTER
 		BNE	Pqwe
 
 		INC	hites+3
@@ -842,6 +1134,20 @@
 		LDA	ab+3
 		ADC	hites+3
 		STA	ab+3
+	ELSE
+		BNE	Pqwe2
+
+		INC	hites+3
+
+.Pqwe2		LDA	ab+2
+		CLC
+		ADC	hites+2
+		STA	ab+2
+
+		LDA	ab+3
+		ADC	hites+3
+		STA	ab+3
+	ENDIF
 
 .L830		LDA	ab+4
 		BPL	L850
@@ -859,7 +1165,11 @@
 
 		LDX	h
 		STX	xy+4
+	IF BUILD_MASTER
+		BRA	L880
+	ELSE
 		JMP	L880
+	ENDIF
 
 .L850		LDA	h
 		STA	xy+4
@@ -879,17 +1189,24 @@
 		LDA	ab+4
 		BPL	cont_to_3b
 
-.hit_edge	LDA	#0
+.hit_edge
+	IF BUILD_MASTER
+		STZ	ab+4
+	ELSE
+		LDA	#0
 		STA	ab+4
+	ENDIF
 
-		BEQ	skip_zm
+		BEQ	skip_zm ; BRA?
 
 .cont_to_3b	LDA	h
 		SEC
 		SBC	oxy+4
 		STA	ab+4
 
+
 .skip_zm
+
 
 .L880		LDA	ab+4
 		BMI	N_store_it
@@ -908,4 +1225,4 @@
 ;****************************************
 ;****************************************
 
-;		INCLUDE	"mc003b.6502"
+		; INCLUDE "mc003b.asm"

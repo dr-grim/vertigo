@@ -44,8 +44,9 @@
 
 .actual_mask	SKIP	24		; = 3 * columns of 8
 
-.screen_store	SKIP	24		; = 3 * columns of 8
-.screen_store2	SKIP	24		; = 3 * columns of 8
+; defined in mc000a.asm
+; .screen_store	SKIP	24		; = 3 * columns of 8
+; .screen_store2	SKIP	24		; = 3 * columns of 8
 		SKIP	8
 
 ;****************************************
@@ -441,6 +442,15 @@
 ;****************************************
 ;****************************************
 
+; These are defined in main.asm for non-Master, but for Master they were here?
+; Wait, in original Master code, they were in zero page? Or memory?
+; In src-unified/main.asm, I have them in the ELSE block (BBCB/Electron).
+; For Master, they were not in the SKIP block.
+; Let's check original Master main.asm if possible or just use the Master code structure.
+; In Master code (mc000b.asm), they are defined.
+; Since mc000b_master.asm is only included for Master, this definition is fine for Master.
+; BUT, if they are referenced in code shared by both, we need to ensure consistency.
+; For now, keep them here for Master, and main.asm has them for non-Master.
 .timer_digits	SKIP	3
 .timer_frames	SKIP	3
 .timer_status	SKIP	1

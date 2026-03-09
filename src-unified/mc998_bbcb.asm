@@ -2,8 +2,8 @@
 
 ;****************************************
 ;****************************************
-dea_frcount	=	drmem
-lb_frame	=	drmem+1
+dea_frcount_bbcb	=	drmem
+lb_frame_local	=	drmem+1
 
 .eolevel5	LDX	#LO(levmes5)
 		LDY	#HI(levmes5)
@@ -49,12 +49,12 @@ lb_frame	=	drmem+1
 
 .f_lp		JSR	anim_doframe
 
-		LDA	lb_frame
+		LDA	lb_frame_local
 		LDX	#21
 		LDY	#61
 		JSR	disp_lball
 
-		LDA	lb_frame
+		LDA	lb_frame_local
 		EOR	#15
 		LDX	#27
 		LDY	#88
@@ -265,24 +265,24 @@ lb_frame	=	drmem+1
 ;****************************************
 
 .keep_rot	LDA	#100
-.kr2		STA	dea_frcount
+.kr2		STA	dea_frcount_bbcb
 
 .f_lp3		JSR	anim_doframe
 
-		LDA	lb_frame
+		LDA	lb_frame_local
 		LDX	#5
 		LDY	#140
 		JSR	disp_lball
 
-		DEC	dea_frcount
+		DEC	dea_frcount_bbcb
 		BNE	f_lp3
 
 		RTS
 
 ;****************************************
 
-;dea_frcount	=	drmem
-;lb_frame	=	drmem+1
+;dea_frcount_bbcb	=	drmem
+;lb_frame_local	=	drmem+1
 
 ;****************************************
 ;****************************************
@@ -351,7 +351,7 @@ lb_frame	=	drmem+1
 		LDA	#0
 		STA	indicator
 		STA	frame
-		STA	lb_frame
+		STA	lb_frame_local
 
 		JSR	convc2
 
@@ -426,13 +426,13 @@ lb_frame	=	drmem+1
 ;****************************************
 ;****************************************
 
-.inclb		LDX	lb_frame
+.inclb		LDX	lb_frame_local
 		DEX
 		BPL	lb_ok
 
 		LDX	#15
 
-.lb_ok		STX	lb_frame
+.lb_ok		STX	lb_frame_local
 		RTS
 
 ;****************************************

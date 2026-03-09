@@ -115,6 +115,11 @@ accreg		=	&FE34
 
 .old_lives	SKIP	1
 
+; These variables are defined in mc001.asm for Master
+; .lives		SKIP	1
+; .score		SKIP	5
+; .frame_delay	SKIP	1
+
 .arrows_X	SKIP	1
 .arrows_Y	SKIP	1
 .arrows_frame	SKIP	1
@@ -195,6 +200,8 @@ accreg		=	&FE34
 
 .old_level2	SKIP	1
 
+; defined in mc001.asm for non-Master as well?
+; No, original code has them here for BBC B
 .lives		SKIP	1
 .score		SKIP	5
 .frame_delay	SKIP	1
@@ -326,61 +333,54 @@ SE		=	192
 .code_start
 
 	IF BUILD_MASTER
-		INCLUDE "mc000a_master.asm"
-		INCLUDE "mc000b_master.asm"
-		INCLUDE "mc000c_master.asm"
-		INCLUDE "mc000d_master.asm"
-		INCLUDE "mc001a_master.asm"
-		INCLUDE "mc001b_master.asm"
-		INCLUDE "mc002_master.asm"
-		INCLUDE "mc003a_master.asm"
-		INCLUDE "mc003b_master.asm"
-		INCLUDE "mc003c_master.asm"
-		INCLUDE "mc004a_master.asm"
-		INCLUDE "mc004b_master.asm"
-		INCLUDE "mc005a_master.asm"
-		INCLUDE "mc005b_master.asm"
-		INCLUDE "mc006a_master.asm"
-		INCLUDE "mc006b_master.asm"
-		INCLUDE "mc007_master.asm"
-		INCLUDE "mc008_master.asm"
-		INCLUDE "mc009a_master.asm"
-		INCLUDE "mc009b_master.asm"
-		INCLUDE "mc010_master.asm"
-		INCLUDE "mc011_master.asm"
-		INCLUDE "mc012_master.asm"
-		INCLUDE "mc999_master.asm"
-		INCLUDE "mctemp_master.asm"
-		INCLUDE "mctemp2_master.asm"
+		INCLUDE "mc000a.asm"
+		INCLUDE "mc000b.asm"
+		INCLUDE "mc000c.asm"
+		INCLUDE "mc000d.asm"
+		INCLUDE "mc001.asm"
+		INCLUDE "mc001b.asm"
+		INCLUDE "mc002.asm"
+		INCLUDE "mc003a.asm"
+		INCLUDE "mc003b.asm"
+		INCLUDE "mc003c.asm"
+		INCLUDE "mc004.asm"
+		INCLUDE "mc004b.asm"
+		INCLUDE "mc005a.asm"
+		INCLUDE "mc005b.asm"
+		INCLUDE "mc006a.asm"
+		INCLUDE "mc006b.asm"
+		INCLUDE "mc007.asm"
+		INCLUDE "mc008.asm"
+		INCLUDE "mc009a.asm"
+		INCLUDE "mc009b.asm"
+		INCLUDE "mc010.asm"
+		INCLUDE "mc011.asm"
+		INCLUDE "mc012.asm"
+		INCLUDE "mc999.asm"
+		INCLUDE "mctemp.asm"
+		INCLUDE "mctemp2.asm"
 	ELSE
 		; BBC B / Electron Includes
-		INCLUDE "mc000a_bbcb.asm"
-		INCLUDE "mc000c_bbcb.asm"
-		INCLUDE "mc001_bbcb.asm"
-
-		IF TARGET_DISC
-			INCLUDE "mc002a_bbcb_disc.asm"
-		ELSE
-			INCLUDE "mc002a_bbcb_tape.asm"
-		ENDIF
-
-		INCLUDE "mc002b_bbcb.asm"
-		INCLUDE "mc003a_bbcb.asm"
-		INCLUDE "mc003b_bbcb.asm"
-		INCLUDE "mc003c_bbcb.asm"
-		INCLUDE "mc004_bbcb.asm"
-		INCLUDE "mc005_bbcb.asm"
-		INCLUDE "mc006_bbcb.asm"
+		INCLUDE "mc000a.asm"
+		INCLUDE "mc000c.asm"
+		INCLUDE "mc001.asm"
+		; INCLUDE "mc002.asm"
+		INCLUDE "mc002b.asm"
+		INCLUDE "mc003a.asm"
+		INCLUDE "mc003b.asm"
+		INCLUDE "mc003c.asm"
+		INCLUDE "mc004.asm"
+		INCLUDE "mc004b.asm"
+		INCLUDE "mc005.asm"
+		INCLUDE "mc006.asm"
 		; mc007 is Master only
-		INCLUDE "mc008_bbcb.asm"
-		INCLUDE "mc009_bbcb.asm"
+		INCLUDE "mc008.asm"
+		INCLUDE "mc009.asm"
 		; mc010, mc011, mc012 are Master only
-		IF BUILD_BBCB
-			INCLUDE "mc998_bbcb.asm"
-		ENDIF
-		INCLUDE "mc999_bbcb.asm"
-		INCLUDE "mcmusic_bbcb.asm"
-		INCLUDE "mcdata_bbcb.asm"
+		INCLUDE "mc998.asm"
+		INCLUDE "mc999.asm"
+		INCLUDE "mcmusic.asm"
+		INCLUDE "mcdata.asm"
 	ENDIF
 
 .code_end
@@ -397,15 +397,7 @@ SE		=	192
 
 	CLEAR &0000, &FFFF
 
-	IF BUILD_MASTER
-		INCLUDE "mcload_master.asm"
-	ELSE
-		IF TARGET_DISC
-			INCLUDE "mcload_bbcb_disc.asm"
-		ELSE
-			INCLUDE "mcload_bbcb_tape.asm"
-		ENDIF
-	ENDIF
+	INCLUDE "mcload.asm"
 
 	SAVE "vertigo", loader_code_start, loader_code_end, loader_code_execute
 

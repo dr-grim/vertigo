@@ -1,4 +1,9 @@
-;		TTL	e.mc999
+;		TTL	e.mctemp2
+
+;****************************************
+;****************************************
+
+.jingonoff	EQUB	0
 
 ;****************************************
 ;****************************************
@@ -12,169 +17,126 @@
 
 		JSR	oswrch
 		INY
-		BNE	pt1
+		BRA	pt1
 
 .pt2		RTS
 
 ;****************************************
 ;****************************************
 
-.show_mes	TXA
-		PHA
-		TYA
-		PHA
+.show_mes	STA	jingonoff
+		PHX
+		PHY
 
-		JSR	venetian
+		BANK	4
 
 		LDA	#4
 		STA	workspace
 		LDA	#14
+		STA	workspace+1
+
 		LDX	#30
 		LDY	#4
 		JSR	box
 
-		PLA
-		TAY
-		PLA
-		TAX
+		PLY
+		PLX
 		JSR	print_text
 
-		LDA	#0
-		STA	lb_frame
+		STZ	lb_frame
 		LDA	#100
 		STA	dea_frcount
 
-.eolX1		JSR	fx193
+.eolX1		LDA	#19
+		JSR	osbyte
+		JSR	osbyte
+		JSR	osbyte
 
 		LDA	lb_frame
-		LDX	#6
+		LDX	#12
 		LDY	#128
 		JSR	disp_lball
 
 		LDA	lb_frame
 		EOR	#15
-		LDX	#32
+		LDX	#64
 		LDY	#128
 		JSR	disp_lball
 
 		JSR	inclb
 
+		LDA	jingonoff
+		BEQ	do_code
+
+		JSR	update_jingle
+		JSR	check_eojingle
+		BNE	eolX1
+		JSR	init_music
+		JMP	venetian
+
+.do_code	JSR	code
 		DEC	dea_frcount
 		BNE	eolX1
 
-		RTS
+		JMP	venetian
 
 ;****************************************
 ;****************************************
 
 .eolevel1	LDX	#LO(levmes1)
 		LDY	#HI(levmes1)
-		JSR	show_mes
-
-		JMP	nls3
+		LDA	#0
+		JMP	show_mes
 
 ;****************************************
 ;****************************************
 
 .eolevel2	LDX	#LO(levmes2)
 		LDY	#HI(levmes2)
+		LDA	#0
 		JSR	show_mes
 
 		LDX	#LO(levmes2b)
 		LDY	#HI(levmes2b)
+		LDA	#0
 		JSR	show_mes
 
 		LDX	#LO(levmes2c)
 		LDY	#HI(levmes2c)
-		JSR	show_mes
-
-		JMP	nls3
+		LDA	#0
+		JMP	show_mes
 
 ;****************************************
 ;****************************************
 
-.eolevel3	LDX	#LO(levmes3)
+.eolevel3	LDX	#LO(jingle2)
+		LDY	#HI(jingle2)
+		JSR	setup_jingle
+
+		LDX	#LO(levmes3)
 		LDY	#HI(levmes3)
+		LDA	#255
 		JSR	show_mes
 
+		LDA	#6
+		STA	level_number
 		LDA	#3
-		JSR	flat_run
+		STA	screen_number
+		JSR	screen
 
-; * * * * * * * * * * * * * * * * * * * *
-
-		JSR	d_shadow
-
-		JSR	do_ra
-
-		JSR	bounce
-
-		JSR	venetian
-
-		LDX	#LO(levmes3b)
-		LDY	#HI(levmes3b)
-		JSR	show_mes
-
-		JMP	nls3
-
-;****************************************
-;****************************************
-
-.do_ra		LDA	#2
-		LDX	old_X
-		LDY	old_Y
-		JMP	restore_area
-
-;****************************************
-;****************************************
-
-.eolevel4	LDX	#LO(levmes4)
-		LDY	#HI(levmes4)
-		JSR	show_mes
-
-		LDA	#2
-		JSR	flat_run
-
-		LDA	#LO(thatsnot)
-		STA	restore+1
-		LDA	#HI(thatsnot)
-		STA	restore+2
-		LDA	#19
-		STA	ra_height+1
-		LDA	#5
-		LDX	#32
-		LDY	#124
-		JSR	restore_area
-
-		LDA	#15
-		JSR	large_delay
-
-		JMP	nls3
-
-;****************************************
-;****************************************
-
-.eolevel5ch	LDX	#LO(levmes5c)
-		LDY	#HI(levmes5c)
-		JSR	show_mes
-
-		JMP	not_last_scr
-
-;****************************************
-;****************************************
-
-.flat_run	JSR	doscreen
+		BANK	4
 
 		JSR	reset_cols
 
+		STZ	frame
+		STZ	lb_frame
+
 		LDA	#32 		; X co-ord
 		STA	xy
-		STA	xy+2
-		LDX	#0
-		STX	xy+1
-		STX	xy+3
+		STZ	xy+1
 
-		INX
-		STX	indicator
+		STA	xy+2		; Y co-ord
+		STZ	xy+3
 
 		LDA	#20		; height
 		STA	xy+4
@@ -183,14 +145,26 @@
 
 		JSR	tel2
 
+		LDA	#1
+		STA	indicator
+
 ; * * * * * * * * * * * * * * * * * * * *
 
 .f_lpX		JSR	anim_doframe
 
-		JSR	fx19
+		LDA	#19
+		JSR	osbyte
 		JSR	osbyte
 
-		LDA	xy
+		INC	frame
+
+		LDA	frame
+		CMP	#frames
+		BLT	nfclX
+
+		STZ	frame
+
+.nfclX		LDA	xy
 		CLC
 		ADC	#8
 		STA	xy
@@ -200,14 +174,82 @@
 		STA	xy+1
 		STA	xy+3
 
+		LDA	xy+1
 		CMP	#2
 		BLT	f_lpX
 
 		LDA	xy
-		CMP	#&60
+		CMP	#&A0
 		BLT	f_lpX
 
+; * * * * * * * * * * * * * * * * * * * *
+
+		JSR	bounce
+
+		JSR	venetian
+
+		LDX	#LO(levmes3b)
+		LDY	#HI(levmes3b)
+		LDA	#0
+		JMP	show_mes
+
+;****************************************
+;****************************************
+
+.eolevel4	LDX	#LO(jingle1)
+		LDY	#HI(jingle1)
+		JSR	setup_jingle
+
+		LDX	#LO(levmes4)
+		LDY	#HI(levmes4)
+		LDA	#255
+		JSR	show_mes
+
+		JSR	do_toasanim
+
+		LDX	#LO(levmes4b)
+		LDY	#HI(levmes4b)
+		LDA	#0
+		JMP	show_mes
+
+;****************************************
+;****************************************
+
+.eolevel5	LDA	screen_number
+		PHA
+		LDA	level_number
+		PHA
+
+		LDX	#LO(jingle3)
+		LDY	#HI(jingle3)
+		JSR	setup_jingle
+
+		LDX	#LO(levmes5)
+		LDY	#HI(levmes5)
+		LDA	#255
+		JSR	show_mes
+
+		JSR	do_endanim
+
+		LDX	#LO(levmes5b)
+		LDY	#HI(levmes5b)
+		LDA	#0
+		JSR	show_mes
+
+		PLA
+		STA	level_number
+		PLA
+		STA	screen_number
+
 		RTS
+
+;****************************************
+;****************************************
+
+.eolevel5ch	LDX	#LO(levmes5c)
+		LDY	#HI(levmes5c)
+		LDA	#0
+		JMP	show_mes
 
 ;****************************************
 ;****************************************
@@ -254,10 +296,16 @@
 
 ; * * * * * * * * * * * * * * * * * * * *
 
-.levmes4	EQUB	31,16,16
-		EQUS	"And now,"
-		EQUB	31,17,17
-		EQUS	"THIS :"
+.levmes4	EQUB	31,9,16
+		EQUS	"And now for something"
+		EQUB	31,13,17
+		EQUS	"completely ..."
+		EQUB	0
+
+.levmes4b	EQUB	31,12,16
+		EQUS	"... Different."
+		EQUB	31,14,17
+		EQUS	"( Boing ! )"
 		EQUB	0
 
 ; * * * * * * * * * * * * * * * * * * * *
@@ -284,5 +332,3 @@
 
 ;****************************************
 ;****************************************
-
-;		INCLUDE	"mcmusic.6502"

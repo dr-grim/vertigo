@@ -234,27 +234,27 @@
 	LDA	#7
 	STA	old_level2
 
-	LDX	#LO(window)
-	LDY	#HI(window)
-	JSR	print_text
-
-	LDX	#LO(ff_tape)
-	LDY	#HI(ff_tape)
-	JSR	print_text
-
-	LDX	#LO(press_play)
-	LDY	#HI(press_play)
-	JSR	print_text
-
-	LDA	#'7'
-	JSR	oswrch
+;*	LDX	#LO(window)
+;*	LDY	#HI(window)
+;*	JSR	print_text
+;*
+;*	LDX	#LO(ff_tape)
+;*	LDY	#HI(ff_tape)
+;*	JSR	print_text
+;*
+;*	LDX	#LO(press_play)
+;*	LDY	#HI(press_play)
+;*	JSR	print_text
+;*
+;*	LDA	#'7'
+;*	JSR	OSWRCH
 
 	LDX	#LO(file_level)
 	LDY	#HI(file_level)
 	JSR	oscli
 
-	LDA	#26
-	JSR	oswrch
+;*	LDA	#26
+;*	JSR	OSWRCH
 
 	JSR	shades
 
@@ -452,4 +452,6 @@
 ;****************************************
 ;****************************************
 
-;		INCLUDE	"mc998.6502"
+	IF BUILD_BBCB
+		; INCLUDE	"mc998_bbcb.asm" - Included in main.asm
+	ENDIF
