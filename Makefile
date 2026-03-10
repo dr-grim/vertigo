@@ -24,7 +24,11 @@ vertigo-bbc-b-cassette.ssd:	$(wildcard src-bbc-b-cassette/*) Makefile
 vertigo-electron-cassette.ssd:	$(wildcard src-electron-cassette/*) Makefile
 	cd src-electron-cassette && ../$(BEEBASM) -w -vc -boot vertigo -do ../vertigo-electron-cassette.ssd -i main.6502
 
+unified:
+	$(MAKE) -C src-unified
+
 clean:
 	rm -rf beebasm
 	rm vertigo.ssd
 	rm vertigo-bbc-b-disc.ssd
+	$(MAKE) -C src-unified clean
